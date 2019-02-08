@@ -13,5 +13,120 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="ImGuiDx">
+      <UniqueIdentifier>{0af283fd-6226-4cad-92c2-c322c34fba3f}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Animation.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Collision.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Common.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Input.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Joypad.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Keyboard.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Music.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Vector2.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneGame.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneTitle.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="ScreenShake.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="External\ImguiDx\imgui_demo.cpp">
+      <Filter>ImGuiDx</Filter>
+    </ClCompile>
+    <ClCompile Include="External\ImguiDx\imgui_draw.cpp">
+      <Filter>ImGuiDx</Filter>
+    </ClCompile>
+    <ClCompile Include="External\ImguiDx\imgui_impl_dxlib.cpp">
+      <Filter>ImGuiDx</Filter>
+    </ClCompile>
+    <ClCompile Include="External\ImguiDx\imgui.cpp">
+      <Filter>ImGuiDx</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Animation.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Collision.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Common.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Input.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Joypad.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Keyboard.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Music.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneManager.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Vector2.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneGame.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneTitle.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="ScreenShake.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="External\ImguiDx\imgui.h">
+      <Filter>ImGuiDx</Filter>
+    </ClInclude>
+    <ClInclude Include="External\ImguiDx\imgui_impl_dxlib.h">
+      <Filter>ImGuiDx</Filter>
+    </ClInclude>
+    <ClInclude Include="External\ImguiDx\imgui_internal.h">
+      <Filter>ImGuiDx</Filter>
+    </ClInclude>
+    <ClInclude Include="External\ImguiDx\stb_rect_pack.h">
+      <Filter>ImGuiDx</Filter>
+    </ClInclude>
+    <ClInclude Include="External\ImguiDx\stb_textedit.h">
+      <Filter>ImGuiDx</Filter>
+    </ClInclude>
+    <ClInclude Include="External\ImguiDx\stb_truetype.h">
+      <Filter>ImGuiDx</Filter>
+    </ClInclude>
+    <ClInclude Include="External\ImguiDx\imconfig.h">
+      <Filter>ImGuiDx</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
