@@ -16,9 +16,11 @@ enum BGM
 };
 enum SE
 {
-	M_E_NEXT = 0,
-	M_E_BACK,
+	M_OPEN = 0,
 
+	// 仮，ポーズ時に鳴らしている
+	M_E_NEXT,
+	M_E_BACK,
 
 	SE_END
 };

@@ -164,6 +164,7 @@
     <ClCompile Include="Keyboard.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Music.cpp" />
+    <ClCompile Include="Player.cpp" />
     <ClCompile Include="SceneGame.cpp" />
     <ClCompile Include="SceneTitle.cpp" />
     <ClCompile Include="ScreenShake.cpp" />
@@ -184,6 +185,7 @@
     <ClInclude Include="Joypad.h" />
     <ClInclude Include="Keyboard.h" />
     <ClInclude Include="Music.h" />
+    <ClInclude Include="Player.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SceneGame.h" />
     <ClInclude Include="SceneManager.h" />

@@ -9,7 +9,15 @@
 #include "Scene.h"
 #include "SceneManager.h"
 
+#if DEBUG_MODE
+
+#include "SceneGame.h"
+
+#else
+
 #include "SceneTitle.h"
+
+#endif // DEBUG_MODE
 
 #if USE_IMGUI
 
@@ -18,7 +26,7 @@
 
 LRESULT CALLBACK WndProc( HWND wnd, UINT msg, WPARAM wParam, LPARAM lParam );
 
-#endif
+#endif // USE_IMGUI
 
 int WINAPI WinMain(	HINSTANCE	hCurInst/*インスタンスハンドル*/,	HINSTANCE	hPrevInst/*名残*/,	
 					LPSTR		lpsCmdLine/*コマンドライン引数*/,	int			nCmdShow/*ウィンドウの表示状態の設定*/)
@@ -63,7 +71,7 @@ int WINAPI WinMain(	HINSTANCE	hCurInst/*インスタンスハンドル*/,	HINSTANCE	hPrevI
 		io.Fonts->GetGlyphRangesJapanese()
 	);
 
-#endif
+#endif // USE_IMGUI
 
 	MusicInit();
 
@@ -72,7 +80,17 @@ int WINAPI WinMain(	HINSTANCE	hCurInst/*インスタンスハンドル*/,	HINSTANCE	hPrevI
 	pManager = new SceneMng();
 
 	// 最初のシーンを生成
-	pManager->mpScene = new Title( pManager );//DEBUG:開始シーン変更
+
+#if DEBUG_MODE
+
+	pManager->mpScene = new Game( pManager );
+
+#else
+
+	pManager->mpScene = new Title( pManager );
+
+#endif // DEBUG_MODE
+
 	pManager->Init();
 
 	// ゲームループ
@@ -82,7 +100,7 @@ int WINAPI WinMain(	HINSTANCE	hCurInst/*インスタンスハンドル*/,	HINSTANCE	hPrevI
 
 		ImGui_ImplDxLib_NewFrame();
 
-#endif
+#endif // USE_IMGUI
 
 		KeyboardUpdate();
 		JoypadUpdate();
@@ -100,7 +118,7 @@ int WINAPI WinMain(	HINSTANCE	hCurInst/*インスタンスハンドル*/,	HINSTANCE	hPrevI
 
 		ImGui::Render();
 
-#endif
+#endif // USE_IMGUI
 	}
 
 	// 終了処理
@@ -111,7 +129,7 @@ int WINAPI WinMain(	HINSTANCE	hCurInst/*インスタンスハンドル*/,	HINSTANCE	hPrevI
 
 	ImGui_ImplDxLib_Shutdown();
 
-#endif
+#endif // USE_IMGUI
 
 	MusicUninit();
 
@@ -156,4 +174,4 @@ LRESULT CALLBACK WndProc( HWND wnd, UINT msg, WPARAM wParam, LPARAM lParam )
 	return 0;
 }
 
-#endif
+#endif // USE_IMGUI

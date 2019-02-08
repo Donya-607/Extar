@@ -13,7 +13,7 @@
 #include <imgui.h>
 #include <imgui_impl_dxlib.h>
 
-#endif
+#endif // USE_IMGUI
 
 namespace TitleImage
 {
@@ -87,12 +87,16 @@ void Title::Update()
 }
 void Title::MainUpdate()
 {
+#if USE_IMGUI
+
 	ImGui::Begin( "test_window" );
 
 	static float foo = 0;
 	ImGui::SliderFloat( "foo", &foo, 1.0f, 10.0f );
 
 	ImGui::End();
+
+#endif // USE_IMGUI
 }
 void Title::PrepareChangeSceneToGame()
 {

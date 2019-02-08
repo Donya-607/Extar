@@ -17,9 +17,9 @@ void Anim::Update()
 	// else
 
 	cnt = 0;
-	if ( elem < endIdx - 1 )
+	if ( index < endIdx - 1 )
 	{
-		elem++;
+		index++;
 		return;
 	}
 	// else
@@ -27,7 +27,7 @@ void Anim::Update()
 	end = true;
 	if ( loop )
 	{
-		elem = startIdx;
+		index = startIdx;
 	}
 }
 void Anim::ReverseUpdate()
@@ -41,9 +41,9 @@ void Anim::ReverseUpdate()
 	// else
 
 	cnt = 0;
-	if ( startIdx < elem )
+	if ( startIdx < index )
 	{
-		elem--;
+		index--;
 		return;
 	}
 	// else
@@ -52,28 +52,25 @@ void Anim::ReverseUpdate()
 	if ( loop )
 	{
 		// 0 Žn‚Ü‚è‚Ì‚½‚ßC–‡”‚©‚ç‚P‚Âˆø‚¢‚Ä‚¢‚é
-		elem = endIdx - 1;
+		index = endIdx - 1;
 	}
 }
 
 void Anim::Set
 (
 	int startIndex,	int endIndex,
-	int count,		int element,
+	int nowIndex,
 	int playSpeed,
 	int *hundle,
 	bool isLoop,
-	bool isReverse,
-	bool isEnd
+	bool isReverse
 )
 {
 	startIdx	=	startIndex;
 	endIdx		=	endIndex;
-	cnt			=	count;
-	elem		=	element;
+	index		=	nowIndex;
 	spd			=	playSpeed;
 	hnd			=	hundle;
 	loop		=	isLoop;
 	reverse		=	isReverse;
-	end			=	isEnd;
 }

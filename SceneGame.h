@@ -6,6 +6,8 @@
 #include "Scene.h"
 #include "SceneManager.h"
 
+#include "Player.h"
+
 //--------------------
 //
 //		Game.h
@@ -23,12 +25,14 @@ private:
 public:
 	State state;
 
+	std::unique_ptr<Player> pPlayer;
+
 	bool isPause;
 public:
 	Game( SceneMng *pMng ) : Scene( pMng ),
 		state( State::Game ),
+		pPlayer(),
 		isPause( false )
-
 		{}
 	~Game() {}
 
