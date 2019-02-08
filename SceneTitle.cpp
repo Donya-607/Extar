@@ -8,6 +8,13 @@
 #include "SceneGame.h"
 #include "SceneTitle.h"
 
+#if USE_IMGUI
+
+#include <imgui.h>
+#include <imgui_impl_dxlib.h>
+
+#endif
+
 namespace TitleImage
 {
 	static int hTitleBG;
@@ -80,7 +87,12 @@ void Title::Update()
 }
 void Title::MainUpdate()
 {
+	ImGui::Begin( "test_window" );
 
+	static float foo = 0;
+	ImGui::SliderFloat( "foo", &foo, 1.0f, 10.0f );
+
+	ImGui::End();
 }
 void Title::PrepareChangeSceneToGame()
 {
