@@ -63,6 +63,11 @@ void Game::Update()
 		char debugstoper = 0;
 	}
 
+	if ( TRG( KEY_INPUT_D ) )
+	{
+		isDrawCollision = !isDrawCollision;
+	}
+
 #endif // DEBUG_MODE
 
 	if ( IsInputPauseButton() )
@@ -172,7 +177,12 @@ void Game::Draw()
 	}
 
 #if	DEBUG_MODE
-	ShowCollisionArea();
+
+	if ( isDrawCollision )
+	{
+		ShowCollisionArea();
+	}
+
 #endif	// DEBUG_MODE
 }
 

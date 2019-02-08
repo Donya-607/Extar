@@ -28,11 +28,12 @@ public:
 	std::unique_ptr<Player> pPlayer;
 
 	bool isPause;
+	bool isDrawCollision;
 public:
 	Game( SceneMng *pMng ) : Scene( pMng ),
 		state( State::Game ),
 		pPlayer(),
-		isPause( false )
+		isPause( false ), isDrawCollision( false )
 		{}
 	~Game() {}
 
