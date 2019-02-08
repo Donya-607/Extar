@@ -122,11 +122,11 @@ void Player::Init()
 
 	col.Set
 	(
-		0,											// Xオフセット
-		0,											// Yオフセット
-		scast<float>( PlayerImage::WIDTH  >> 1 ),	// サイズの半分
-		scast<float>( PlayerImage::HEIGHT >> 1 ),	// サイズの半分
-		true										// 当たり判定適用フラグ
+		0,			// Xオフセット
+		0,			// Yオフセット
+		32.0f,		// サイズの半分
+		56.0f,		// サイズの半分
+		true		// 当たり判定適用フラグ
 	);
 }
 void Player::Uninit()
@@ -136,6 +136,20 @@ void Player::Uninit()
 
 void Player::Update()
 {
+#if USE_IMGUI
+
+	ImGui::Begin( "Player_Collision" );
+
+	ImGui::SliderFloat( "X_Offset", &col.cx, scast<float>( -PlayerImage::WIDTH  ), scast<float>( PlayerImage::WIDTH  ) );
+	ImGui::SliderFloat( "Y_Offset", &col.cy, scast<float>( -PlayerImage::HEIGHT ), scast<float>( PlayerImage::HEIGHT ) );
+
+	ImGui::SliderFloat( "Width",  &col.w, 1.0f, scast<float>( PlayerImage::WIDTH  ) );
+	ImGui::SliderFloat( "Height", &col.h, 1.0f, scast<float>( PlayerImage::HEIGHT ) );
+
+	ImGui::End();
+
+#endif
+
 	Open();
 
 	Move();
@@ -167,7 +181,7 @@ void Player::Move()
 
 	static float MOVE_SPD = 12.0f;
 
-	ImGui::Begin( "Player" );
+	ImGui::Begin( "Player_Move" );
 
 	ImGui::SliderFloat( "SideMove_Speed", &MOVE_SPD, 0.0f, 64.0f );
 	ImGui::SliderFloat( "Y_Position", &pos.y, 0.0f, scast<float>( SCREEN_HEIGHT ) );
