@@ -155,6 +155,7 @@
     <ClCompile Include="Animation.cpp" />
     <ClCompile Include="Collision.cpp" />
     <ClCompile Include="Common.cpp" />
+    <ClCompile Include="easing.cpp" />
     <ClCompile Include="External\ImguiDx\imgui.cpp" />
     <ClCompile Include="External\ImguiDx\imgui_demo.cpp" />
     <ClCompile Include="External\ImguiDx\imgui_draw.cpp" />
@@ -164,16 +165,17 @@
     <ClCompile Include="Keyboard.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Music.cpp" />
-    <ClCompile Include="Player.cpp" />
     <ClCompile Include="SceneGame.cpp" />
     <ClCompile Include="SceneTitle.cpp" />
     <ClCompile Include="ScreenShake.cpp" />
+    <ClCompile Include="ScreenShot.cpp" />
     <ClCompile Include="Vector2.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Animation.h" />
     <ClInclude Include="Collision.h" />
     <ClInclude Include="Common.h" />
+    <ClInclude Include="easing.h" />
     <ClInclude Include="External\ImguiDx\imconfig.h" />
     <ClInclude Include="External\ImguiDx\imgui.h" />
     <ClInclude Include="External\ImguiDx\imgui_impl_dxlib.h" />
@@ -185,12 +187,12 @@
     <ClInclude Include="Joypad.h" />
     <ClInclude Include="Keyboard.h" />
     <ClInclude Include="Music.h" />
-    <ClInclude Include="Player.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SceneGame.h" />
     <ClInclude Include="SceneManager.h" />
     <ClInclude Include="SceneTitle.h" />
     <ClInclude Include="ScreenShake.h" />
+    <ClInclude Include="ScreenShot.h" />
     <ClInclude Include="Vector2.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

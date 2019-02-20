@@ -40,16 +40,11 @@ void Game::Init()
 
 	GameImage::Load();
 
-	pPlayer.reset( new Player() );
-	pPlayer->Init();
-
 	ShakeInit();
 }
 void Game::Uninit()
 {
 	GameImage::Release();
-
-	pPlayer->Uninit();
 
 	ShakeUninit();
 }
@@ -115,11 +110,6 @@ void Game::Update()
 }
 void Game::GameUpdate()
 {
-	if ( pPlayer )
-	{
-		pPlayer->Update();
-	}
-
 	ShakeUpdate();
 }
 
@@ -171,11 +161,6 @@ void Game::Draw()
 		);
 	}
 
-	if ( pPlayer )
-	{
-		pPlayer->Draw( shake );
-	}
-
 #if	DEBUG_MODE
 
 	if ( isDrawCollision )
@@ -200,20 +185,6 @@ void Game::ShowCollisionArea()
 		unsigned int red   = GetColor( 200, 32, 32 );
 		unsigned int green = GetColor( 32, 200, 32 );
 		unsigned int blue  = GetColor( 32, 32, 200 );
-
-		if ( pPlayer )
-		{
-			Box pl = pPlayer->GetColWorldPos();
-			DrawBox
-			(
-				scast<int>( pl.cx - pl.w ),
-				scast<int>( pl.cy - pl.h ),
-				scast<int>( pl.cx + pl.w ),
-				scast<int>( pl.cy + pl.h ),
-				green,
-				TRUE
-			);
-		}
 	}
 	SetDrawBlendMode( DX_BLENDMODE_NOBLEND, 255 );
 }
