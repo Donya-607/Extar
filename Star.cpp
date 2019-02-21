@@ -4,6 +4,14 @@
 
 #include "Star.h"
 
+namespace StarImage
+{
+	void Load();
+	void Release();
+
+	int  GetHandle( int level, int animIndex );
+}
+
 void Star::Init( int Row, int Column, int Width, int Height, int Level )
 {
 	row		= Row;

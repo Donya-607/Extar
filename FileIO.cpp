@@ -14,6 +14,9 @@ namespace FileIO
 	static std::vector<Camera> cameras;
 	static std::vector<std::vector<Star>> galaxy;
 
+	// TODO:カメラと星で読み込みが別なので，フォルダの数を不揃いにできてしまう
+	static int maxStageNumber = 1;
+
 	void ReadAllCamera()
 	{
 		if ( !cameras.empty() )
@@ -22,7 +25,8 @@ namespace FileIO
 		}
 
 		// ステージが見つからなくなるまで，つまりステージ数ぶんループ
-		for ( int stageNumber = 1; true; stageNumber++ )
+		int stageNumber = 1;
+		for ( ; true; stageNumber++ )
 		{
 			// ファイルの用意
 			std::string filename = "./Data/Stages/Stage" + std::to_string( stageNumber ) + "/Camera.txt";
@@ -59,6 +63,8 @@ namespace FileIO
 
 			ifs.close();
 		}
+
+		maxStageNumber = stageNumber;
 	}
 	void ReadAllStars()
 	{
@@ -125,5 +131,10 @@ namespace FileIO
 	void ReleaseStarsData()
 	{
 		std::vector<std::vector<Star>>().swap( galaxy );
+	}
+
+	int GetMaxStageNumber()
+	{
+
 	}
 }

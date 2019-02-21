@@ -30,6 +30,8 @@ namespace FileIO
 
 	void ReleaseCameraData();
 	void ReleaseStarsData();
+
+	int GetMaxStageNumber();
 }
 
 #endif //INCLUDED_LOADFILE_H_
