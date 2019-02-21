@@ -153,6 +153,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Animation.cpp" />
+    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Collision.cpp" />
     <ClCompile Include="Common.cpp" />
     <ClCompile Include="easing.cpp" />
@@ -160,6 +161,7 @@
     <ClCompile Include="External\ImguiDx\imgui_demo.cpp" />
     <ClCompile Include="External\ImguiDx\imgui_draw.cpp" />
     <ClCompile Include="External\ImguiDx\imgui_impl_dxlib.cpp" />
+    <ClCompile Include="Grid.cpp" />
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="Joypad.cpp" />
     <ClCompile Include="Keyboard.cpp" />
@@ -173,6 +175,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Animation.h" />
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="Collision.h" />
     <ClInclude Include="Common.h" />
     <ClInclude Include="easing.h" />
@@ -183,6 +186,7 @@
     <ClInclude Include="External\ImguiDx\stb_rect_pack.h" />
     <ClInclude Include="External\ImguiDx\stb_textedit.h" />
     <ClInclude Include="External\ImguiDx\stb_truetype.h" />
+    <ClInclude Include="Grid.h" />
     <ClInclude Include="Input.h" />
     <ClInclude Include="Joypad.h" />
     <ClInclude Include="Keyboard.h" />

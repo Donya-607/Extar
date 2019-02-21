@@ -32,7 +32,7 @@ int WINAPI WinMain(	HINSTANCE	hCurInst/*インスタンスハンドル*/,	HINSTANCE	hPrevI
 					LPSTR		lpsCmdLine/*コマンドライン引数*/,	int			nCmdShow/*ウィンドウの表示状態の設定*/)
 {
 	// エラーチェック
-#if defined(DEBUG) | defined(_DEBUG)
+#if defined( DEBUG ) | defined( _DEBUG )
 	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
 	//_crtBreakAlloc = ;	// メモリリークが起きていた場合，出力される番号をこれに代入することで，該当箇所で動的確保した際に止めてくれるようになる
 	// _crtBreakAlloc = ;

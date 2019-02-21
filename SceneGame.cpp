@@ -12,6 +12,9 @@
 
 #include "ScreenShake.h"
 
+#include "Camera.h"
+#include "Grid.h"
+
 namespace GameImage
 {
 	static int hGameBG;
@@ -39,12 +42,24 @@ void Game::Init()
 	PlayBGM( M_Game );
 
 	GameImage::Load();
+	CameraImage::Load();
+
+	Vector2 gridSize{ 64.0f, 64.0f };
+	Grid::SetSize( gridSize );
+
+	pCamera.reset( new Camera() );
+	pCamera->Init( /* sizeX = */3, /* sizeY = */2, /* moveAmount = */1 );
 
 	ShakeInit();
 }
 void Game::Uninit()
 {
 	GameImage::Release();
+	CameraImage::Release();
+
+	Grid::SetSize( { 0, 0 } );
+
+	pCamera->Uninit();
 
 	ShakeUninit();
 }
@@ -96,7 +111,7 @@ void Game::Update()
 
 	CollisionCheck();
 
-#if DEBUG_MODE
+#if DEBUG_MODE	// TODO:ここをデバッグビルドかどうか判定するやつに変えたい
 
 	if ( TRG( KEY_INPUT_RETURN ) )
 	{
@@ -110,6 +125,11 @@ void Game::Update()
 }
 void Game::GameUpdate()
 {
+	if ( pCamera )
+	{
+		pCamera->Update();
+	}
+
 	ShakeUpdate();
 }
 
@@ -159,6 +179,13 @@ void Game::Draw()
 			GameImage::hGameBG,
 			TRUE
 		);
+	}
+
+	Grid::Draw( shake );
+
+	if ( pCamera )
+	{
+		pCamera->Draw( shake );
 	}
 
 #if	DEBUG_MODE

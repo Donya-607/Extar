@@ -6,6 +6,8 @@
 #include "Scene.h"
 #include "SceneManager.h"
 
+#include "Camera.h"
+
 //--------------------
 //
 //		Game.h
@@ -23,11 +25,14 @@ private:
 public:
 	State state;
 
+	std::unique_ptr<Camera> pCamera;
+
 	bool isPause;
 	bool isDrawCollision;
 public:
 	Game( SceneMng *pMng ) : Scene( pMng ),
 		state( State::Game ),
+		pCamera( nullptr ),
 		isPause( false ), isDrawCollision( false )
 		{}
 	~Game() {}
