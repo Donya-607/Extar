@@ -2,7 +2,17 @@
 #define INCLUDED_STAR_H_
 
 #include <vector>
+
+#include "Animation.h"
 #include "Vector2.h"
+
+namespace StarImage
+{
+	void Load();
+	void Release();
+
+	int  GetHandle( int level, int animIndex );
+}
 
 class Star
 {
