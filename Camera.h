@@ -10,8 +10,8 @@
 
 #endif // USE_IMGUI
 
-#include "Vector2.h"
 #include "Collision.h"
+#include "Vector2.h"
 
 namespace CameraImage
 {

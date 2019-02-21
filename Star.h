@@ -3,7 +3,17 @@
 
 #include <vector>
 
+#include "Common.h"
+
+#if USE_IMGUI
+
+#include <imgui.h>
+#include <imgui_impl_dxlib.h>
+
+#endif // USE_IMGUI
+
 #include "Animation.h"
+#include "Collision.h"
 #include "Vector2.h"
 
 namespace StarImage
@@ -43,6 +53,37 @@ public:
 	void Update();
 
 	void Draw( Vector2 shake ) const;
+public:
+	Box FetchColWorldPos() const
+	{
+		Box tmp =
+		{
+			scast<float>( FRAME_POS_X + ( row		* width  ) + ( width  >> 1 ) ),
+			scast<float>( FRAME_POS_Y + ( column	* height ) + ( height >> 1 ) ),
+			width  >> 1,
+			height >> 1,
+			true
+		};
+
+		return tmp;
+	}
+
+	void AcquireData( int *Row, int *Column, int *Width, int *Height, int *Level ) const
+	{
+		*Row		= row;
+		*Column		= column;
+		*Width		= width;
+		*Height		= height;
+		*Level		= level;
+	}
+	void SetData( int Row, int Column, int Width, int Height, int Level )
+	{
+		row		= Row;
+		column	= Column;
+		width	= Width;
+		height	= Height;
+		level	= Level;
+	}
 };
 
 class StarMng
@@ -59,6 +100,12 @@ public:
 	void Update();
 
 	void Draw( Vector2 shake ) const;
+private:
+#if USE_IMGUI
+
+	void ChangeParametersByImGui();
+
+#endif // USE_IMGUI
 };
 
 #endif //INCLUDED_STAR_H_

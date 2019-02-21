@@ -122,3 +122,12 @@ void StarMng::Draw( Vector2 shake ) const
 		it.Draw( shake );
 	}
 }
+
+#if USE_IMGUI
+
+void StarMng::ChangeParametersByImGui()
+{
+
+}
+
+#endif // USE_IMGUI
