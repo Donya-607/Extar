@@ -51,7 +51,7 @@ namespace FileIO
 
 
 			// ì«Ç›çûÇ›
-			for ( int i = 0; i < data.size(); i++ )
+			for ( int i = 0; i < scast<int>( data.size() ); i++ )
 			{
 				std::string buf;
 				std::getline( ifs, buf, ',' );
@@ -135,6 +135,6 @@ namespace FileIO
 
 	int GetMaxStageNumber()
 	{
-
+		return maxStageNumber;
 	}
 }
