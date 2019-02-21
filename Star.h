@@ -8,6 +8,8 @@
 
 namespace StarImage
 {
+	constexpr int SIZE = 64;
+
 	void Load();
 	void Release();
 
@@ -16,6 +18,8 @@ namespace StarImage
 
 class Star
 {
+public:
+	static constexpr int MAX_LEVEL = 6;
 private:
 	int row;	// 行, 0始まり
 	int column;	// 列, 0始まり
@@ -24,9 +28,12 @@ private:
 	int height;	// マス目式の大きさ, 1始まり
 
 	int level;	// 1 ~ 6
+
+	Anim anim;
 public:
 	Star() : row( 0 ), column( 0 ), width( 1 ), height( 1 ),
-		level( 6 )
+		level( 6 ),
+		anim()
 	{}
 	~Star() {}
 
