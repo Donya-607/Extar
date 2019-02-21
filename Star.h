@@ -16,6 +16,8 @@
 #include "Collision.h"
 #include "Vector2.h"
 
+#include "Grid.h"
+
 namespace StarImage
 {
 	constexpr int SIZE = 64;
@@ -58,10 +60,10 @@ public:
 	{
 		Box tmp =
 		{
-			scast<float>( FRAME_POS_X + ( row		* width  ) + ( width  >> 1 ) ),
-			scast<float>( FRAME_POS_Y + ( column	* height ) + ( height >> 1 ) ),
-			width  >> 1,
-			height >> 1,
+			scast<float>( FRAME_POS_X + ( row		* Grid::GetSize().x ) + ( width >> 1 ) ),
+			scast<float>( FRAME_POS_Y + ( column	* Grid::GetSize().y ) + ( height >> 1 ) ),
+			scast<float>( width  >> 1 ),
+			scast<float>( height >> 1 ),
 			true
 		};
 
@@ -90,6 +92,18 @@ class StarMng
 {
 private:
 	std::vector<Star> stars;
+
+#if USE_IMGUI
+
+	int stageNumber;	// 1始まり
+	int choiseRow;		// 0始まり
+	int choiseColumn;	// 0始まり
+	int width;			// 1始まり
+	int height;			// 1始まり
+	int level;			// 1始まり
+
+#endif // USE_IMGUI
+
 public:
 	StarMng() : stars() {}
 	~StarMng() { std::vector<Star>().swap( stars ); }
@@ -104,6 +118,10 @@ private:
 #if USE_IMGUI
 
 	void ChangeParametersByImGui();
+
+	void RemoveStar();
+
+	void DrawUI() const;
 
 #endif // USE_IMGUI
 };

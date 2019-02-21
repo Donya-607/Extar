@@ -11,9 +11,9 @@ class Circle;
 
 /// <summary>
 /// 当たり判定用<para></para>
-/// cx, cy	: 中心点，オブジェクトに設定する場合はオフセット値を指定<para></para>
-/// w, h	: 幅・高さの半分を指定<para></para>
-/// exist	: 判定の有無に使用
+/// float cx, cy	: 中心点，オブジェクトに設定する場合はオフセット値を指定<para></para>
+/// float w, h	: 幅・高さの半分を指定<para></para>
+/// bool exist	: 判定の有無に使用
 /// </summary>
 class Box
 {
@@ -48,9 +48,9 @@ public:
 
 /// <summary>
 /// 当たり判定用<para></para>
-/// cx, cy	: 中心点，オブジェクトに設定する場合はオフセット値を指定<para></para>
-/// radius	: 半径を指定<para></para>
-/// exist	: 判定の有無に使用
+/// float cx, cy	: 中心点，オブジェクトに設定する場合はオフセット値を指定<para></para>
+/// float radius	: 半径を指定<para></para>
+/// bool exist	: 判定の有無に使用
 /// </summary>
 class Circle
 {

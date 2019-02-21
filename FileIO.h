@@ -26,7 +26,7 @@ namespace FileIO
 
 	void WriteStars( int stageNumber, const std::vector<Star> *data );
 	int  GetStarsArraySize( int stageNumber );
-	Star FetchStarsInfo( int stageNumber, int index );
+	std::vector<Star> FetchStarsInfo( int stageNumber );
 
 	void ReleaseCameraData();
 	void ReleaseStarsData();

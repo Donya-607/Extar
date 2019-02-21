@@ -35,6 +35,13 @@ private:
 	Vector2 pos;	// LeftTop Position
 	Vector2 velo;	// Velocity
 	Vector2 size;	// 全体サイズ
+
+#if USE_IMGUI
+
+	int stageNumber;// 1始まり
+
+#endif // USE_IMGUI
+
 public:
 	Camera() : row( 0 ), column( 0 ), width( 1 ), height( 1 ),
 		moveAmount( 1 ),

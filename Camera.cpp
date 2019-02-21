@@ -54,6 +54,13 @@ void Camera::Init( int stageNumber )
 
 	pos.x	= row		* size.x;
 	pos.y	= column	* size.y;
+
+#if USE_IMGUI
+
+	this->stageNumber = stageNumber;
+
+#endif // USE_IMGUI
+
 }
 void Camera::Uninit()
 {
@@ -124,8 +131,6 @@ void Camera::Draw( Vector2 shake ) const
 
 void Camera::ChangeParametersByImGui()
 {
-	static int stageNumber = 1;	// 1始まり
-
 	ImGui::Begin( "Camera_Parameters", nullptr, ImGuiWindowFlags_MenuBar );
 
 	if ( ImGui::BeginMenuBar() )
@@ -135,7 +140,10 @@ void Camera::ChangeParametersByImGui()
 			if ( ImGui::MenuItem( "Save" ) )
 			{
 				FileIO::WriteCamera( stageNumber, this );
-				FileIO::ReadAllCamera();	// ファイルに保存するだけで適用しないため，ついでにまとめて読み込みなおしている
+
+				// ファイルに保存するだけで適用しないため，ついでにまとめて読み込みなおす
+				FileIO::ReadAllCamera();
+				FileIO::ReadAllStars();
 
 				PlaySE( M_E_NEXT );
 			}

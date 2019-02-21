@@ -195,11 +195,11 @@ namespace FileIO
 	{
 		return scast<int>( ( galaxy.at( stageNumber ) ).size() );
 	}
-	Star FetchStarsInfo( int stageNumber, int index )
+	std::vector<Star> FetchStarsInfo( int stageNumber )
 	{
-		assert( stageNumber <= scast<int>( ( galaxy.at( stageNumber ) ).size() ) );
+		assert( stageNumber <= scast<int>( galaxy.size() ) );
 
-		return  ( galaxy.at( stageNumber ) ).at( index );
+		return  galaxy.at( stageNumber - 1 );
 	}
 
 	void ReleaseCameraData()

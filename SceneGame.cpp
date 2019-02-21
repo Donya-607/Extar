@@ -52,12 +52,16 @@ void Game::Init()
 
 	GameImage::Load();
 	CameraImage::Load();
+	StarImage::Load();
 
 	Vector2 gridSize{ 64.0f, 64.0f };
 	Grid::SetSize( gridSize );
 
 	pCamera.reset( new Camera() );
 	pCamera->Init( stageNumber );
+
+	pStarMng.reset( new StarMng() );
+	pStarMng->Init( stageNumber );
 
 	ShakeInit();
 }
@@ -68,10 +72,12 @@ void Game::Uninit()
 
 	GameImage::Release();
 	CameraImage::Release();
+	StarImage::Release();
 
 	Grid::SetSize( { 0, 0 } );
 
 	pCamera->Uninit();
+	pStarMng->Uninit();
 
 	ShakeUninit();
 }
@@ -142,6 +148,11 @@ void Game::GameUpdate()
 		pCamera->Update();
 	}
 
+	if ( pStarMng )
+	{
+		pStarMng->Update();
+	}
+
 	ShakeUpdate();
 }
 
@@ -207,6 +218,11 @@ void Game::Draw()
 	if ( pCamera )
 	{
 		pCamera->Draw( shake );
+	}
+
+	if ( pStarMng )
+	{
+		pStarMng->Draw( shake );
 	}
 
 #if	DEBUG_MODE
