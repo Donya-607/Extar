@@ -6,6 +6,8 @@
 #include "Camera.h"
 #include "Grid.h"
 
+#include "FileIO.h"
+
 #include <algorithm>	// Clampで使用
 #undef min				// Clampで使用
 #undef max				// Clampで使用
@@ -37,21 +39,19 @@ namespace CameraImage
 	}
 }
 
-void Camera::Init( int sizeX, int sizeY, int movementAmount )
+void Camera::Init( int stageNumber )
 {
+	// 左上に設定
 	row		= 0;
 	column	= 0;
 
-	width	= sizeX;
-	height	= sizeY;
-
-	moveAmount = movementAmount;
+	// HACK:*this = で直接代入するのはＯＫか？危険か？
+	*this = FileIO::FetchCameraInfo( stageNumber );
 
 	// グリッドサイズは，この時点で正しいものに設定されているとする
 	size.x	= Grid::GetSize().x * width;
 	size.y	= Grid::GetSize().y * height;
 
-	// 画面左上に設定
 	pos.x	= row		* size.x;
 	pos.y	= column	* size.y;
 }
@@ -124,7 +124,36 @@ void Camera::Draw( Vector2 shake ) const
 
 void Camera::ChangeParametersByImGui()
 {
-	ImGui::Begin( "Camera_Parameters" );
+	static int stageNumber = 1;	// 1始まり
+
+	ImGui::Begin( "Camera_Parameters", nullptr, ImGuiWindowFlags_MenuBar );
+
+	if ( ImGui::BeginMenuBar() )
+	{
+		if ( ImGui::BeginMenu( "File" ) )
+		{
+			if ( ImGui::MenuItem( "Save" ) )
+			{
+				FileIO::WriteCamera( stageNumber, this );
+				FileIO::ReadAllCamera();	// ファイルに保存するだけで適用しないため，ついでにまとめて読み込みなおしている
+
+				PlaySE( M_E_NEXT );
+			}
+			if ( ImGui::MenuItem( "Load" ) )
+			{
+				// HACK:*this = で直接代入するのはＯＫか？危険か？
+				*this = FileIO::FetchCameraInfo( stageNumber );
+
+				PlaySE( M_E_BACK );
+			}
+
+			ImGui::EndMenu();
+		}
+
+		ImGui::EndMenuBar();
+	}
+
+	ImGui::SliderInt( "IO_StageNumber", &stageNumber, 1, 30 );
 
 	ImGui::SliderInt( "Width",  &width,  1, Grid::GetRowMax() );
 	ImGui::SliderInt( "Height", &height, 1, Grid::GetColumnMax() );

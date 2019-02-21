@@ -15,6 +15,8 @@
 #include "Camera.h"
 #include "Grid.h"
 
+#include "FileIO.h"
+
 namespace GameImage
 {
 	static int hGameBG;
@@ -45,6 +47,9 @@ void Game::Init()
 {
 	PlayBGM( M_Game );
 
+	FileIO::ReadAllCamera();
+	FileIO::ReadAllStars();
+
 	GameImage::Load();
 	CameraImage::Load();
 
@@ -52,12 +57,15 @@ void Game::Init()
 	Grid::SetSize( gridSize );
 
 	pCamera.reset( new Camera() );
-	pCamera->Init( /* sizeX = */3, /* sizeY = */2, /* moveAmount = */1 );
+	pCamera->Init( stageNumber );
 
 	ShakeInit();
 }
 void Game::Uninit()
 {
+	FileIO::ReadAllCamera();
+	FileIO::ReadAllStars();
+
 	GameImage::Release();
 	CameraImage::Release();
 
@@ -188,8 +196,7 @@ void Game::Draw()
 		// ˜g
 		DrawGraph
 		(
-			FRAME_POS_X,
-			FRAME_POS_Y,
+			0, 0,
 			GameImage::hFrame,
 			TRUE
 		);

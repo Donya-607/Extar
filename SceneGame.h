@@ -23,6 +23,8 @@ private:
 		FOO
 	};
 public:
+	int stageNumber;	// 1Žn‚Ü‚è
+
 	State state;
 
 	std::unique_ptr<Camera> pCamera;
@@ -31,6 +33,7 @@ public:
 	bool isDrawCollision;
 public:
 	Game( SceneMng *pMng ) : Scene( pMng ),
+		stageNumber( 1 ),
 		state( State::Game ),
 		pCamera( nullptr ),
 		isPause( false ), isDrawCollision( false )

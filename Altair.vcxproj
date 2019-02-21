@@ -165,6 +165,7 @@
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="Joypad.cpp" />
     <ClCompile Include="Keyboard.cpp" />
+    <ClCompile Include="FileIO.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Music.cpp" />
     <ClCompile Include="SceneGame.cpp" />
@@ -191,6 +192,7 @@
     <ClInclude Include="Input.h" />
     <ClInclude Include="Joypad.h" />
     <ClInclude Include="Keyboard.h" />
+    <ClInclude Include="FileIO.h" />
     <ClInclude Include="Music.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SceneGame.h" />

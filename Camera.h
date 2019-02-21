@@ -1,6 +1,8 @@
 #ifndef INCLUDED_CAMERA_H_
 #define INCLUDED_CAMERA_H_
 
+#include "Common.h"
+
 #if USE_IMGUI
 
 #include <imgui.h>
@@ -39,7 +41,7 @@ public:
 		pos(), velo(), size() {}
 	~Camera() {}
 
-	void Init( int sizeX, int sizeY, int movementAmount );
+	void Init( int stageNumber );
 	void Uninit();
 
 	void Update();
@@ -49,7 +51,7 @@ public:
 	void ClampMatrix();
 
 	void Draw( Vector2 shake ) const;
-
+public:
 	Box FetchColWorldPos() const
 	{
 		Vector2 halfSize{ size.x * 0.5f, size.y * 0.5f };
@@ -64,6 +66,19 @@ public:
 		};
 
 		return tmp;
+	}
+
+	void AcquireData( int *Width, int *Height, int *MoveAmount ) const
+	{
+		*Width		= width;
+		*Height		= height;
+		*MoveAmount	= moveAmount;
+	}
+	void SetData( int Width, int Height, int MoveAmount )
+	{
+		width		= Width;
+		height		= Height;
+		moveAmount	= MoveAmount;
 	}
 private:
 #if USE_IMGUI
