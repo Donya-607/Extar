@@ -24,7 +24,39 @@ void Star::Update()
 
 }
 
-void Star::Draw( Vector2 shake )
+void Star::Draw( Vector2 shake ) const
 {
 
+}
+
+
+
+void StarMng::Init( int stageNumber )
+{
+
+}
+void StarMng::Uninit()
+{
+	for ( Star &it : stars )
+	{
+		it.Uninit();
+	}
+
+	// std::vector<Star>().swap( stars );	// デストラクタに記述
+}
+
+void StarMng::Update()
+{
+	for ( Star &it : stars )
+	{
+		it.Update();
+	}
+}
+
+void StarMng::Draw( Vector2 shake ) const
+{
+	for ( const Star &it : stars )
+	{
+		it.Draw( shake );
+	}
 }

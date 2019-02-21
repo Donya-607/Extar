@@ -107,7 +107,7 @@ void Camera::ClampMatrix()
 	column	= std::max( column,	0 );
 }
 
-void Camera::Draw( Vector2 shake )
+void Camera::Draw( Vector2 shake ) const
 {
 	DrawExtendGraph
 	(

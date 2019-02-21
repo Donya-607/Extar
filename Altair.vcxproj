@@ -171,6 +171,7 @@
     <ClCompile Include="SceneTitle.cpp" />
     <ClCompile Include="ScreenShake.cpp" />
     <ClCompile Include="ScreenShot.cpp" />
+    <ClCompile Include="Star.cpp" />
     <ClCompile Include="Vector2.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -197,6 +198,7 @@
     <ClInclude Include="SceneTitle.h" />
     <ClInclude Include="ScreenShake.h" />
     <ClInclude Include="ScreenShot.h" />
+    <ClInclude Include="Star.h" />
     <ClInclude Include="Vector2.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -18,6 +18,7 @@
 namespace GameImage
 {
 	static int hGameBG;
+	static int hFrame;
 
 	void Load()
 	{
@@ -28,12 +29,15 @@ namespace GameImage
 		}
 		// else
 
-		hGameBG = LoadGraph( "./Data/Images/BG/Game.png" );
+		hGameBG = LoadGraph( "./Data/Images/BG/Game.png"  );
+		hFrame	= LoadGraph( "./Data/Images/BG/Frame.png" );
 	}
 	void Release()
 	{
 		DeleteGraph( hGameBG );
+		DeleteGraph( hFrame  );
 		hGameBG = 0;
+		hFrame  = 0;
 	}
 }
 
@@ -170,6 +174,7 @@ void Game::Draw()
 
 	// îwåi
 	{
+		// âºíuÇ´Ç»ÇÃÇ≈ÅCExtendGraph
 		DrawExtendGraph
 		(
 			scast<int>( 0 - shake.x ),
@@ -177,6 +182,15 @@ void Game::Draw()
 			scast<int>( SCREEN_WIDTH  - shake.x ),
 			scast<int>( SCREEN_HEIGHT - shake.y ),
 			GameImage::hGameBG,
+			TRUE
+		);
+
+		// òg
+		DrawGraph
+		(
+			FRAME_POS_X,
+			FRAME_POS_Y,
+			GameImage::hFrame,
 			TRUE
 		);
 	}

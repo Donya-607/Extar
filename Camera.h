@@ -48,7 +48,7 @@ public:
 	void ClampPos();
 	void ClampMatrix();
 
-	void Draw( Vector2 shake );
+	void Draw( Vector2 shake ) const;
 
 	Box FetchColWorldPos() const
 	{

@@ -1,6 +1,7 @@
 #ifndef INCLUDED_STAR_H_
 #define INCLUDED_STAR_H_
 
+#include <vector>
 #include "Vector2.h"
 
 class Star
@@ -24,7 +25,23 @@ public:
 
 	void Update();
 
-	void Draw( Vector2 shake );
+	void Draw( Vector2 shake ) const;
+};
+
+class StarMng
+{
+private:
+	std::vector<Star> stars;
+public:
+	StarMng() : stars() {}
+	~StarMng() { std::vector<Star>().swap( stars ); }
+
+	void Init( int stageNumber );
+	void Uninit();
+
+	void Update();
+
+	void Draw( Vector2 shake ) const;
 };
 
 #endif //INCLUDED_STAR_H_
