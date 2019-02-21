@@ -1,5 +1,6 @@
 #include "DxLib.h"
 #include "Common.h"
+#include "Music.h"
 #include "Input.h"
 
 #include "Camera.h"
