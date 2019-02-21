@@ -98,19 +98,33 @@ namespace FileIO
 			std::vector<Star> stars;	// １ステージの星たち
 
 			// 読み込み
-			while ( !ifs.eof() )
+			for ( ; ; )
 			{
-				stars.push_back( Star() );
-				Star &star = stars.back();
-
 				for ( int i = 0; i < scast<int>( data.size() ); i++ )
 				{
 					std::string buf;
-					std::getline( ifs, buf, ',' );
+
+					// 最後のみ区切り文字を変えないと，改行して次の数字まで読んでしまう
+					if ( i == scast<int>( data.size() ) - 1 )
+					{
+						std::getline( ifs, buf, '\n' );
+					}
+					else
+					{
+						std::getline( ifs, buf, ',' );
+					}
 
 					*data[i] = atoi( buf.c_str() );
 				}
-				star.SetData( row, column, width, height, level );
+
+				if ( ifs.eof() )
+				{
+					break;
+				}
+				// else
+
+				stars.push_back( Star() );
+				stars.back().SetData( row, column, width, height, level );
 			}
 
 			galaxy.push_back( stars );

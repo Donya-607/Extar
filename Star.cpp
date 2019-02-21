@@ -13,7 +13,7 @@ namespace StarImage
 	constexpr int NUM_COLUMN	= 6;	// Y
 	constexpr int NUM_ALL		= NUM_ROW * NUM_COLUMN;
 
-	constexpr int SPD			= 2;
+	constexpr int SPD			= 4;
 
 	static int hStars[NUM_ALL];
 
@@ -55,16 +55,8 @@ namespace StarImage
 	}
 }
 
-void Star::Init( int Row, int Column, int Width, int Height, int Level )
+void Star::Init( int Row, int Column, int Width, int Height, int Level, bool flagSetAnimeOnly )
 {
-	row		= Row;
-	column	= Column;
-
-	width	= Width;
-	height	= Height;
-
-	level	= Level;
-
 	// アニメ構造体の，再生機能だけ利用する
 	anim.Set
 	(
@@ -72,6 +64,20 @@ void Star::Init( int Row, int Column, int Width, int Height, int Level )
 		0, StarImage::SPD,
 		nullptr
 	);
+
+	if ( flagSetAnimeOnly )
+	{
+		return;
+	}
+	// else
+
+	row		= Row;
+	column	= Column;
+
+	width	= Width;
+	height	= Height;
+
+	level	= Level;
 }
 void Star::Uninit()
 {
@@ -104,6 +110,11 @@ void Star::Draw( Vector2 shake ) const
 void StarMng::Init( int stageNumber )
 {
 	stars = FileIO::FetchStarsInfo( stageNumber );
+	
+	for ( Star &it : stars )
+	{
+		it.Init(NULL, NULL, NULL, NULL, NULL, /* flagSetAnimeOnly = */true );
+	}
 
 #if USE_IMGUI
 
@@ -178,6 +189,10 @@ void StarMng::ChangeParametersByImGui()
 			if ( ImGui::MenuItem( "Load" ) )
 			{
 				stars = FileIO::FetchStarsInfo( stageNumber );
+				for ( Star &it : stars )
+				{
+					it.Init( NULL, NULL, NULL, NULL, NULL, /* flagSetAnimeOnly = */true );
+				}
 
 				PlaySE( M_E_BACK );
 			}
@@ -190,32 +205,46 @@ void StarMng::ChangeParametersByImGui()
 
 	ImGui::SliderInt( "IO_StageNumber", &stageNumber,	1, 30 );
 
-	ImGui::SliderInt( "Choice_Row",		&choiseRow,		0, Grid::GetRowMax() );
-	ImGui::SliderInt( "Choice_Column",	&choiseColumn,	0, Grid::GetColumnMax() );
+	ImGui::SliderInt( "Choice_X",		&choiseRow,		0, Grid::GetRowMax() - 1 );
+	ImGui::SliderInt( "Choice_Y",		&choiseColumn,	0, Grid::GetColumnMax() - 1 );
 
-	// ImGui::SliderInt( "Set_Width",	&width,			1, Grid::GetRowMax() );
-	// ImGui::SliderInt( "Set_Height",	&height,		1, Grid::GetColumnMax() );
-	ImGui::SliderInt( "Set_Size",		&width,			1, Grid::GetRowMax() );
+	// ImGui::SliderInt( "Set_Width",	&width,			1, Grid::GetRowMax() - 1 );
+	// ImGui::SliderInt( "Set_Height",	&height,		1, Grid::GetColumnMax() - 1 );
+	ImGui::SliderInt( "Set_Size",		&width,			1, Grid::GetRowMax() - 1 );
 	height = width;
 
 	ImGui::SliderInt( "Set_Level",		&level,			1, Star::MAX_LEVEL );
 
-	if ( ImGui::Button( "Remove_ChooseStar" ) )
+	if ( ImGui::Button( "Set_Star" ) )
+	{
+		SetStar();
+
+		PlaySE( M_E_NEXT );
+	}
+
+	if ( ImGui::Button( "Remove_Star_from_ChoosePos" ) )
 	{
 		RemoveStar();
+
+		PlaySE( M_E_BACK );
 	}
 
 	ImGui::End();
 }
 
+void StarMng::SetStar()
+{
+	stars.push_back( Star() );
+	stars.back().Init( choiseRow, choiseColumn, width, height, level );
+}
 void StarMng::RemoveStar()
 {
 	Box choose =
 	{
-		scast<float>( FRAME_POS_X + ( choiseRow		* Grid::GetSize().x ) + ( width  >> 1 ) ),
-		scast<float>( FRAME_POS_Y + ( choiseColumn	* Grid::GetSize().y ) + ( height >> 1 ) ),
-		scast<float>( width  >> 1 ),
-		scast<float>( height >> 1 ),
+		scast<float>( FRAME_POS_X + ( choiseRow		* Grid::GetSize().x ) ) + ( Grid::GetSize().x * 0.5f ),
+		scast<float>( FRAME_POS_Y + ( choiseColumn	* Grid::GetSize().y ) ) + ( Grid::GetSize().y * 0.5f ),
+		( Grid::GetSize().x * 0.5f ) - 1/* 意図しない重なりを防ぐため*/,
+		( Grid::GetSize().y * 0.5f ) - 1/* 意図しない重なりを防ぐため*/,
 		true
 	};
 
@@ -243,6 +272,7 @@ void StarMng::DrawUI() const
 		unsigned int green	= GetColor( 32, 200, 32 );
 		unsigned int blue	= GetColor( 32, 32, 200 );
 
+		// セットせんとする敵の画像
 		DrawExtendGraph
 		(
 			scast<int>( FRAME_POS_X + ( choiseRow		* Grid::GetSize().x ) ),
@@ -252,6 +282,7 @@ void StarMng::DrawUI() const
 			StarImage::GetHandle( level, 0 ),
 			TRUE
 		);
+
 	}
 	SetDrawBlendMode( DX_BLENDMODE_NOBLEND, 255 );
 }

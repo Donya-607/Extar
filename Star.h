@@ -49,7 +49,7 @@ public:
 	{}
 	~Star() {}
 
-	void Init( int row, int column, int width, int height, int level );
+	void Init( int row, int column, int width, int height, int level, bool flagSetAnimeOnly = false );
 	void Uninit();
 
 	void Update();
@@ -58,12 +58,16 @@ public:
 public:
 	Box FetchColWorldPos() const
 	{
+		Vector2 halfSize;
+		halfSize.x = ( ( width  * Grid::GetSize().x ) * 0.5f );
+		halfSize.y = ( ( height * Grid::GetSize().y ) * 0.5f );
+
 		Box tmp =
 		{
-			scast<float>( FRAME_POS_X + ( row		* Grid::GetSize().x ) + ( width >> 1 ) ),
-			scast<float>( FRAME_POS_Y + ( column	* Grid::GetSize().y ) + ( height >> 1 ) ),
-			scast<float>( width  >> 1 ),
-			scast<float>( height >> 1 ),
+			scast<float>( FRAME_POS_X + ( row		* Grid::GetSize().x ) ) + halfSize.x,
+			scast<float>( FRAME_POS_Y + ( column	* Grid::GetSize().y ) ) + halfSize.y,
+			halfSize.x - 1/* à”ê}ÇµÇ»Ç¢èdÇ»ÇËÇñhÇÆÇΩÇﬂ*/,
+			halfSize.y - 1/* à”ê}ÇµÇ»Ç¢èdÇ»ÇËÇñhÇÆÇΩÇﬂ*/,
 			true
 		};
 
@@ -119,6 +123,7 @@ private:
 
 	void ChangeParametersByImGui();
 
+	void SetStar();
 	void RemoveStar();
 
 	void DrawUI() const;

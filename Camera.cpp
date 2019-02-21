@@ -163,8 +163,8 @@ void Camera::ChangeParametersByImGui()
 
 	ImGui::SliderInt( "IO_StageNumber", &stageNumber, 1, 30 );
 
-	ImGui::SliderInt( "Width",  &width,  1, Grid::GetRowMax() );
-	ImGui::SliderInt( "Height", &height, 1, Grid::GetColumnMax() );
+	ImGui::SliderInt( "Width",  &width,  1, Grid::GetRowMax() - 1 );
+	ImGui::SliderInt( "Height", &height, 1, Grid::GetColumnMax() - 1 );
 
 	ImGui::SliderInt( "MovementAmount", &moveAmount, 1, 12 );
 
