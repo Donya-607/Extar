@@ -13,7 +13,7 @@ namespace StarImage
 	constexpr int NUM_COLUMN	= 6;	// Y
 	constexpr int NUM_ALL		= NUM_ROW * NUM_COLUMN;
 
-	constexpr int SPD			= 4;
+	constexpr int SPD			= 6;
 
 	static int hStars[NUM_ALL];
 
