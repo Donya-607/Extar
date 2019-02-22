@@ -1,8 +1,8 @@
 #include <array>
 
 #include "DxLib.h"
-#include "Music.h"
 #include "Common.h"
+#include "Music.h"
 #include "Input.h"
 
 #include "SceneGame.h"
@@ -165,7 +165,7 @@ void Game::GameUpdate()
 
 	if ( pStarMng )
 	{
-		pStarMng->Update();
+		pStarMng->ClearUpdate();
 	}
 
 	ShakeUpdate();
@@ -192,7 +192,6 @@ void Game::Exposure()
 	// else
 
 	Box camera = pCamera->FetchColWorldPos();
-
 	std::vector<int> targets;
 
 	// 適用番号の検査
@@ -215,6 +214,16 @@ void Game::Exposure()
 	}
 
 	PlaySE( M_EXPOSURE );
+
+	// 適用対象がいなかったら終わる
+	if ( !scast<int>( targets.size() ) || !end )
+	{
+		return;
+	}
+	// else
+
+	// アンドゥ用
+	pStarMng->SaveLog();
 
 	// 適用
 	for ( int i = 0; i < scast<int>( targets.size() ); i++ )

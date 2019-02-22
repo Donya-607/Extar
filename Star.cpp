@@ -1,6 +1,7 @@
 #include "DxLib.h"
 #include "Common.h"
 #include "Music.h"
+#include "Input.h"	// アンドゥにて使用
 
 #include "Star.h"
 
@@ -170,12 +171,45 @@ void StarMng::Uninit()
 	{
 		it.Uninit();
 	}
-
-	// std::vector<Star>().swap( stars );	// デストラクタに記述
+	stars.clear();
+	
+	levelStorage.clear();
 }
 
 void StarMng::Update()
 {
+	if ( scast<int>( stars.size() ) < 1 )
+	{
+		assert( !"Star is not exists." );
+		return;
+	}
+	// else
+
+	for ( Star &it : stars )
+	{
+		it.Update();
+	}
+
+	if ( PRESS_CTRL && TRG( KEY_INPUT_Z ) )
+	{
+		Undo();
+	}
+
+#if USE_IMGUI
+
+	ChangeParametersByImGui();
+
+#endif // USE_IMGUI
+}
+void StarMng::ClearUpdate()
+{
+	if ( scast<int>( stars.size() ) < 1 )
+	{
+		assert( !"Star is not exists." );
+		return;
+	}
+	// else
+
 	for ( Star &it : stars )
 	{
 		it.Update();
@@ -200,6 +234,55 @@ void StarMng::Draw( Vector2 shake ) const
 	DrawUI();
 
 #endif // USE_IMGUI
+}
+
+bool StarMng::CanSaveLog() const
+{
+	if ( scast<int>( stars.size() ) == scast<int>( levelStorage.size() ) )
+	{
+		// return false;
+	}
+	// else
+	return true;
+}
+void StarMng::SaveLog()
+{
+	if ( !CanSaveLog() )
+	{
+		return;
+	}
+	// else
+
+	std::vector<int> data;
+	for ( const Star &it : stars )
+	{
+		int level = 0;
+		it.AcquireData( nullptr, nullptr, nullptr, nullptr, &level );
+
+		assert( 1 <= level && level <= 6 );
+
+		data.push_back( level );
+	}
+
+	levelStorage.push_back( data );
+}
+void StarMng::Undo()
+{
+	if ( !CanUndo() )
+	{
+		return;
+	}
+	// else
+
+	std::vector<int> &storage = levelStorage.back();
+
+	std::vector<int>::iterator it = storage.begin();
+	for ( int i = 0 ; it != storage.end(); i++, it++ )
+	{
+		stars.at( i ).SetData( NULL, NULL, NULL, NULL, *it );
+	}
+
+	levelStorage.pop_back();
 }
 
 bool StarMng::IsEqualLevels() const

@@ -94,11 +94,11 @@ public:
 	}
 	void SetData( int Row, int Column, int Width, int Height, int Level )
 	{
-		row		= Row;
-		column	= Column;
-		width	= Width;
-		height	= Height;
-		level	= Level;
+		if ( NULL != Row	) { row		= Row;		}
+		if ( NULL != Column	) { column	= Column;	}
+		if ( NULL != Width	) { width	= Width;	}
+		if ( NULL != Height	) { height	= Height;	}
+		if ( NULL != Level	) { level	= Level;	}
 	}
 private:
 	void Rotate();
@@ -108,6 +108,8 @@ class StarMng
 {
 private:
 	std::vector<Star> stars;
+
+	std::vector<std::vector<int>> levelStorage;	// Ctrl+Z‚É‚ÄŽg—p
 
 #if USE_IMGUI
 
@@ -121,13 +123,18 @@ private:
 #endif // USE_IMGUI
 
 public:
-	StarMng() : stars() {}
-	~StarMng() { std::vector<Star>().swap( stars ); }
+	StarMng() : stars(), levelStorage(){}
+	~StarMng()
+	{
+		std::vector<Star>().swap( stars );
+		std::vector<std::vector<int>>().swap( levelStorage );
+	}
 
 	void Init( int stageNumber );
 	void Uninit();
 
 	void Update();
+	void ClearUpdate();
 
 	void Draw( Vector2 shake ) const;
 public:
@@ -147,6 +154,19 @@ public:
 
 		return stars.at( index ).GetLevel();
 	}
+
+	bool CanSaveLog() const;
+	void SaveLog();
+	bool CanUndo() const
+	{
+		if ( scast<int>( levelStorage.size() ) )
+		{
+			return true;
+		}
+		// else
+		return false;
+	}
+	void Undo();
 
 	void Expose( int index )
 	{
