@@ -37,9 +37,4 @@
 
 bool IsTriggerPauseButton();
 
-/*
-#define IS_PRESS_LEFT	( PRESS( KEY_INPUT_LEFT )  || PRESS_J_X( XB_LEFT )  || STICK_LEFT( X_STICK_L_X )  )
-#define IS_PRESS_RIGHT	( PRESS( KEY_INPUT_RIGHT ) || PRESS_J_X( XB_RIGHT ) || STICK_RIGHT( X_STICK_L_X ) )
-*/
-
 #endif //INCLUDED_INPUT_H_
