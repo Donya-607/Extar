@@ -135,9 +135,21 @@ void Game::Update()
 
 #if DEBUG_MODE	// TODO:ここをデバッグビルドかどうか判定するやつに変えたい
 
-	if ( TRG( KEY_INPUT_RETURN ) )
+	constexpr int DEBUG_CHANGE_SCENE_TIME = 45;
+	static int debugTimerForChangeScene = 0;
+	if ( state == State::Clear )
+	{
+		debugTimerForChangeScene++;
+	}
+
+	if	(
+			TRG( KEY_INPUT_RETURN )
+			|| DEBUG_CHANGE_SCENE_TIME <= debugTimerForChangeScene
+		)
 	{
 		PrepareChangeSceneToTitle();
+
+		debugTimerForChangeScene = 0;
 
 		delete this;
 		return;
@@ -165,7 +177,7 @@ void Game::GameUpdate()
 
 	if ( pStarMng )
 	{
-		pStarMng->ClearUpdate();
+		pStarMng->Update();
 	}
 
 	ShakeUpdate();
@@ -175,7 +187,7 @@ void Game::ClearUpdate()
 {
 	if ( pStarMng )
 	{
-		pStarMng->Update();
+		pStarMng->ClearUpdate();
 	}
 
 	ShakeUpdate();
@@ -298,14 +310,14 @@ void Game::Draw()
 
 	Grid::Draw( shake );
 
-	if ( pCamera )
-	{
-		pCamera->Draw( shake );
-	}
-
 	if ( pStarMng )
 	{
 		pStarMng->Draw( shake );
+	}
+
+	if ( pCamera )
+	{
+		pCamera->Draw( shake );
 	}
 
 #if	DEBUG_MODE
@@ -313,6 +325,17 @@ void Game::Draw()
 	if ( isDrawCollision )
 	{
 		ShowCollisionArea();
+	}
+
+	if ( state == State::Clear )
+	{
+		DrawExtendFormatString
+		(
+			360, 300,
+			6.0, 6.0,
+			GetColor( 200, 200, 200 ),
+			"Stage Clear!"
+		);
 	}
 
 #endif	// DEBUG_MODE
