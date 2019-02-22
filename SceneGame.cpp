@@ -185,6 +185,7 @@ void Game::Exposure()
 			// １が入っている場合，使えない
 			if ( pStarMng->FetchLevel( i ) <= 1 )
 			{
+				PlaySE( M_FAILURE );
 				return;
 			}
 			// else
@@ -192,6 +193,8 @@ void Game::Exposure()
 			targets.push_back( i );
 		}
 	}
+
+	PlaySE( M_EXPOSURE );
 
 	// 適用
 	for ( int i = 0; i < scast<int>( targets.size() ); i++ )

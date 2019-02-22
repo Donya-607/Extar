@@ -127,7 +127,7 @@ void StarMng::Init( int stageNumber )
 	choiseColumn		= 0;
 	width				= 1;
 	height				= 1;
-	level				= 1;
+	level				= 6;
 
 #endif // USE_IMGUI
 
@@ -238,6 +238,8 @@ void StarMng::ChangeParametersByImGui()
 
 void StarMng::SetStar()
 {
+	RemoveStar();
+
 	stars.push_back( Star() );
 	stars.back().Init( choiseRow, choiseColumn, width, height, level );
 }
