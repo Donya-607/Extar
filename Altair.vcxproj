@@ -165,12 +165,14 @@
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="Joypad.cpp" />
     <ClCompile Include="Keyboard.cpp" />
+    <ClCompile Include="FileIO.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Music.cpp" />
     <ClCompile Include="SceneGame.cpp" />
     <ClCompile Include="SceneTitle.cpp" />
     <ClCompile Include="ScreenShake.cpp" />
     <ClCompile Include="ScreenShot.cpp" />
+    <ClCompile Include="Star.cpp" />
     <ClCompile Include="Vector2.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -190,6 +192,7 @@
     <ClInclude Include="Input.h" />
     <ClInclude Include="Joypad.h" />
     <ClInclude Include="Keyboard.h" />
+    <ClInclude Include="FileIO.h" />
     <ClInclude Include="Music.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SceneGame.h" />
@@ -197,6 +200,7 @@
     <ClInclude Include="SceneTitle.h" />
     <ClInclude Include="ScreenShake.h" />
     <ClInclude Include="ScreenShot.h" />
+    <ClInclude Include="Star.h" />
     <ClInclude Include="Vector2.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

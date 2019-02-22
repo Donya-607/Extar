@@ -1,6 +1,8 @@
 #ifndef INCLUDED_CAMERA_H_
 #define INCLUDED_CAMERA_H_
 
+#include "Common.h"
+
 #if USE_IMGUI
 
 #include <imgui.h>
@@ -8,8 +10,8 @@
 
 #endif // USE_IMGUI
 
-#include "Vector2.h"
 #include "Collision.h"
+#include "Vector2.h"
 
 namespace CameraImage
 {
@@ -33,37 +35,54 @@ private:
 	Vector2 pos;	// LeftTop Position
 	Vector2 velo;	// Velocity
 	Vector2 size;	// 全体サイズ
+
+	bool	isExposure;	// 露光した瞬間のみTRUE
+
+#if USE_IMGUI
+
+	int stageNumber;// 1始まり
+
+#endif // USE_IMGUI
+
 public:
 	Camera() : row( 0 ), column( 0 ), width( 1 ), height( 1 ),
 		moveAmount( 1 ),
-		pos(), velo(), size() {}
+		pos(), velo(), size(),
+		isExposure( false )
+	{}
 	~Camera() {}
 
-	void Init( int sizeX, int sizeY, int movementAmount );
+	void Init( int stageNumber );
 	void Uninit();
 
 	void Update();
 
+	bool IsExposure() const
+	{
+		return isExposure;
+	}
+
+	void Draw( Vector2 shake ) const;
+private:
 	void Move();
 	void ClampPos();
 	void ClampMatrix();
 
-	void Draw( Vector2 shake );
+	void Exposure();
+public:
+	Box  FetchColWorldPos() const;
 
-	Box FetchColWorldPos() const
+	void AcquireData( int *Width, int *Height, int *MoveAmount ) const
 	{
-		Vector2 halfSize{ size.x * 0.5f, size.y * 0.5f };
-
-		Box tmp =
-		{
-			pos.x + halfSize.x,
-			pos.y + halfSize.y,
-			halfSize.x,
-			halfSize.y,
-			true
-		};
-
-		return tmp;
+		*Width		= width;
+		*Height		= height;
+		*MoveAmount	= moveAmount;
+	}
+	void SetData( int Width, int Height, int MoveAmount )
+	{
+		width		= Width;
+		height		= Height;
+		moveAmount	= MoveAmount;
 	}
 private:
 #if USE_IMGUI

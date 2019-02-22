@@ -15,9 +15,12 @@
 #include "Camera.h"
 #include "Grid.h"
 
+#include "FileIO.h"
+
 namespace GameImage
 {
 	static int hGameBG;
+	static int hFrame;
 
 	void Load()
 	{
@@ -28,12 +31,15 @@ namespace GameImage
 		}
 		// else
 
-		hGameBG = LoadGraph( "./Data/Images/BG/Game.png" );
+		hGameBG = LoadGraph( "./Data/Images/BG/Game.png"  );
+		hFrame	= LoadGraph( "./Data/Images/BG/Frame.png" );
 	}
 	void Release()
 	{
 		DeleteGraph( hGameBG );
+		DeleteGraph( hFrame  );
 		hGameBG = 0;
+		hFrame  = 0;
 	}
 }
 
@@ -41,25 +47,37 @@ void Game::Init()
 {
 	PlayBGM( M_Game );
 
+	FileIO::ReadAllCamera();
+	FileIO::ReadAllStars();
+
 	GameImage::Load();
 	CameraImage::Load();
+	StarImage::Load();
 
 	Vector2 gridSize{ 64.0f, 64.0f };
 	Grid::SetSize( gridSize );
 
 	pCamera.reset( new Camera() );
-	pCamera->Init( /* sizeX = */3, /* sizeY = */2, /* moveAmount = */1 );
+	pCamera->Init( stageNumber );
+
+	pStarMng.reset( new StarMng() );
+	pStarMng->Init( stageNumber );
 
 	ShakeInit();
 }
 void Game::Uninit()
 {
+	FileIO::ReadAllCamera();
+	FileIO::ReadAllStars();
+
 	GameImage::Release();
 	CameraImage::Release();
+	StarImage::Release();
 
 	Grid::SetSize( { 0, 0 } );
 
 	pCamera->Uninit();
+	pStarMng->Uninit();
 
 	ShakeUninit();
 }
@@ -68,7 +86,7 @@ void Game::Update()
 {
 #if DEBUG_MODE
 
-	if ( TRG( KEY_INPUT_C ) || TRG_J_X( XB_LEFT ) )
+	if ( TRG( KEY_INPUT_C ) )
 	{
 		char debugstoper = 0;
 	}
@@ -128,9 +146,24 @@ void Game::GameUpdate()
 	if ( pCamera )
 	{
 		pCamera->Update();
+
+		if ( pCamera->IsExposure() )
+		{
+			Exposure();
+		}
+	}
+
+	if ( pStarMng )
+	{
+		pStarMng->Update();
 	}
 
 	ShakeUpdate();
+}
+
+void Game::Exposure()
+{
+
 }
 
 bool Game::IsInputPauseButton()
@@ -170,6 +203,7 @@ void Game::Draw()
 
 	// îwåi
 	{
+		// âºíuÇ´Ç»ÇÃÇ≈ÅCExtendGraph
 		DrawExtendGraph
 		(
 			scast<int>( 0 - shake.x ),
@@ -179,6 +213,14 @@ void Game::Draw()
 			GameImage::hGameBG,
 			TRUE
 		);
+
+		// òg
+		DrawGraph
+		(
+			0, 0,
+			GameImage::hFrame,
+			TRUE
+		);
 	}
 
 	Grid::Draw( shake );
@@ -186,6 +228,11 @@ void Game::Draw()
 	if ( pCamera )
 	{
 		pCamera->Draw( shake );
+	}
+
+	if ( pStarMng )
+	{
+		pStarMng->Draw( shake );
 	}
 
 #if	DEBUG_MODE
@@ -212,6 +259,40 @@ void Game::ShowCollisionArea()
 		unsigned int red   = GetColor( 200, 32, 32 );
 		unsigned int green = GetColor( 32, 200, 32 );
 		unsigned int blue  = GetColor( 32, 32, 200 );
+
+		if ( pCamera )
+		{
+			Box tmp = pCamera->FetchColWorldPos();
+
+			DrawBoxAA
+			(
+				tmp.cx - tmp.w,
+				tmp.cy - tmp.h,
+				tmp.cx + tmp.w,
+				tmp.cy + tmp.h,
+				blue,
+				TRUE
+			);
+		}
+
+		if ( pStarMng )
+		{
+			int end = pStarMng->GetArraySize();
+			for ( int i = 0; i < end; i++ )
+			{
+				Box star = pStarMng->FetchColWorldPos( i );
+
+				DrawBoxAA
+				(
+					star.cx - star.w,
+					star.cy - star.h,
+					star.cx + star.w,
+					star.cy + star.h,
+					green,
+					TRUE
+				);
+			}
+		}
 	}
 	SetDrawBlendMode( DX_BLENDMODE_NOBLEND, 255 );
 }

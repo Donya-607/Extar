@@ -6,6 +6,8 @@
 #include "Camera.h"
 #include "Grid.h"
 
+#include "FileIO.h"
+
 #include <algorithm>	// Clampで使用
 #undef min				// Clampで使用
 #undef max				// Clampで使用
@@ -37,23 +39,28 @@ namespace CameraImage
 	}
 }
 
-void Camera::Init( int sizeX, int sizeY, int movementAmount )
+void Camera::Init( int stageNumber )
 {
+	// 左上に設定
 	row		= 0;
 	column	= 0;
 
-	width	= sizeX;
-	height	= sizeY;
-
-	moveAmount = movementAmount;
+	// HACK:*this = で直接代入するのはＯＫか？危険か？
+	*this = FileIO::FetchCameraInfo( stageNumber );
 
 	// グリッドサイズは，この時点で正しいものに設定されているとする
 	size.x	= Grid::GetSize().x * width;
 	size.y	= Grid::GetSize().y * height;
 
-	// 画面左上に設定
 	pos.x	= row		* size.x;
 	pos.y	= column	* size.y;
+
+#if USE_IMGUI
+
+	this->stageNumber = stageNumber;
+
+#endif // USE_IMGUI
+
 }
 void Camera::Uninit()
 {
@@ -64,11 +71,26 @@ void Camera::Update()
 {
 	Move();
 
+	Exposure();
+
 #if USE_IMGUI
 
 	ChangeParametersByImGui();
 
 #endif // USE_IMGUI
+}
+
+void Camera::Draw( Vector2 shake ) const
+{
+	DrawExtendGraph
+	(
+		FRAME_POS_X + scast<int>( pos.x - shake.x ),
+		FRAME_POS_Y + scast<int>( pos.y - shake.y ),
+		FRAME_POS_X + scast<int>( pos.x + size.x - shake.x ),
+		FRAME_POS_Y + scast<int>( pos.y + size.y - shake.y ),
+		CameraImage::GetHandle(),
+		TRUE
+	);
 }
 
 void Camera::Move()
@@ -107,27 +129,74 @@ void Camera::ClampMatrix()
 	column	= std::max( column,	0 );
 }
 
-void Camera::Draw( Vector2 shake )
+void Camera::Exposure()
 {
-	DrawExtendGraph
-	(
-		FRAME_POS_X + scast<int>( pos.x - shake.x ),
-		FRAME_POS_Y + scast<int>( pos.y - shake.y ),
-		FRAME_POS_X + scast<int>( pos.x + size.x - shake.x ),
-		FRAME_POS_Y + scast<int>( pos.y + size.y - shake.y ),
-		CameraImage::GetHandle(),
-		TRUE
-	);
+	if ( !IS_TRG_J_X_EXPOSURE )
+	{
+		isExposure = false;
+
+		return;
+	}
+	// else
+
+	isExposure = true;
+}
+
+Box Camera::FetchColWorldPos() const
+{
+	Vector2 halfSize{ size.x * 0.5f, size.y * 0.5f };
+	Vector2 base{ scast<float>( FRAME_POS_X ), scast<float>( FRAME_POS_Y ) };
+
+	Box tmp =
+	{
+		base.x + ( row		* Grid::GetSize().x ) + halfSize.x,
+		base.y + ( column	* Grid::GetSize().y ) + halfSize.y,
+		halfSize.x,
+		halfSize.y,
+		true
+	};
+
+	return tmp;
 }
 
 #if USE_IMGUI
 
 void Camera::ChangeParametersByImGui()
 {
-	ImGui::Begin( "Camera_Parameters" );
+	ImGui::Begin( "Camera_Parameters", nullptr, ImGuiWindowFlags_MenuBar );
 
-	ImGui::SliderInt( "Width",  &width,  1, Grid::GetRowMax() );
-	ImGui::SliderInt( "Height", &height, 1, Grid::GetColumnMax() );
+	if ( ImGui::BeginMenuBar() )
+	{
+		if ( ImGui::BeginMenu( "File" ) )
+		{
+			if ( ImGui::MenuItem( "Save" ) )
+			{
+				FileIO::WriteCamera( stageNumber, this );
+
+				// ファイルに保存するだけで適用しないため，ついでにまとめて読み込みなおす
+				FileIO::ReadAllCamera();
+				FileIO::ReadAllStars();
+
+				PlaySE( M_E_NEXT );
+			}
+			if ( ImGui::MenuItem( "Load" ) )
+			{
+				// HACK:*this = で直接代入するのはＯＫか？危険か？
+				*this = FileIO::FetchCameraInfo( stageNumber );
+
+				PlaySE( M_E_BACK );
+			}
+
+			ImGui::EndMenu();
+		}
+
+		ImGui::EndMenuBar();
+	}
+
+	ImGui::SliderInt( "IO_StageNumber", &stageNumber, 1, 30 );
+
+	ImGui::SliderInt( "Width",  &width,  1, Grid::GetRowMax() - 1 );
+	ImGui::SliderInt( "Height", &height, 1, Grid::GetColumnMax() - 1 );
 
 	ImGui::SliderInt( "MovementAmount", &moveAmount, 1, 12 );
 
