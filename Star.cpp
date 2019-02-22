@@ -71,6 +71,9 @@ void Star::Init( int Row, int Column, int Width, int Height, int Level, bool fla
 		nullptr
 	);
 
+	rotateInterval = ROTATE_INTERVAL;
+	angle = ( rand() % 8 ) * 45.0f;
+
 	if ( flagSetAnimeOnly )
 	{
 		return;
@@ -84,9 +87,6 @@ void Star::Init( int Row, int Column, int Width, int Height, int Level, bool fla
 	height	= Height;
 
 	level	= Level;
-
-	rotateInterval = ROTATE_INTERVAL;
-	angle	= ( rand() % 8 ) * 45.0f;
 }
 void Star::Uninit()
 {

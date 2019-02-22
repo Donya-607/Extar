@@ -144,7 +144,7 @@ void Game::Update()
 
 	if	(
 			TRG( KEY_INPUT_RETURN )
-			|| DEBUG_CHANGE_SCENE_TIME <= debugTimerForChangeScene
+			|| ( state == State::Clear && DEBUG_CHANGE_SCENE_TIME <= debugTimerForChangeScene )
 		)
 	{
 		PrepareChangeSceneToTitle();
