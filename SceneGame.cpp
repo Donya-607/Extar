@@ -120,8 +120,12 @@ void Game::Update()
 
 	switch ( state )
 	{
+	case State::Select:
+		SelectUpdate();			break;
 	case State::Game:
 		GameUpdate();			break;
+	case State::Clear:
+		ClearUpdate();			break;
 	default:
 		assert( !"Error:SceneGame state error." );
 		break;
@@ -141,6 +145,12 @@ void Game::Update()
 
 #endif // DEBUG_MODE
 }
+
+void Game::SelectUpdate()
+{
+
+}
+
 void Game::GameUpdate()
 {
 	if ( pCamera )
@@ -153,6 +163,16 @@ void Game::GameUpdate()
 		}
 	}
 
+	if ( pStarMng )
+	{
+		pStarMng->Update();
+	}
+
+	ShakeUpdate();
+}
+
+void Game::ClearUpdate()
+{
 	if ( pStarMng )
 	{
 		pStarMng->Update();
@@ -200,6 +220,13 @@ void Game::Exposure()
 	for ( int i = 0; i < scast<int>( targets.size() ); i++ )
 	{
 		pStarMng->Expose( targets.at( i ) );
+	}
+
+	// 仮でこの場でクリア確認を行っているが，もし変化演出後とかに変えるのであれば，
+	// カメラまたは星に IsDoneEzposureEffect() のようなのを作るとよさそう
+	if ( pStarMng->IsEqualLevels() )
+	{
+		state = State::Clear;
 	}
 }
 

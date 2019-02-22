@@ -82,11 +82,11 @@ public:
 
 	void AcquireData( int *Row, int *Column, int *Width, int *Height, int *Level ) const
 	{
-		*Row		= row;
-		*Column		= column;
-		*Width		= width;
-		*Height		= height;
-		*Level		= level;
+		if ( nullptr != Row		)	{ *Row		= row;		}
+		if ( nullptr != Column	)	{ *Column	= column;	}
+		if ( nullptr != Width	)	{ *Width	= width;	}
+		if ( nullptr != Height	)	{ *Height	= height;	}
+		if ( nullptr != Level	)	{ *Level	= level;	}
 	}
 	void SetData( int Row, int Column, int Width, int Height, int Level )
 	{
@@ -148,6 +148,8 @@ public:
 
 		stars.at( index ).BeExposed();
 	}
+
+	bool IsEqualLevels() const;
 private:
 #if USE_IMGUI
 

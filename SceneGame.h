@@ -20,8 +20,9 @@ class Game : public Scene
 private:
 	enum class State : int
 	{
-		Game = 0,
-		FOO
+		Select = 0,
+		Game,
+		Clear
 	};
 public:
 	int stageNumber;	// 1Žn‚Ü‚è
@@ -46,7 +47,9 @@ public:
 	void Uninit();
 
 	void Update();
+	void SelectUpdate();
 	void GameUpdate();
+	void ClearUpdate();
 
 	void Exposure();
 

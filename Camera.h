@@ -74,9 +74,9 @@ public:
 
 	void AcquireData( int *Width, int *Height, int *MoveAmount ) const
 	{
-		*Width		= width;
-		*Height		= height;
-		*MoveAmount	= moveAmount;
+		if( nullptr != Width		) { *Width		= width;		}
+		if( nullptr != Height		) { *Height		= height;		}
+		if( nullptr != MoveAmount	) { *MoveAmount	= moveAmount;	}
 	}
 	void SetData( int Width, int Height, int MoveAmount )
 	{

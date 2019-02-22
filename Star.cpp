@@ -170,6 +170,35 @@ void StarMng::Draw( Vector2 shake ) const
 #endif // USE_IMGUI
 }
 
+bool StarMng::IsEqualLevels() const
+{
+	int criterion = 0;	// 1 ~ 6 Ç™ê≥èÌ
+
+	for ( const Star &it : stars )
+	{
+		if ( 0 == criterion )
+		{
+			it.AcquireData( nullptr, nullptr, nullptr, nullptr, &criterion );
+
+			assert( 1 <= criterion  && criterion <= 6 );
+
+			continue;
+		}
+		// else
+
+		int level = 0;
+		it.AcquireData( nullptr, nullptr, nullptr, nullptr, &level );
+
+		if ( level != criterion )
+		{
+			assert( 1 <= criterion  && criterion <= 6 );
+			return false;
+		}
+	}
+
+	return true;
+}
+
 #if USE_IMGUI
 
 void StarMng::ChangeParametersByImGui()
