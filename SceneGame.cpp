@@ -163,7 +163,41 @@ void Game::GameUpdate()
 
 void Game::Exposure()
 {
+	assert( pCamera );
 
+	if ( !pStarMng )
+	{
+		return;
+	}
+	// else
+
+	Box camera = pCamera->FetchColWorldPos();
+
+	std::vector<int> targets;
+
+	// 適用番号の検査
+	int end = pStarMng->GetArraySize();
+	for ( int i = 0; i < end; i++ )
+	{
+		Box star = pStarMng->FetchColWorldPos( i );
+		if ( Box::IsHitBox( camera, star ) )
+		{
+			// １が入っている場合，使えない
+			if ( pStarMng->FetchLevel( i ) <= 1 )
+			{
+				return;
+			}
+			// else
+
+			targets.push_back( i );
+		}
+	}
+
+	// 適用
+	for ( int i = 0; i < scast<int>( targets.size() ); i++ )
+	{
+		pStarMng->Expose( targets.at( i ) );
+	}
 }
 
 bool Game::IsInputPauseButton()

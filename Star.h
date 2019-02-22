@@ -56,7 +56,7 @@ public:
 
 	void Draw( Vector2 shake ) const;
 public:
-	Box FetchColWorldPos() const
+	Box  FetchColWorldPos() const
 	{
 		Vector2 halfSize;
 		halfSize.x = ( ( width  * Grid::GetSize().x ) * 0.5f );
@@ -73,6 +73,12 @@ public:
 
 		return tmp;
 	}
+	int  GetLevel() const
+	{
+		return level;
+	}
+
+	void BeExposed();
 
 	void AcquireData( int *Row, int *Column, int *Width, int *Height, int *Level ) const
 	{
@@ -119,16 +125,28 @@ public:
 
 	void Draw( Vector2 shake ) const;
 public:
-	int GetArraySize() const
+	int  GetArraySize() const
 	{
 		return scast<int>( stars.size() );
 	}
-	Box FetchColWorldPos( int index ) const
+	Box  FetchColWorldPos( int index ) const
 	{
 		assert( index < scast<int>( stars.size() ) );
 
-		Box tmp = stars.at( index ).FetchColWorldPos();
-		return tmp;
+		return stars.at( index ).FetchColWorldPos();
+	}
+	int  FetchLevel( int index ) const
+	{
+		assert( index < scast<int>( stars.size() ) );
+
+		return stars.at( index ).GetLevel();
+	}
+
+	void Expose( int index )
+	{
+		assert( index < scast<int>( stars.size() ) );
+
+		stars.at( index ).BeExposed();
 	}
 private:
 #if USE_IMGUI

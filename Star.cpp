@@ -105,6 +105,10 @@ void Star::Draw( Vector2 shake ) const
 	);
 }
 
+void Star::BeExposed()
+{
+	level -= 1;
+}
 
 
 void StarMng::Init( int stageNumber )
