@@ -91,7 +91,7 @@ void Game::Update()
 		char debugstoper = 0;
 	}
 
-	if ( TRG( KEY_INPUT_D ) )
+	if ( TRG( KEY_INPUT_V ) )
 	{
 		isDrawCollision = !isDrawCollision;
 	}
