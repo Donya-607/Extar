@@ -70,21 +70,7 @@ private:
 
 	void Exposure();
 public:
-	Box FetchColWorldPos() const
-	{
-		Vector2 halfSize{ size.x * 0.5f, size.y * 0.5f };
-
-		Box tmp =
-		{
-			pos.x + halfSize.x,
-			pos.y + halfSize.y,
-			halfSize.x,
-			halfSize.y,
-			true
-		};
-
-		return tmp;
-	}
+	Box  FetchColWorldPos() const;
 
 	void AcquireData( int *Width, int *Height, int *MoveAmount ) const
 	{

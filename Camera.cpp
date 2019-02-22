@@ -142,6 +142,23 @@ void Camera::Exposure()
 	isExposure = true;
 }
 
+Box Camera::FetchColWorldPos() const
+{
+	Vector2 halfSize{ size.x * 0.5f, size.y * 0.5f };
+	Vector2 base{ scast<float>( FRAME_POS_X ), scast<float>( FRAME_POS_Y ) };
+
+	Box tmp =
+	{
+		base.x + ( row		* Grid::GetSize().x ) + halfSize.x,
+		base.y + ( column	* Grid::GetSize().y ) + halfSize.y,
+		halfSize.x,
+		halfSize.y,
+		true
+	};
+
+	return tmp;
+}
+
 #if USE_IMGUI
 
 void Camera::ChangeParametersByImGui()
