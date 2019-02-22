@@ -238,6 +238,7 @@ void StarMng::Draw( Vector2 shake ) const
 
 bool StarMng::CanSaveLog() const
 {
+	// セーブできない状況があると思っていたが，そうでもなさそう？
 	if ( scast<int>( stars.size() ) == scast<int>( levelStorage.size() ) )
 	{
 		// return false;
