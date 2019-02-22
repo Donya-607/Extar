@@ -41,10 +41,14 @@ private:
 
 	int level;	// 1 ~ 6
 
+	int rotateInterval;
+	float angle;// Degree, ClockWise
+
 	Anim anim;
 public:
 	Star() : row( 0 ), column( 0 ), width( 1 ), height( 1 ),
 		level( 6 ),
+		rotateInterval( 0 ), angle( 0 ),
 		anim()
 	{}
 	~Star() {}
@@ -96,6 +100,8 @@ public:
 		height	= Height;
 		level	= Level;
 	}
+private:
+	void Rotate();
 };
 
 class StarMng

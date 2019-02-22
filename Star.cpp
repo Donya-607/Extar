@@ -7,6 +7,11 @@
 #include "FileIO.h"
 #include "Grid.h"
 
+namespace
+{
+	constexpr int ROTATE_INTERVAL = 4;
+}
+
 namespace StarImage
 {
 	constexpr int NUM_ROW		= 3;	// X
@@ -78,6 +83,9 @@ void Star::Init( int Row, int Column, int Width, int Height, int Level, bool fla
 	height	= Height;
 
 	level	= Level;
+
+	rotateInterval = ROTATE_INTERVAL;
+	angle	= ( rand() % 8 ) * 45.0f;
 }
 void Star::Uninit()
 {
@@ -86,6 +94,8 @@ void Star::Uninit()
 
 void Star::Update()
 {
+	Rotate();
+
 	anim.Update();
 
 	// さしあたり長方形はナシになったので，とりあえず止めておく。使う可能性も残っているので，削除まではしない
@@ -94,12 +104,15 @@ void Star::Update()
 
 void Star::Draw( Vector2 shake ) const
 {
-	DrawExtendGraph
+	DrawRotaGraph3
 	(
-		scast<int>( FRAME_POS_X + ( row		* Grid::GetSize().x ) ),
-		scast<int>( FRAME_POS_Y + ( column	* Grid::GetSize().y ) ),
-		scast<int>( FRAME_POS_X + ( row		* Grid::GetSize().x ) + ( width  * Grid::GetSize().x ) ),
-		scast<int>( FRAME_POS_Y + ( column	* Grid::GetSize().y ) + ( height * Grid::GetSize().y ) ),
+		scast<int>( FRAME_POS_X + ( row		* Grid::GetSize().x ) + ( Grid::GetSize().x * 0.5f ) ),	// 画面上の中心座標
+		scast<int>( FRAME_POS_Y + ( column	* Grid::GetSize().y ) + ( Grid::GetSize().y * 0.5f ) ),	// 画面上の中心座標
+		StarImage::SIZE >> 1,	// 画像上の中心座標
+		StarImage::SIZE >> 1,	// 画像上の中心座標
+		scast<double>( width  ),
+		scast<double>( height ),
+		scast<double>( ToRadian( angle ) ),
 		StarImage::GetHandle( level, anim.index ),
 		TRUE
 	);
@@ -108,6 +121,25 @@ void Star::Draw( Vector2 shake ) const
 void Star::BeExposed()
 {
 	level -= 1;
+}
+
+void Star::Rotate()
+{
+	if ( 0 < rotateInterval-- )
+	{
+		return;
+	}
+	// else
+
+	rotateInterval = ROTATE_INTERVAL;
+
+	// 正方形のときのみ，45度ずつ回転
+	angle += ( width == height ) ? 45.0f : 90.0f;
+
+	if ( 359 < angle )
+	{
+		angle = 0;
+	}
 }
 
 
