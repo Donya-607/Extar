@@ -6,6 +6,9 @@
 const int	stickBorderLine = 350;	// 「傾いている」と判断する境界値，0 ~ 1000
 const int	triggerBorderLine = 128;// 「トリガー入力している」と判断する境界値，0 ~ 255
 
+static int padConnectingNum;		// コントローラが接続されている数
+static int padType[4];				// コントローラの種類
+
 // Xinput
 static int	keysX[ButtonXEnd];		// ボタンの入力状態
 static int	sticksInputX[StickXEnd];// スティックの傾きぐあい
@@ -22,11 +25,6 @@ static int	sticksFrameD[StickDEnd];// スティックの入力フレーム
 float		angleD[LRStickDEnd];	// スティックの角度
 static DINPUT_JOYSTATE inputD[4];	// 生の入力状態
 
-// HORI
-static int keysH[HORIButtonEnd];
-
-static int padConnectingNum;		// コントローラが接続されている数
-static int padType[4];				// コントローラの種類
 void JoipadInit()
 {
 	padConnectingNum = GetJoypadNum();
@@ -48,6 +46,7 @@ void JoipadInit()
 		padType[0] = T_DInput;
 	}
 }
+
 void JoypadUpdate()
 {
 	/* * * * * * * * * * * * * * * * *
@@ -96,13 +95,18 @@ void JoypadUpdate()
 
 			for ( int i = 0; i < StickXEnd; i++ )
 			{
-				sticksFrameX[i] = 
-					( 
-						sticksInputX[i] <= -stickBorderLine ||
-						stickBorderLine <= sticksInputX[i] 
-					) 
-					? sticksFrameX[i] + 1 
-					: 0;
+				if ( stickBorderLine <= sticksInputX[i] )
+				{
+					sticksFrameX[i] += 1;
+				}
+				else if ( sticksInputX[i] <= -stickBorderLine )
+				{
+					sticksFrameX[i] -= 1;
+				}
+				else
+				{
+					sticksFrameX[i] = 0;
+				}
 			}
 		}
 		// スティックの角度を見る		
@@ -199,13 +203,18 @@ void JoypadUpdate()
 
 			for ( int i = 0; i < StickDEnd; i++ )
 			{
-				sticksFrameD[i] =
-					(
-						sticksInputD[i] <= -stickBorderLine ||
-						stickBorderLine <= sticksInputD[i]
-						)
-					? sticksFrameD[i] + 1
-					: 0;
+				if ( stickBorderLine <= sticksInputD[i] )
+				{
+					sticksFrameD[i] += 1;
+				}
+				else if ( sticksInputD[i] <= -stickBorderLine )
+				{
+					sticksFrameD[i] -= 1;
+				}
+				else
+				{
+					sticksFrameD[i] = 0;
+				}
 			}
 		}
 		// スティックの角度を見る
@@ -267,16 +276,6 @@ void JoypadUpdate()
 	}
 
 	// TODO:DirectInputがとれたっぽいので，あとはラッパー関数と，古いものを削除するのと，などする
-
-	// HORI用の入力(古い) GetJoypadInputState
-	{
-		int input = GetJoypadInputState(DX_INPUT_PAD1);
-
-		for ( int i = 0; i < HORIButtonEnd; i++ )
-		{
-			keysH[i] = ( input & ( 1 << i ) ) ? keysH[i] + 1 : 0;
-		}
-	}
 }
 
 // XBox
@@ -396,11 +395,4 @@ bool IsTiltJoypadStickD		( JoypadLRStickD side )
 	if ( GetJoypadStickFrameD( D_STICK_L_Y ) ) { return true; }
 	// else
 	return false;
-}
-
-// OLD
-int GetJoypadHORI			( JOYPAD_BUTTON_HORI button )
-{
-	assert( H_DOWN <= button && button < HORIButtonEnd );
-	return keysH[button];
 }
