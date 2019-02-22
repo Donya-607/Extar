@@ -68,7 +68,71 @@ namespace FileIO
 	}
 	void ReadAllStars()
 	{
+		if ( !galaxy.empty() )
+		{
+			galaxy.clear();
+		}
 
+		// ステージが見つからなくなるまで，つまりステージ数ぶんループ
+		int stageNumber = 1;
+		for ( ; true; stageNumber++ )
+		{
+			// ファイルの用意
+			std::string filename = "./Data/Stages/Stage" + std::to_string( stageNumber ) + "/Stars.txt";
+
+			std::ifstream ifs( filename, std::ios::in );
+			if ( !ifs )
+			{
+				break;
+			}
+			// else
+
+
+			// データの用意
+			int row, column, width, height, level;
+			std::array<int *, 5> data =
+			{
+				&row, &column, &width, &height, &level
+			};
+
+			std::vector<Star> stars;	// １ステージの星たち
+
+			// 読み込み
+			for ( ; ; )
+			{
+				for ( int i = 0; i < scast<int>( data.size() ); i++ )
+				{
+					std::string buf;
+
+					// 最後のみ区切り文字を変えないと，改行して次の数字まで読んでしまう
+					if ( i == scast<int>( data.size() ) - 1 )
+					{
+						std::getline( ifs, buf, '\n' );
+					}
+					else
+					{
+						std::getline( ifs, buf, ',' );
+					}
+
+					*data[i] = atoi( buf.c_str() );
+				}
+
+				if ( ifs.eof() )
+				{
+					break;
+				}
+				// else
+
+				stars.push_back( Star() );
+				stars.back().SetData( row, column, width, height, level );
+			}
+
+			galaxy.push_back( stars );
+
+			ifs.close();
+		}
+
+		maxStageNumber = stageNumber;
 	}
 
 	void WriteCamera( int stageNumber, const Camera *data )
@@ -77,7 +141,7 @@ namespace FileIO
 		std::string filename = "./Data/Stages/Stage" + std::to_string( stageNumber );
 		_mkdir( filename.c_str() );
 
-		filename += +"/Camera.txt";
+		filename += "/Camera.txt";
 
 		std::ofstream ofs( filename, std::ios::out );
 		if ( !ofs )
@@ -111,17 +175,45 @@ namespace FileIO
 
 	void WriteStars( int stageNumber, const std::vector<Star> *data )
 	{
+		// フォルダ・ファイルの準備
+		std::string filename = "./Data/Stages/Stage" + std::to_string( stageNumber );
+		_mkdir( filename.c_str() );
 
+		filename += "/Stars.txt";
+
+		std::ofstream ofs( filename, std::ios::out );
+		if ( !ofs )
+		{
+			assert( !"ファイルオープンに失敗しました：WriteStars()" );
+			exit( EXIT_FAILURE );
+			return;
+		}
+		// else
+
+
+		// データの用意・書き込み
+		for ( int i = 0; i < scast<int>( data->size() ); i++ )
+		{
+			int row, column, width, height, level;
+			( data->at( i ) ).AcquireData( &row, &column, &width, &height, &level );
+
+			ofs << row		<< ',' << column << ','
+				<< width	<< ',' << height << ','
+				<< level	<< std::endl;
+		}
+
+		ofs.close();
 	}
 
 	int  GetStarsArraySize( int stageNumber )
 	{
-		return NULL;
+		return scast<int>( ( galaxy.at( stageNumber ) ).size() );
 	}
-	Star FetchStarsInfo( int stageNumber, int index )
+	std::vector<Star> FetchStarsInfo( int stageNumber )
 	{
-		Star temp;
-		return temp;
+		assert( stageNumber <= scast<int>( galaxy.size() ) );
+
+		return  galaxy.at( stageNumber - 1 );
 	}
 
 	void ReleaseCameraData()

@@ -52,12 +52,16 @@ void Game::Init()
 
 	GameImage::Load();
 	CameraImage::Load();
+	StarImage::Load();
 
 	Vector2 gridSize{ 64.0f, 64.0f };
 	Grid::SetSize( gridSize );
 
 	pCamera.reset( new Camera() );
 	pCamera->Init( stageNumber );
+
+	pStarMng.reset( new StarMng() );
+	pStarMng->Init( stageNumber );
 
 	ShakeInit();
 }
@@ -68,10 +72,12 @@ void Game::Uninit()
 
 	GameImage::Release();
 	CameraImage::Release();
+	StarImage::Release();
 
 	Grid::SetSize( { 0, 0 } );
 
 	pCamera->Uninit();
+	pStarMng->Uninit();
 
 	ShakeUninit();
 }
@@ -80,12 +86,12 @@ void Game::Update()
 {
 #if DEBUG_MODE
 
-	if ( TRG( KEY_INPUT_C ) || TRG_J_X( XB_LEFT ) )
+	if ( TRG( KEY_INPUT_C ) )
 	{
 		char debugstoper = 0;
 	}
 
-	if ( TRG( KEY_INPUT_D ) )
+	if ( TRG( KEY_INPUT_V ) )
 	{
 		isDrawCollision = !isDrawCollision;
 	}
@@ -140,9 +146,61 @@ void Game::GameUpdate()
 	if ( pCamera )
 	{
 		pCamera->Update();
+
+		if ( pCamera->IsExposure() )
+		{
+			Exposure();
+		}
+	}
+
+	if ( pStarMng )
+	{
+		pStarMng->Update();
 	}
 
 	ShakeUpdate();
+}
+
+void Game::Exposure()
+{
+	assert( pCamera );
+
+	if ( !pStarMng )
+	{
+		return;
+	}
+	// else
+
+	Box camera = pCamera->FetchColWorldPos();
+
+	std::vector<int> targets;
+
+	// 適用番号の検査
+	int end = pStarMng->GetArraySize();
+	for ( int i = 0; i < end; i++ )
+	{
+		Box star = pStarMng->FetchColWorldPos( i );
+		if ( Box::IsHitBox( camera, star ) )
+		{
+			// １が入っている場合，使えない
+			if ( pStarMng->FetchLevel( i ) <= 1 )
+			{
+				PlaySE( M_FAILURE );
+				return;
+			}
+			// else
+
+			targets.push_back( i );
+		}
+	}
+
+	PlaySE( M_EXPOSURE );
+
+	// 適用
+	for ( int i = 0; i < scast<int>( targets.size() ); i++ )
+	{
+		pStarMng->Expose( targets.at( i ) );
+	}
 }
 
 bool Game::IsInputPauseButton()
@@ -209,6 +267,11 @@ void Game::Draw()
 		pCamera->Draw( shake );
 	}
 
+	if ( pStarMng )
+	{
+		pStarMng->Draw( shake );
+	}
+
 #if	DEBUG_MODE
 
 	if ( isDrawCollision )
@@ -233,6 +296,40 @@ void Game::ShowCollisionArea()
 		unsigned int red   = GetColor( 200, 32, 32 );
 		unsigned int green = GetColor( 32, 200, 32 );
 		unsigned int blue  = GetColor( 32, 32, 200 );
+
+		if ( pCamera )
+		{
+			Box tmp = pCamera->FetchColWorldPos();
+
+			DrawBoxAA
+			(
+				tmp.cx - tmp.w,
+				tmp.cy - tmp.h,
+				tmp.cx + tmp.w,
+				tmp.cy + tmp.h,
+				blue,
+				TRUE
+			);
+		}
+
+		if ( pStarMng )
+		{
+			int end = pStarMng->GetArraySize();
+			for ( int i = 0; i < end; i++ )
+			{
+				Box star = pStarMng->FetchColWorldPos( i );
+
+				DrawBoxAA
+				(
+					star.cx - star.w,
+					star.cy - star.h,
+					star.cx + star.w,
+					star.cy + star.h,
+					green,
+					TRUE
+				);
+			}
+		}
 	}
 	SetDrawBlendMode( DX_BLENDMODE_NOBLEND, 255 );
 }

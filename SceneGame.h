@@ -7,6 +7,7 @@
 #include "SceneManager.h"
 
 #include "Camera.h"
+#include "Star.h"
 
 //--------------------
 //
@@ -28,6 +29,7 @@ public:
 	State state;
 
 	std::unique_ptr<Camera> pCamera;
+	std::unique_ptr<StarMng> pStarMng;
 
 	bool isPause;
 	bool isDrawCollision;
@@ -35,7 +37,7 @@ public:
 	Game( SceneMng *pMng ) : Scene( pMng ),
 		stageNumber( 1 ),
 		state( State::Game ),
-		pCamera( nullptr ),
+		pCamera( nullptr ), pStarMng( nullptr ),
 		isPause( false ), isDrawCollision( false )
 		{}
 	~Game() {}
@@ -45,6 +47,8 @@ public:
 
 	void Update();
 	void GameUpdate();
+
+	void Exposure();
 
 	bool IsInputPauseButton();
 	void PauseUpdate();

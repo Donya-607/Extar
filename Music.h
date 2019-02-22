@@ -16,7 +16,8 @@ enum BGM
 };
 enum SE
 {
-	M_OPEN = 0,
+	M_EXPOSURE = 0,
+	M_FAILURE,
 
 	// 仮，ポーズ時に鳴らしている
 	M_E_NEXT,
