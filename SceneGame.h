@@ -48,6 +48,8 @@ public:
 	void Update();
 	void GameUpdate();
 
+	void Exposure();
+
 	bool IsInputPauseButton();
 	void PauseUpdate();
 

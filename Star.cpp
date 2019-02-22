@@ -243,8 +243,8 @@ void StarMng::RemoveStar()
 	{
 		scast<float>( FRAME_POS_X + ( choiseRow		* Grid::GetSize().x ) ) + ( Grid::GetSize().x * 0.5f ),
 		scast<float>( FRAME_POS_Y + ( choiseColumn	* Grid::GetSize().y ) ) + ( Grid::GetSize().y * 0.5f ),
-		( Grid::GetSize().x * 0.5f ) - 1/* à”ê}ÇµÇ»Ç¢èdÇ»ÇËÇñhÇÆÇΩÇﬂ*/,
-		( Grid::GetSize().y * 0.5f ) - 1/* à”ê}ÇµÇ»Ç¢èdÇ»ÇËÇñhÇÆÇΩÇﬂ*/,
+		Grid::GetSize().x * 0.5f,
+		Grid::GetSize().y * 0.5f,
 		true
 	};
 

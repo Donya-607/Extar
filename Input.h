@@ -16,8 +16,7 @@
 
 #else
 
-#define IS_PRESS_J_X_OPEN	( PRESS( KEY_INPUT_Z ) || PRESS_J_X( XB_R ) )
-#define IS_TRG_J_X_SHUTTER	( TRG( KEY_INPUT_X )   || TRG_J_TRIGGER_X( XT_RIGHT ) )
+#define IS_TRG_J_X_EXPOSURE	( TRG( KEY_INPUT_X )   || TRG_J_TRIGGER_X( XT_RIGHT ) )
 
 #define IS_TRG_UP			( TRG( KEY_INPUT_UP )    || TRG( KEY_INPUT_W ) || STICK_UP( X_STICK_L_Y )    )
 #define IS_TRG_DOWN			( TRG( KEY_INPUT_DOWN )  || TRG( KEY_INPUT_S ) || STICK_DOWN( X_STICK_L_Y )  )

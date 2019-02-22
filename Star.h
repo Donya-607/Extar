@@ -118,6 +118,18 @@ public:
 	void Update();
 
 	void Draw( Vector2 shake ) const;
+public:
+	int GetArraySize() const
+	{
+		return scast<int>( stars.size() );
+	}
+	Box FetchColWorldPos( int index ) const
+	{
+		assert( index < scast<int>( stars.size() ) );
+
+		Box tmp = stars.at( index ).FetchColWorldPos();
+		return tmp;
+	}
 private:
 #if USE_IMGUI
 

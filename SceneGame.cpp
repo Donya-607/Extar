@@ -86,7 +86,7 @@ void Game::Update()
 {
 #if DEBUG_MODE
 
-	if ( TRG( KEY_INPUT_C ) || TRG_J_X( XB_LEFT ) )
+	if ( TRG( KEY_INPUT_C ) )
 	{
 		char debugstoper = 0;
 	}
@@ -146,6 +146,11 @@ void Game::GameUpdate()
 	if ( pCamera )
 	{
 		pCamera->Update();
+
+		if ( pCamera->IsExposure() )
+		{
+			Exposure();
+		}
 	}
 
 	if ( pStarMng )
@@ -154,6 +159,11 @@ void Game::GameUpdate()
 	}
 
 	ShakeUpdate();
+}
+
+void Game::Exposure()
+{
+
 }
 
 bool Game::IsInputPauseButton()
@@ -249,6 +259,40 @@ void Game::ShowCollisionArea()
 		unsigned int red   = GetColor( 200, 32, 32 );
 		unsigned int green = GetColor( 32, 200, 32 );
 		unsigned int blue  = GetColor( 32, 32, 200 );
+
+		if ( pCamera )
+		{
+			Box tmp = pCamera->FetchColWorldPos();
+
+			DrawBoxAA
+			(
+				tmp.cx - tmp.w,
+				tmp.cy - tmp.h,
+				tmp.cx + tmp.w,
+				tmp.cy + tmp.h,
+				blue,
+				TRUE
+			);
+		}
+
+		if ( pStarMng )
+		{
+			int end = pStarMng->GetArraySize();
+			for ( int i = 0; i < end; i++ )
+			{
+				Box star = pStarMng->FetchColWorldPos( i );
+
+				DrawBoxAA
+				(
+					star.cx - star.w,
+					star.cy - star.h,
+					star.cx + star.w,
+					star.cy + star.h,
+					green,
+					TRUE
+				);
+			}
+		}
 	}
 	SetDrawBlendMode( DX_BLENDMODE_NOBLEND, 255 );
 }

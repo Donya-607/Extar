@@ -36,6 +36,8 @@ private:
 	Vector2 velo;	// Velocity
 	Vector2 size;	// 全体サイズ
 
+	bool	isExposure;	// 露光した瞬間のみTRUE
+
 #if USE_IMGUI
 
 	int stageNumber;// 1始まり
@@ -45,7 +47,9 @@ private:
 public:
 	Camera() : row( 0 ), column( 0 ), width( 1 ), height( 1 ),
 		moveAmount( 1 ),
-		pos(), velo(), size() {}
+		pos(), velo(), size(),
+		isExposure( false )
+	{}
 	~Camera() {}
 
 	void Init( int stageNumber );
@@ -53,11 +57,18 @@ public:
 
 	void Update();
 
+	bool IsExposure() const
+	{
+		return isExposure;
+	}
+
+	void Draw( Vector2 shake ) const;
+private:
 	void Move();
 	void ClampPos();
 	void ClampMatrix();
 
-	void Draw( Vector2 shake ) const;
+	void Exposure();
 public:
 	Box FetchColWorldPos() const
 	{

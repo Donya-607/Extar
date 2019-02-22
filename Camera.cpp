@@ -71,11 +71,26 @@ void Camera::Update()
 {
 	Move();
 
+	Exposure();
+
 #if USE_IMGUI
 
 	ChangeParametersByImGui();
 
 #endif // USE_IMGUI
+}
+
+void Camera::Draw( Vector2 shake ) const
+{
+	DrawExtendGraph
+	(
+		FRAME_POS_X + scast<int>( pos.x - shake.x ),
+		FRAME_POS_Y + scast<int>( pos.y - shake.y ),
+		FRAME_POS_X + scast<int>( pos.x + size.x - shake.x ),
+		FRAME_POS_Y + scast<int>( pos.y + size.y - shake.y ),
+		CameraImage::GetHandle(),
+		TRUE
+	);
 }
 
 void Camera::Move()
@@ -114,17 +129,17 @@ void Camera::ClampMatrix()
 	column	= std::max( column,	0 );
 }
 
-void Camera::Draw( Vector2 shake ) const
+void Camera::Exposure()
 {
-	DrawExtendGraph
-	(
-		FRAME_POS_X + scast<int>( pos.x - shake.x ),
-		FRAME_POS_Y + scast<int>( pos.y - shake.y ),
-		FRAME_POS_X + scast<int>( pos.x + size.x - shake.x ),
-		FRAME_POS_Y + scast<int>( pos.y + size.y - shake.y ),
-		CameraImage::GetHandle(),
-		TRUE
-	);
+	if ( !IS_TRG_J_X_EXPOSURE )
+	{
+		isExposure = false;
+
+		return;
+	}
+	// else
+
+	isExposure = true;
 }
 
 #if USE_IMGUI
