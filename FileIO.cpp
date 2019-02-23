@@ -13,6 +13,7 @@ namespace FileIO
 {
 	static std::vector<Camera> cameras;
 	static std::vector<std::vector<Star>> galaxy;
+	static std::vector<std::vector<int>>  numMoves;
 
 	// TODO:カメラと星で読み込みが別なので，フォルダの数を不揃いにできてしまう
 	static int maxStageNumber = 1;
@@ -136,7 +137,50 @@ namespace FileIO
 	}
 	void ReadAllNumMoves()
 	{
+		if ( !numMoves.empty() )
+		{
+			numMoves.clear();
+		}
 
+		// ステージが見つからなくなるまで，つまりステージ数ぶんループ
+		int stageNumber = 1;
+		for ( ; true; stageNumber++ )
+		{
+			// ファイルの用意
+			std::string filename = "./Data/Stages/Stage" + std::to_string( stageNumber ) + "/NumberOfMoves.txt";
+
+			std::ifstream ifs( filename, std::ios::in );
+			if ( !ifs )
+			{
+				break;
+			}
+			// else
+
+
+			// データの用意
+			std::vector<int> numbers;	// １ステージの評価基準たち
+
+			// 読み込み
+			for ( ; ; )
+			{
+				std::string buf;
+				std::getline( ifs, buf, '\n' );
+
+				if ( ifs.eof() )
+				{
+					break;
+				}
+				// else
+
+				numbers.push_back( atoi( buf.c_str() ) );
+			}
+
+			numMoves.push_back( numbers );
+
+			ifs.close();
+		}
+
+		maxStageNumber = stageNumber - 1;	// 見つからなかったから抜けている -> 最後の１つ後ろを指している
 	}
 
 	void WriteCamera( int stageNumber, const Camera *data )
@@ -210,7 +254,9 @@ namespace FileIO
 	}
 	int  GetStarsArraySize( int stageNumber )
 	{
-		return scast<int>( ( galaxy.at( stageNumber ) ).size() );
+		assert( stageNumber <= scast<int>( galaxy.size() ) );
+
+		return scast<int>( ( galaxy.at( stageNumber - 1 ) ).size() );
 	}
 	std::vector<Star> FetchStarsInfo( int stageNumber )
 	{
@@ -221,15 +267,41 @@ namespace FileIO
 
 	void WriteNumMoves( int stageNumber, const std::vector<int> *data )
 	{
+		// フォルダ・ファイルの準備
+		std::string filename = "./Data/Stages/Stage" + std::to_string( stageNumber );
+		_mkdir( filename.c_str() );
 
+		filename += "/NumberOfMoves.txt";
+
+		std::ofstream ofs( filename, std::ios::out );
+		if ( !ofs )
+		{
+			assert( !"ファイルオープンに失敗しました：WriteNumMoves()" );
+			exit( EXIT_FAILURE );
+			return;
+		}
+		// else
+
+
+		// データの用意・書き込み
+		for ( int i = 0; i < scast<int>( data->size() ); i++ )
+		{
+			ofs << data->at( i ) << std::endl;
+		}
+
+		ofs.close();
 	}
 	int  GetNumMovesArraySize( int stageNumber )
 	{
-		return NULL;
+		assert( stageNumber <= scast<int>( numMoves.size() ) );
+
+		return scast<int>( ( numMoves.at( stageNumber - 1 ) ).size() );
 	}
 	std::vector<int> FetchNumMovesInfo( int stageNumber )
 	{
-		return std::vector<int>();
+		assert( stageNumber <= scast<int>( numMoves.size() ) );
+
+		return numMoves.at( stageNumber - 1 );
 	}
 
 	void ReleaseCameraData()
@@ -242,7 +314,7 @@ namespace FileIO
 	}
 	void ReleaseNumMovesData()
 	{
-
+		std::vector<std::vector<int>>().swap( numMoves );
 	}
 
 	int GetMaxStageNumber()
