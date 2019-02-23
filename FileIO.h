@@ -1,5 +1,5 @@
-#ifndef INCLUDED_LOADFILE_H_
-#define INCLUDED_LOADFILE_H_
+#ifndef INCLUDED_FILEIO_H_
+#define INCLUDED_FILEIO_H_
 
 #include <vector>
 
@@ -19,6 +19,7 @@ namespace FileIO
 {
 	void ReadAllCamera();
 	void ReadAllStars();
+	void ReadAllNumMoves();
 
 	void WriteCamera( int stageNumber, const Camera *data );
 	int  GetCameraArraySize();
@@ -28,10 +29,23 @@ namespace FileIO
 	int  GetStarsArraySize( int stageNumber );
 	std::vector<Star> FetchStarsInfo( int stageNumber );
 
+	void WriteNumMoves( int stageNumber, const std::vector<int> *data );
+	int  GetNumMovesArraySize( int stageNumber );
+	std::vector<int> FetchNumMovesInfo( int stageNumber );
+
 	void ReleaseCameraData();
 	void ReleaseStarsData();
+	void ReleaseNumMoves();
 
-	int GetMaxStageNumber();
+	int  GetMaxStageNumber();
+
+#if USE_IMGUI
+
+	void UpdateNowStageNumberByImGui();
+	int  GetNowStageNumber();
+
+#endif // USE_IMGUI
+
 }
 
-#endif //INCLUDED_LOADFILE_H_
+#endif //INCLUDED_FILEIO_H_
