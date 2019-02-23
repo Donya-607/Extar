@@ -8,6 +8,7 @@
 
 #include "Camera.h"
 #include "Star.h"
+#include "NumMoves.h"
 
 //--------------------
 //
@@ -31,8 +32,9 @@ private:
 
 	State state;
 
-	std::unique_ptr<Camera>  pCamera;
-	std::unique_ptr<StarMng> pStarMng;
+	std::unique_ptr<Camera>   pCamera;
+	std::unique_ptr<StarMng>  pStarMng;
+	std::unique_ptr<NumMoves> pNumMoves;
 
 	bool isPause;
 	bool isDrawCollision;
@@ -40,7 +42,7 @@ public:
 	Game( SceneMng *pMng ) : Scene( pMng ),
 		stageNumber( 1 ), numMoves( 0 ),
 		state( State::Game ),
-		pCamera( nullptr ), pStarMng( nullptr ),
+		pCamera( nullptr ), pStarMng( nullptr ), pNumMoves( nullptr ),
 		isPause( false ), isDrawCollision( false )
 		{}
 	~Game() {}

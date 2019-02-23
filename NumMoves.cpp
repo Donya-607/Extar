@@ -1,10 +1,13 @@
 #include <string>
 
+#include "Music.h"
 #include "NumMoves.h"
 
-void NumMoves::Init( std::vector<int> data )
+#include "FileIO.h"
+
+void NumMoves::Init( int stageNumber )
 {
-	moves.swap( data );
+	moves.swap( FileIO::FetchNumMovesInfo( stageNumber ) );
 }
 void NumMoves::Uninit()
 {
@@ -18,11 +21,11 @@ void NumMoves::Update()
 
 int  NumMoves::CalcRank( int numMoves )
 {
-	int i = 1;
+	int i = 0;
 	for ( ; i <= scast<int>( moves.size() ); i++ )
 	{
 		// 基準「以下」ならＯＫ
-		if ( numMoves <= moves.at( i - 1 ) )
+		if ( numMoves <= moves.at( i ) )
 		{
 			return i;
 		}
@@ -51,21 +54,49 @@ void NumMoves::ChangeParametersByImGui()
 		}
 	}
 
-	ImGui::BeginChild( ImGui::GetID( (void*)0 ), ImVec2( 250, 100 ), ImGuiWindowFlags_NoTitleBar );
+	ImGui::BeginChild( ImGui::GetID( (void*)0 ), ImVec2( 420, 100 ), ImGuiWindowFlags_NoTitleBar );
 	int end = scast<int>( moves.size() );
 	for ( int i = 0; i < end; i++ )
 	{
 		std::string name = "Rank " + std::to_string( i );
 
 		int before = ( i == 0   ) ? -1 : i - 1;
-		int after  = ( i == end ) ? -1 : i + 1;
-		int lower  = ( before == -1 ) ? 1 : moves.at( before ) + 1;
-		int upper  = ( after == -1 ) ? 99 : moves.at( after );
+		int after  = ( i == end - 1 ) ? -1 : i + 1;
+		int lower  = ( before == -1 ) ? 1  : moves.at( before ) + 1;
+		int upper  = ( after  == -1 ) ? 99 : moves.at( after  );
 		ImGui::SliderInt( name.c_str(), &moves.at( i ), lower, upper );
 	}
 	ImGui::EndChild();
 
+	ImGui::Text( "" );	// Space
+
+	if ( FileIO::GetNowStageNumber() <= FileIO::GetMaxStageNumber() )
+	{
+		if ( ImGui::Button( "Save" ) )
+		{
+			SaveData();
+
+			// ファイルに保存するだけで適用しないため，ついでにまとめて読み込みなおす
+			FileIO::ReadAllCamera();
+			FileIO::ReadAllStars();
+			FileIO::ReadAllNumMoves();
+
+			PlaySE( M_E_NEXT );
+		}
+		if ( ImGui::Button( "Load" ) )
+		{
+			moves = FileIO::FetchNumMovesInfo( FileIO::GetNowStageNumber() );
+
+			PlaySE( M_E_BACK );
+		}
+	}
+
 	ImGui::End();
+}
+
+void NumMoves::SaveData()
+{
+	FileIO::WriteNumMoves( FileIO::GetNowStageNumber(), &moves );
 }
 
 #endif // USE_IMGUI

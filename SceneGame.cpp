@@ -1,4 +1,5 @@
 #include <array>
+#include <string>
 
 #include "DxLib.h"
 #include "Common.h"
@@ -65,6 +66,9 @@ void Game::Init()
 	pStarMng.reset( new StarMng() );
 	pStarMng->Init( stageNumber );
 
+	pNumMoves.reset( new NumMoves() );
+	pNumMoves->Init( stageNumber );
+
 	ShakeInit();
 }
 void Game::Uninit()
@@ -81,6 +85,7 @@ void Game::Uninit()
 
 	pCamera->Uninit();
 	pStarMng->Uninit();
+	pNumMoves->Uninit();
 
 	ShakeUninit();
 }
@@ -194,6 +199,11 @@ void Game::GameUpdate()
 		}
 	}
 
+	if ( pNumMoves )
+	{
+		pNumMoves->Update();
+	}
+
 #if USE_IMGUI
 
 	FileIO::UpdateNowStageNumberByImGui();
@@ -207,6 +217,14 @@ void Game::GameUpdate()
 		{
 			pStarMng->SaveData();
 		}
+		if ( pNumMoves )
+		{
+			pNumMoves->SaveData();
+		}
+
+		FileIO::ReadAllCamera();
+		FileIO::ReadAllStars();
+		FileIO::ReadAllNumMoves();
 	}
 
 #endif // USE_IMGUI
@@ -364,17 +382,6 @@ void Game::Draw()
 		ShowCollisionArea();
 	}
 
-	if ( state == State::Clear )
-	{
-		DrawExtendFormatString
-		(
-			360, 300,
-			6.0, 6.0,
-			GetColor( 200, 200, 200 ),
-			"Stage Clear!"
-		);
-	}
-
 #endif	// DEBUG_MODE
 }
 
@@ -387,6 +394,52 @@ void Game::DrawUI()
 		GetColor( 200, 200, 200 ),
 		"¡‚ÌŽè”F%d", numMoves
 	);
+
+	if ( state != State::Clear )
+	{
+		return;
+	}
+	// else
+
+#if DEBUG_MODE
+
+	DrawExtendFormatString
+	(
+		360, 300,
+		6.0, 6.0,
+		GetColor( 200, 200, 200 ),
+		"Stage Clear!"
+	);
+
+	if ( pNumMoves )
+	{
+		int nowRank = pNumMoves->CalcRank( numMoves );
+
+		std::array<unsigned int, 4> colours =
+		{
+			GetColor( 200, 200, 32 ),
+			GetColor( 200, 64, 32 ),
+			GetColor( 64, 200, 32 ),
+			GetColor( 32, 64, 200 )
+		};
+		std::array<char, 4> ranks =
+		{
+			'S', 'A', 'B', 'C'
+		};
+		std::string result = "Rank : ";
+		result.push_back( ranks[nowRank] );
+
+		DrawExtendString
+		(
+			360, 360,
+			6.0, 6.0,
+			result.c_str(),
+			colours[nowRank]
+		);
+	}
+
+#endif // DEBUG_MODE
+
 }
 
 void Game::CollisionCheck()

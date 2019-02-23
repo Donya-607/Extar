@@ -41,7 +41,7 @@ int WINAPI WinMain(	HINSTANCE	hCurInst/*インスタンスハンドル*/,	HINSTANCE	hPrevI
 	SetOutApplicationLogValidFlag( FALSE );			// FALSE:デバッグ情報用の Log.txt を出力しない
 	SetGraphMode( SCREEN_WIDTH, SCREEN_HEIGHT, 16 );// SizeX, SizeY, ColorBitNum
 	SetWindowIconID( 128 );							// タイトルバーのアイコンを変更
-	SetMainWindowText( "KATANUKI" );				// タイトルバーのテキストを変更
+	SetMainWindowText( "えくすた" );					// タイトルバーのテキストを変更
 	ChangeWindowMode( TRUE );						// TRUE:ウィンドウモードで起動
 	SetDrawScreen( DX_SCREEN_BACK );				// DX_SCREEN_BACK:描画先を裏画面に設定
 

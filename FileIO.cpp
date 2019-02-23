@@ -187,7 +187,11 @@ namespace FileIO
 	{
 		// フォルダ・ファイルの準備
 		std::string filename = "./Data/Stages/Stage" + std::to_string( stageNumber );
-		_mkdir( filename.c_str() );
+		if ( 0 == _mkdir( filename.c_str() ) )
+		{
+			// フォルダを生成したなら
+			maxStageNumber++;
+		}
 
 		filename += "/Camera.txt";
 
@@ -225,7 +229,11 @@ namespace FileIO
 	{
 		// フォルダ・ファイルの準備
 		std::string filename = "./Data/Stages/Stage" + std::to_string( stageNumber );
-		_mkdir( filename.c_str() );
+		if ( 0 == _mkdir( filename.c_str() ) )
+		{
+			// フォルダを生成したなら
+			maxStageNumber++;
+		}
 
 		filename += "/Stars.txt";
 
@@ -269,7 +277,11 @@ namespace FileIO
 	{
 		// フォルダ・ファイルの準備
 		std::string filename = "./Data/Stages/Stage" + std::to_string( stageNumber );
-		_mkdir( filename.c_str() );
+		if ( 0 == _mkdir( filename.c_str() ) )
+		{
+			// フォルダを生成したなら
+			maxStageNumber++;
+		}
 
 		filename += "/NumberOfMoves.txt";
 
@@ -335,7 +347,7 @@ namespace FileIO
 
 		ImGui::Text( "IO_StageNumber : %d", nowStageNumber );
 
-		ImGui::BeginChild( ImGui::GetID( (void*)0 ), ImVec2( 250, 100 ), ImGuiWindowFlags_NoTitleBar );
+		ImGui::BeginChild( ImGui::GetID( (void*)0 ), ImVec2( 128, 100 ), ImGuiWindowFlags_NoTitleBar );
 		int end = maxStageNumber + 1;
 		for ( int i = 1; i <= end; i++ )
 		{

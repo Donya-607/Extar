@@ -23,7 +23,7 @@ public:
 		std::vector<int>().swap( moves );
 	}
 
-	void Init( std::vector<int> data );
+	void Init( int stageNumber );
 	void Uninit();
 
 	void Update();
@@ -34,6 +34,8 @@ public:
 
 private:
 	void ChangeParametersByImGui();
+public:
+	void SaveData();
 
 #endif // USE_IMGUI
 
