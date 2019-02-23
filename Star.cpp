@@ -63,19 +63,18 @@ namespace StarImage
 
 void Star::Init( int Row, int Column, int Width, int Height, int Level, bool flagSetAnimeOnly )
 {
-	// アニメ構造体の，再生機能だけ利用する
-	anim.Set
-	(
-		0, StarImage::NUM_ROW,
-		0, StarImage::SPD,
-		nullptr
-	);
-
-	rotateInterval = ROTATE_INTERVAL;
-	angle = ( rand() % 8 ) * 45.0f;
-
 	if ( flagSetAnimeOnly )
 	{
+		// アニメ構造体の，再生機能だけ利用する
+		anim.Set
+		(
+			0, StarImage::NUM_ROW,
+			0, StarImage::SPD,
+			nullptr
+		);
+
+		CalcRotate();
+
 		return;
 	}
 	// else
@@ -87,6 +86,16 @@ void Star::Init( int Row, int Column, int Width, int Height, int Level, bool fla
 	height	= Height;
 
 	level	= Level;
+
+	// アニメ構造体の，再生機能だけ利用する
+	anim.Set
+	(
+		0, StarImage::NUM_ROW,
+		0, StarImage::SPD,
+		nullptr
+	);
+
+	CalcRotate();
 }
 void Star::Uninit()
 {
@@ -95,20 +104,27 @@ void Star::Uninit()
 
 void Star::Update()
 {
-	Rotate();
-
 	anim.Update();
 
 	// さしあたり長方形はナシになったので，とりあえず止めておく。使う可能性も残っているので，削除まではしない
 	assert( width == height );
 }
 
+void Star::CalcRotate()
+{
+	angle = ( level % 2 ) ? 45.0f : 0;
+}
+
 void Star::Draw( Vector2 shake ) const
 {
+	Vector2 halfSize;
+	halfSize.x = ( ( width  * Grid::GetSize().x ) * 0.5f );
+	halfSize.y = ( ( height * Grid::GetSize().y ) * 0.5f );
+
 	DrawRotaGraph3
 	(
-		scast<int>( FRAME_POS_X + ( row		* Grid::GetSize().x ) + ( Grid::GetSize().x * 0.5f ) ),	// 画面上の中心座標
-		scast<int>( FRAME_POS_Y + ( column	* Grid::GetSize().y ) + ( Grid::GetSize().y * 0.5f ) ),	// 画面上の中心座標
+		scast<int>( FRAME_POS_X + ( row		* Grid::GetSize().x ) + halfSize.x ),	// 画面上の中心座標
+		scast<int>( FRAME_POS_Y + ( column	* Grid::GetSize().y ) + halfSize.y ),	// 画面上の中心座標
 		StarImage::SIZE >> 1,	// 画像上の中心座標
 		StarImage::SIZE >> 1,	// 画像上の中心座標
 		scast<double>( width  ),
@@ -122,26 +138,10 @@ void Star::Draw( Vector2 shake ) const
 void Star::BeExposed()
 {
 	level -= 1;
+
+	CalcRotate();
 }
 
-void Star::Rotate()
-{
-	if ( 0 < rotateInterval-- )
-	{
-		return;
-	}
-	// else
-
-	rotateInterval = ROTATE_INTERVAL;
-
-	// 正方形のときのみ，45度ずつ回転
-	angle += ( width == height ) ? 45.0f : 90.0f;
-
-	if ( 359 < angle )
-	{
-		angle = 0;
-	}
-}
 
 
 void StarMng::Init( int stageNumber )
@@ -190,11 +190,6 @@ void StarMng::Update()
 		it.Update();
 	}
 
-	if ( IS_TRG_UNDO )
-	{
-		Undo();
-	}
-
 #if USE_IMGUI
 
 	ChangeParametersByImGui();
@@ -214,12 +209,6 @@ void StarMng::ClearUpdate()
 	{
 		it.Update();
 	}
-
-#if USE_IMGUI
-
-	ChangeParametersByImGui();
-
-#endif // USE_IMGUI
 }
 
 void StarMng::Draw( Vector2 shake ) const
@@ -236,16 +225,6 @@ void StarMng::Draw( Vector2 shake ) const
 #endif // USE_IMGUI
 }
 
-bool StarMng::CanSaveLog() const
-{
-	// セーブできない状況があると思っていたが，そうでもなさそう？
-	if ( scast<int>( stars.size() ) == scast<int>( levelStorage.size() ) )
-	{
-		// return false;
-	}
-	// else
-	return true;
-}
 void StarMng::SaveLog()
 {
 	if ( !CanSaveLog() )
@@ -267,11 +246,11 @@ void StarMng::SaveLog()
 
 	levelStorage.push_back( data );
 }
-void StarMng::Undo()
+bool StarMng::Undo()
 {
 	if ( !CanUndo() )
 	{
-		return;
+		return false;
 	}
 	// else
 
@@ -281,9 +260,12 @@ void StarMng::Undo()
 	for ( int i = 0 ; it != storage.end(); i++, it++ )
 	{
 		stars.at( i ).SetData( NULL, NULL, NULL, NULL, *it );
+		stars.at( i ).CalcRotate();
 	}
 
 	levelStorage.pop_back();
+
+	return true;
 }
 
 bool StarMng::IsEqualLevels() const

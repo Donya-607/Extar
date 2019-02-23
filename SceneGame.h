@@ -24,19 +24,21 @@ private:
 		Game,
 		Clear
 	};
-public:
-	int stageNumber;	// 1始まり
+private:
+	int  stageNumber;	// 1始まり
+
+	int  numMoves;		// 今の手数，0始まり，アンドゥで減る
 
 	State state;
 
-	std::unique_ptr<Camera> pCamera;
+	std::unique_ptr<Camera>  pCamera;
 	std::unique_ptr<StarMng> pStarMng;
 
 	bool isPause;
 	bool isDrawCollision;
 public:
 	Game( SceneMng *pMng ) : Scene( pMng ),
-		stageNumber( 1 ),
+		stageNumber( 1 ), numMoves( 0 ),
 		state( State::Game ),
 		pCamera( nullptr ), pStarMng( nullptr ),
 		isPause( false ), isDrawCollision( false )
@@ -51,7 +53,7 @@ public:
 	void GameUpdate();
 	void ClearUpdate();
 
-	void Exposure();
+	bool Exposure();	// 成功したらTRUE
 
 	bool IsInputPauseButton();
 	void PauseUpdate();
@@ -59,7 +61,8 @@ public:
 	void PrepareChangeSceneToTitle();
 
 	void Draw();
-	
+	void DrawUI();
+private:
 	void CollisionCheck();
 	void ShowCollisionArea();
 };

@@ -41,14 +41,13 @@ private:
 
 	int level;	// 1 ~ 6
 
-	int rotateInterval;
 	float angle;// Degree, ClockWise
 
 	Anim anim;
 public:
 	Star() : row( 0 ), column( 0 ), width( 1 ), height( 1 ),
 		level( 6 ),
-		rotateInterval( 0 ), angle( 0 ),
+		angle( 0 ),
 		anim()
 	{}
 	~Star() {}
@@ -57,6 +56,8 @@ public:
 	void Uninit();
 
 	void Update();
+
+	void CalcRotate();
 
 	void Draw( Vector2 shake ) const;
 public:
@@ -100,8 +101,6 @@ public:
 		if ( NULL != Height	) { height	= Height;	}
 		if ( NULL != Level	) { level	= Level;	}
 	}
-private:
-	void Rotate();
 };
 
 class StarMng
@@ -155,18 +154,8 @@ public:
 		return stars.at( index ).GetLevel();
 	}
 
-	bool CanSaveLog() const;
 	void SaveLog();
-	bool CanUndo() const
-	{
-		if ( scast<int>( levelStorage.size() ) )
-		{
-			return true;
-		}
-		// else
-		return false;
-	}
-	void Undo();
+	bool Undo();	// 成功したらTRUE
 
 	void Expose( int index )
 	{
@@ -177,6 +166,25 @@ public:
 
 	bool IsEqualLevels() const;
 private:
+	bool CanSaveLog() const
+	{
+		// セーブできない状況があると思っていたが，そうでもなさそう？
+		if ( scast<int>( stars.size() ) == scast<int>( levelStorage.size() ) )
+		{
+			// return false;
+		}
+		// else
+		return true;
+	}
+	bool CanUndo() const
+	{
+		if ( scast<int>( levelStorage.size() ) )
+		{
+			return true;
+		}
+		// else
+		return false;
+	}
 #if USE_IMGUI
 
 	void ChangeParametersByImGui();

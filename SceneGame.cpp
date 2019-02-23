@@ -172,13 +172,24 @@ void Game::GameUpdate()
 
 		if ( pCamera->IsExposure() )
 		{
-			Exposure();
+			if ( Exposure() )
+			{
+				numMoves++;
+			}
 		}
 	}
 
 	if ( pStarMng )
 	{
 		pStarMng->Update();
+
+		if ( IS_TRG_UNDO )
+		{
+			if ( pStarMng->Undo() )
+			{
+				numMoves--;
+			}
+		}
 	}
 
 	ShakeUpdate();
@@ -194,13 +205,13 @@ void Game::ClearUpdate()
 	ShakeUpdate();
 }
 
-void Game::Exposure()
+bool Game::Exposure()
 {
 	assert( pCamera );
 
 	if ( !pStarMng )
 	{
-		return;
+		return false;
 	}
 	// else
 
@@ -218,7 +229,7 @@ void Game::Exposure()
 			if ( pStarMng->FetchLevel( i ) <= 1 )
 			{
 				PlaySE( M_FAILURE );
-				return;
+				return false;
 			}
 			// else
 
@@ -226,14 +237,15 @@ void Game::Exposure()
 		}
 	}
 
-	PlaySE( M_EXPOSURE );
-
 	// 適用対象がいなかったら終わる
 	if ( !scast<int>( targets.size() ) || !end )
 	{
-		return;
+		return false;
 	}
 	// else
+
+	// TODO:Exposureの音を鳴らすタイミングは，成功が確定してからかどうか。
+	PlaySE( M_EXPOSURE );
 
 	// アンドゥ用
 	pStarMng->SaveLog();
@@ -245,11 +257,13 @@ void Game::Exposure()
 	}
 
 	// 仮でこの場でクリア確認を行っているが，もし変化演出後とかに変えるのであれば，
-	// カメラまたは星に IsDoneEzposureEffect() のようなのを作るとよさそう
+	// カメラまたは星に IsDoneExposureEffect() のようなのを作るとよさそう
 	if ( pStarMng->IsEqualLevels() )
 	{
 		state = State::Clear;
 	}
+
+	return true;
 }
 
 bool Game::IsInputPauseButton()
@@ -321,6 +335,8 @@ void Game::Draw()
 		pCamera->Draw( shake );
 	}
 
+	DrawUI();
+
 #if	DEBUG_MODE
 
 	if ( isDrawCollision )
@@ -340,6 +356,17 @@ void Game::Draw()
 	}
 
 #endif	// DEBUG_MODE
+}
+
+void Game::DrawUI()
+{
+	DrawExtendFormatString
+	(
+		10, 10,
+		2.0, 2.0,
+		GetColor( 200, 200, 200 ),
+		"今の手数：%d", numMoves
+	);
 }
 
 void Game::CollisionCheck()
