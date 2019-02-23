@@ -50,7 +50,7 @@ namespace Grid
 					FRAME_POS_X + pos			- iShakeX,
 					FRAME_POS_Y + FRAME_HEIGHT	- iShakeY,
 					GetColor( 255, 32, 80 ),
-					3
+					2
 				);
 			}
 		}
@@ -74,7 +74,7 @@ namespace Grid
 					FRAME_POS_X + FRAME_WIDTH	- iShakeX,
 					FRAME_POS_Y + pos			- iShakeY,
 					GetColor( 255, 32, 80 ),
-					3
+					2
 				);
 			}
 		}

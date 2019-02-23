@@ -190,7 +190,7 @@ void StarMng::Update()
 		it.Update();
 	}
 
-	if ( PRESS_CTRL && TRG( KEY_INPUT_Z ) )
+	if ( IS_TRG_UNDO )
 	{
 		Undo();
 	}

@@ -131,7 +131,7 @@ void Camera::ClampMatrix()
 
 void Camera::Exposure()
 {
-	if ( !IS_TRG_J_X_EXPOSURE )
+	if ( !IS_TRG_EXPOSURE )
 	{
 		isExposure = false;
 

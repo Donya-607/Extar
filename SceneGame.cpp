@@ -54,7 +54,8 @@ void Game::Init()
 	CameraImage::Load();
 	StarImage::Load();
 
-	Vector2 gridSize{ 64.0f, 64.0f };
+	const float GRID_SIZE = scast<float>( StarImage::SIZE );
+	Vector2 gridSize{ GRID_SIZE, GRID_SIZE };
 	Grid::SetSize( gridSize );
 
 	pCamera.reset( new Camera() );
