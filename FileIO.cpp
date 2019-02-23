@@ -15,7 +15,7 @@ namespace FileIO
 	static std::vector<std::vector<Star>> galaxy;
 	static std::vector<std::vector<int>>  numMoves;
 
-	// TODO:カメラと星で読み込みが別なので，フォルダの数を不揃いにできてしまう
+	// TODO:各要素で読み込みが別なので，フォルダの数を不揃いにできてしまう
 	static int maxStageNumber = 1;
 
 	void ReadAllCamera()
@@ -317,23 +317,26 @@ namespace FileIO
 		std::vector<std::vector<int>>().swap( numMoves );
 	}
 
-	int GetMaxStageNumber()
+	int  GetMaxStageNumber()
 	{
 		return maxStageNumber;
 	}
 
 #if USE_IMGUI
 
-	static int nowStageNumber = 1;	// 1始まり
+	static int  nowStageNumber	 = 1;	// 1始まり
+	static bool isCreateNewStage = false;
 
 	void UpdateNowStageNumberByImGui()
 	{
+		isCreateNewStage = false;
+
 		ImGui::Begin( "Change_Save&Load_StageNumber" );
 
 		ImGui::Text( "IO_StageNumber : %d", nowStageNumber );
 
 		ImGui::BeginChild( ImGui::GetID( (void*)0 ), ImVec2( 250, 100 ), ImGuiWindowFlags_NoTitleBar );
-		int end = GetMaxStageNumber() + 1;
+		int end = maxStageNumber + 1;
 		for ( int i = 1; i <= end; i++ )
 		{
 			std::string stageName = "Stage[ " + std::to_string( i ) + " ]";
@@ -347,11 +350,23 @@ namespace FileIO
 
 		assert( 0 < nowStageNumber );
 
+		if ( maxStageNumber < nowStageNumber )
+		{
+			if ( ImGui::Button( "Create_NewStage" ) )
+			{
+				isCreateNewStage = true;
+			}
+		}
+
 		ImGui::End();
 	}
 	int  GetNowStageNumber()
 	{
 		return nowStageNumber;
+	}
+	bool IsCreateNewStage()
+	{
+		return isCreateNewStage;
 	}
 
 #endif // USE_IMGUI

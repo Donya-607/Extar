@@ -192,6 +192,8 @@ private:
 	void RemoveStar();
 
 	void DrawUI() const;
+public:
+	void SaveData();
 
 #endif // USE_IMGUI
 };

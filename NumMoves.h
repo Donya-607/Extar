@@ -1,0 +1,42 @@
+#ifndef INCLUDED_NUM_MOVES_H_
+#define INCLUDED_NUM_MOVES_H_
+
+#include <vector>
+
+#include "Common.h"
+
+#if USE_IMGUI
+
+#include <imgui.h>
+#include <imgui_impl_dxlib.h>
+
+#endif // USE_IMGUI
+
+class NumMoves
+{
+private:
+	std::vector<int> moves;
+public:
+	NumMoves() : moves() {}
+	~NumMoves()
+	{
+		std::vector<int>().swap( moves );
+	}
+
+	void Init( std::vector<int> data );
+	void Uninit();
+
+	void Update();
+public:
+	int  CalcRank( int numMoves );
+
+#if USE_IMGUI
+
+private:
+	void ChangeParametersByImGui();
+
+#endif // USE_IMGUI
+
+};
+
+#endif //INCLUDED_NUM_MOVES_H_

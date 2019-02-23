@@ -163,19 +163,19 @@ void Camera::ChangeParametersByImGui()
 
 	ImGui::SliderInt( "MovementAmount", &moveAmount, 1, 12 );
 
-	if ( ImGui::Button( "Save" ) )
-	{
-		FileIO::WriteCamera( FileIO::GetNowStageNumber(), this );
-
-		// ファイルに保存するだけで適用しないため，ついでにまとめて読み込みなおす
-		FileIO::ReadAllCamera();
-		FileIO::ReadAllStars();
-		FileIO::ReadAllNumMoves();
-
-		PlaySE( M_E_NEXT );
-	}
 	if ( FileIO::GetNowStageNumber() <= FileIO::GetMaxStageNumber() )
 	{
+		if ( ImGui::Button( "Save" ) )
+		{
+			SaveData();
+
+			// ファイルに保存するだけで適用しないため，ついでにまとめて読み込みなおす
+			FileIO::ReadAllCamera();
+			FileIO::ReadAllStars();
+			FileIO::ReadAllNumMoves();
+
+			PlaySE( M_E_NEXT );
+		}
 		if ( ImGui::Button( "Load" ) )
 		{
 			// HACK:*this = で直接代入するのはＯＫか？危険か？
@@ -192,6 +192,10 @@ void Camera::ChangeParametersByImGui()
 
 	size.x = Grid::GetSize().x * width;
 	size.y = Grid::GetSize().y * height;
+}
+void Camera::SaveData()
+{
+	FileIO::WriteCamera( FileIO::GetNowStageNumber(), this );
 }
 
 #endif // USE_IMGUI

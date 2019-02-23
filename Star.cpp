@@ -328,19 +328,19 @@ void StarMng::ChangeParametersByImGui()
 
 	ImGui::Text( "" ); // Space
 
-	if ( ImGui::Button( "Save" ) )
-	{
-		FileIO::WriteStars( FileIO::GetNowStageNumber(), &stars );
-
-		// ファイルに保存するだけで適用しないため，ついでにまとめて読み込みなおす
-		FileIO::ReadAllCamera();
-		FileIO::ReadAllStars();
-		FileIO::ReadAllNumMoves();
-
-		PlaySE( M_E_NEXT );
-	}
 	if ( FileIO::GetNowStageNumber() <= FileIO::GetMaxStageNumber() )
 	{
+		if ( ImGui::Button( "Save" ) )
+		{
+			SaveData();
+
+			// ファイルに保存するだけで適用しないため，ついでにまとめて読み込みなおす
+			FileIO::ReadAllCamera();
+			FileIO::ReadAllStars();
+			FileIO::ReadAllNumMoves();
+
+			PlaySE( M_E_NEXT );
+		}
 		if ( ImGui::Button( "Load" ) )
 		{
 			stars = FileIO::FetchStarsInfo( FileIO::GetNowStageNumber() );
@@ -411,6 +411,11 @@ void StarMng::DrawUI() const
 
 	}
 	SetDrawBlendMode( DX_BLENDMODE_NOBLEND, 255 );
+}
+
+void StarMng::SaveData()
+{
+	FileIO::WriteStars( FileIO::GetNowStageNumber(), &stars );
 }
 
 #endif // USE_IMGUI

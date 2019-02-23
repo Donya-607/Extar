@@ -44,6 +44,8 @@ namespace FileIO
 	void UpdateNowStageNumberByImGui();
 	int  GetNowStageNumber();
 
+	bool IsCreateNewStage();
+
 #endif // USE_IMGUI
 
 }

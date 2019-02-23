@@ -197,6 +197,17 @@ void Game::GameUpdate()
 #if USE_IMGUI
 
 	FileIO::UpdateNowStageNumberByImGui();
+	if ( FileIO::IsCreateNewStage() )
+	{
+		if ( pCamera )
+		{
+			pCamera->SaveData();
+		}
+		if ( pStarMng )
+		{
+			pStarMng->SaveData();
+		}
+	}
 
 #endif // USE_IMGUI
 
