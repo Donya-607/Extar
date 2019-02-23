@@ -64,7 +64,7 @@ namespace FileIO
 			ifs.close();
 		}
 
-		maxStageNumber = stageNumber;
+		maxStageNumber = stageNumber - 1;	// å©Ç¬Ç©ÇÁÇ»Ç©Ç¡ÇΩÇ©ÇÁî≤ÇØÇƒÇ¢ÇÈ -> ç≈å„ÇÃÇPÇ¬å„ÇÎÇéwÇµÇƒÇ¢ÇÈ
 	}
 	void ReadAllStars()
 	{
@@ -132,7 +132,11 @@ namespace FileIO
 			ifs.close();
 		}
 
-		maxStageNumber = stageNumber;
+		maxStageNumber = stageNumber - 1;	// å©Ç¬Ç©ÇÁÇ»Ç©Ç¡ÇΩÇ©ÇÁî≤ÇØÇƒÇ¢ÇÈ -> ç≈å„ÇÃÇPÇ¬å„ÇÎÇéwÇµÇƒÇ¢ÇÈ
+	}
+	void ReadAllNumMoves()
+	{
+
 	}
 
 	void WriteCamera( int stageNumber, const Camera *data )
@@ -204,7 +208,6 @@ namespace FileIO
 
 		ofs.close();
 	}
-
 	int  GetStarsArraySize( int stageNumber )
 	{
 		return scast<int>( ( galaxy.at( stageNumber ) ).size() );
@@ -216,6 +219,19 @@ namespace FileIO
 		return  galaxy.at( stageNumber - 1 );
 	}
 
+	void WriteNumMoves( int stageNumber, const std::vector<int> *data )
+	{
+
+	}
+	int  GetNumMovesArraySize( int stageNumber )
+	{
+		return NULL;
+	}
+	std::vector<int> FetchNumMovesInfo( int stageNumber )
+	{
+		return std::vector<int>();
+	}
+
 	void ReleaseCameraData()
 	{
 		std::vector<Camera>().swap( cameras );
@@ -224,9 +240,47 @@ namespace FileIO
 	{
 		std::vector<std::vector<Star>>().swap( galaxy );
 	}
+	void ReleaseNumMovesData()
+	{
+
+	}
 
 	int GetMaxStageNumber()
 	{
 		return maxStageNumber;
 	}
+
+#if USE_IMGUI
+
+	static int nowStageNumber = 1;	// 1énÇ‹ÇË
+
+	void UpdateNowStageNumberByImGui()
+	{
+		ImGui::Begin( "Change_Save&Load_StageNumber" );
+
+		ImGui::Text( "IO_StageNumber : %d", nowStageNumber );
+
+		ImGui::BeginChild( ImGui::GetID( (void*)0 ), ImVec2( 250, 100 ), ImGuiWindowFlags_NoTitleBar );
+		int end = GetMaxStageNumber() + 1;
+		for ( int i = 1; i <= end; i++ )
+		{
+			std::string stageName = "Stage[ " + std::to_string( i ) + " ]";
+
+			if ( ImGui::Button( stageName.c_str() ) )
+			{
+				nowStageNumber = i;
+			}
+		}
+		ImGui::EndChild();
+
+		assert( 0 < nowStageNumber );
+
+		ImGui::End();
+	}
+	int  GetNowStageNumber()
+	{
+		return nowStageNumber;
+	}
+
+#endif // USE_IMGUI
 }

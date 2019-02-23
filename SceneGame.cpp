@@ -49,6 +49,7 @@ void Game::Init()
 
 	FileIO::ReadAllCamera();
 	FileIO::ReadAllStars();
+	FileIO::ReadAllNumMoves();
 
 	GameImage::Load();
 	CameraImage::Load();
@@ -68,8 +69,9 @@ void Game::Init()
 }
 void Game::Uninit()
 {
-	FileIO::ReadAllCamera();
-	FileIO::ReadAllStars();
+	FileIO::ReleaseCameraData();
+	FileIO::ReleaseStarsData();
+	FileIO::ReleaseNumMovesData();
 
 	GameImage::Release();
 	CameraImage::Release();
@@ -191,6 +193,13 @@ void Game::GameUpdate()
 			}
 		}
 	}
+
+#if USE_IMGUI
+
+	FileIO::UpdateNowStageNumberByImGui();
+
+#endif // USE_IMGUI
+
 
 	ShakeUpdate();
 }

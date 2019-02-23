@@ -112,7 +112,6 @@ private:
 
 #if USE_IMGUI
 
-	int stageNumber;	// 1始まり
 	int choiseRow;		// 0始まり
 	int choiseColumn;	// 0始まり
 	int width;			// 1始まり

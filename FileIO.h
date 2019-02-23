@@ -35,7 +35,7 @@ namespace FileIO
 
 	void ReleaseCameraData();
 	void ReleaseStarsData();
-	void ReleaseNumMoves();
+	void ReleaseNumMovesData();
 
 	int  GetMaxStageNumber();
 
