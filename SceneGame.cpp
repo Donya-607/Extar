@@ -21,7 +21,7 @@
 namespace GameImage
 {
 	static int hGameBG;
-	static int hFrame;
+	static int hFrameBG;
 
 	void Load()
 	{
@@ -32,15 +32,15 @@ namespace GameImage
 		}
 		// else
 
-		hGameBG = LoadGraph( "./Data/Images/BG/Game.png"  );
-		hFrame	= LoadGraph( "./Data/Images/BG/Frame.png" );
+		hGameBG		= LoadGraph( "./Data/Images/BG/Game.png"  );
+		hFrameBG	= LoadGraph( "./Data/Images/BG/Frame.png" );
 	}
 	void Release()
 	{
-		DeleteGraph( hGameBG );
-		DeleteGraph( hFrame  );
-		hGameBG = 0;
-		hFrame  = 0;
+		DeleteGraph( hGameBG	);
+		DeleteGraph( hFrameBG	);
+		hGameBG		= 0;
+		hFrameBG	= 0;
 	}
 }
 
@@ -71,6 +71,19 @@ void Game::Init()
 
 	ShakeInit();
 }
+void Game::SelectInit()
+{
+
+}
+void Game::GameInit()
+{
+
+}
+void Game::ClearInit()
+{
+
+}
+
 void Game::Uninit()
 {
 	FileIO::ReleaseCameraData();
@@ -88,6 +101,18 @@ void Game::Uninit()
 	pNumMoves->Uninit();
 
 	ShakeUninit();
+}
+void Game::SelectUninit()
+{
+
+}
+void Game::GameUninit()
+{
+
+}
+void Game::ClearUninit()
+{
+
 }
 
 void Game::Update()
@@ -356,7 +381,7 @@ void Game::Draw()
 		DrawGraph
 		(
 			0, 0,
-			GameImage::hFrame,
+			GameImage::hFrameBG,
 			TRUE
 		);
 	}
@@ -399,7 +424,6 @@ void Game::DrawUI()
 	}
 
 	// êØÉåÉxÉãÇÃï\é¶
-	if ( pStarMng )
 	{
 		const Vector2 BASE{ scast<float>( FRAME_POS_X + FRAME_WIDTH ),scast<float>( FRAME_POS_Y ) };
 		const Vector2 TWEAK{ 48.0f, 0 };

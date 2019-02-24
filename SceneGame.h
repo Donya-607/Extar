@@ -48,7 +48,14 @@ public:
 	~Game() {}
 
 	void Init();
+	void SelectInit();
+	void GameInit();
+	void ClearInit();
+
 	void Uninit();
+	void SelectUninit();
+	void GameUninit();
+	void ClearUninit();
 
 	void Update();
 	void SelectUpdate();
