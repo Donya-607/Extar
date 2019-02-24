@@ -168,6 +168,7 @@
     <ClCompile Include="FileIO.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Music.cpp" />
+    <ClCompile Include="NumMoves.cpp" />
     <ClCompile Include="SceneGame.cpp" />
     <ClCompile Include="SceneTitle.cpp" />
     <ClCompile Include="ScreenShake.cpp" />
@@ -194,6 +195,7 @@
     <ClInclude Include="Keyboard.h" />
     <ClInclude Include="FileIO.h" />
     <ClInclude Include="Music.h" />
+    <ClInclude Include="NumMoves.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SceneGame.h" />
     <ClInclude Include="SceneManager.h" />

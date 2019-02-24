@@ -35,7 +35,7 @@ namespace FileIO
 
 	void ReleaseCameraData();
 	void ReleaseStarsData();
-	void ReleaseNumMoves();
+	void ReleaseNumMovesData();
 
 	int  GetMaxStageNumber();
 
@@ -43,6 +43,8 @@ namespace FileIO
 
 	void UpdateNowStageNumberByImGui();
 	int  GetNowStageNumber();
+
+	bool IsCreateNewStage();
 
 #endif // USE_IMGUI
 

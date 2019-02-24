@@ -20,7 +20,7 @@
 
 namespace StarImage
 {
-	constexpr int SIZE = 96;// 64;
+	constexpr int SIZE = 96;
 
 	void Load();
 	void Release();
@@ -112,7 +112,6 @@ private:
 
 #if USE_IMGUI
 
-	int stageNumber;	// 1始まり
 	int choiseRow;		// 0始まり
 	int choiseColumn;	// 0始まり
 	int width;			// 1始まり
@@ -193,6 +192,8 @@ private:
 	void RemoveStar();
 
 	void DrawUI() const;
+public:
+	void SaveData();
 
 #endif // USE_IMGUI
 };

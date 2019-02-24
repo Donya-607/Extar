@@ -54,13 +54,6 @@ void Camera::Init( int stageNumber )
 
 	pos.x	= row		* size.x;
 	pos.y	= column	* size.y;
-
-#if USE_IMGUI
-
-	this->stageNumber = stageNumber;
-
-#endif // USE_IMGUI
-
 }
 void Camera::Uninit()
 {
@@ -163,42 +156,34 @@ Box Camera::FetchColWorldPos() const
 
 void Camera::ChangeParametersByImGui()
 {
-	ImGui::Begin( "Camera_Parameters", nullptr, ImGuiWindowFlags_MenuBar );
-
-	if ( ImGui::BeginMenuBar() )
-	{
-		if ( ImGui::BeginMenu( "File" ) )
-		{
-			if ( ImGui::MenuItem( "Save" ) )
-			{
-				FileIO::WriteCamera( stageNumber, this );
-
-				// ファイルに保存するだけで適用しないため，ついでにまとめて読み込みなおす
-				FileIO::ReadAllCamera();
-				FileIO::ReadAllStars();
-
-				PlaySE( M_E_NEXT );
-			}
-			if ( ImGui::MenuItem( "Load" ) )
-			{
-				// HACK:*this = で直接代入するのはＯＫか？危険か？
-				*this = FileIO::FetchCameraInfo( stageNumber );
-
-				PlaySE( M_E_BACK );
-			}
-
-			ImGui::EndMenu();
-		}
-
-		ImGui::EndMenuBar();
-	}
-
-	ImGui::SliderInt( "IO_StageNumber", &stageNumber, 1, 30 );
+	ImGui::Begin( "Camera_Parameters" );
 
 	ImGui::SliderInt( "Width",  &width,  1, Grid::GetRowMax() - 1 );
 	ImGui::SliderInt( "Height", &height, 1, Grid::GetColumnMax() - 1 );
 
 	ImGui::SliderInt( "MovementAmount", &moveAmount, 1, 12 );
+
+	if ( FileIO::GetNowStageNumber() <= FileIO::GetMaxStageNumber() )
+	{
+		if ( ImGui::Button( "Save" ) )
+		{
+			SaveData();
+
+			// ファイルに保存するだけで適用しないため，ついでにまとめて読み込みなおす
+			FileIO::ReadAllCamera();
+			FileIO::ReadAllStars();
+			FileIO::ReadAllNumMoves();
+
+			PlaySE( M_E_NEXT );
+		}
+		if ( ImGui::Button( "Load" ) )
+		{
+			// HACK:*this = で直接代入するのはＯＫか？危険か？
+			*this = FileIO::FetchCameraInfo( FileIO::GetNowStageNumber() );
+
+			PlaySE( M_E_BACK );
+		}
+	}
 
 	ImGui::End();
 
@@ -207,6 +192,10 @@ void Camera::ChangeParametersByImGui()
 
 	size.x = Grid::GetSize().x * width;
 	size.y = Grid::GetSize().y * height;
+}
+void Camera::SaveData()
+{
+	FileIO::WriteCamera( FileIO::GetNowStageNumber(), this );
 }
 
 #endif // USE_IMGUI

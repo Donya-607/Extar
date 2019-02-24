@@ -24,26 +24,19 @@ namespace CameraImage
 class Camera
 {
 private:
-	int		row;	// 今いる行, 0始まり
-	int		column;	// 今いる列, 0始まり
+	int		row;		// 今いる行, 0始まり
+	int		column;		// 今いる列, 0始まり
 
-	int		width;	// 覆うマスのサイズ, 1始まり
-	int		height;	// 覆うマスのサイズ, 1始まり
+	int		width;		// 覆うマスのサイズ, 1始まり
+	int		height;		// 覆うマスのサイズ, 1始まり
 
 	int		moveAmount;	// 一度に動くマスの数, 1始まり
 
-	Vector2 pos;	// LeftTop Position
-	Vector2 velo;	// Velocity
-	Vector2 size;	// 全体サイズ
+	Vector2 pos;		// LeftTop Position
+	Vector2 velo;		// Velocity
+	Vector2 size;		// 全体サイズ
 
 	bool	isExposure;	// 露光した瞬間のみTRUE
-
-#if USE_IMGUI
-
-	int stageNumber;// 1始まり
-
-#endif // USE_IMGUI
-
 public:
 	Camera() : row( 0 ), column( 0 ), width( 1 ), height( 1 ),
 		moveAmount( 1 ),
@@ -84,11 +77,12 @@ public:
 		height		= Height;
 		moveAmount	= MoveAmount;
 	}
-private:
+
 #if USE_IMGUI
-
+private:
 	void ChangeParametersByImGui();
-
+public:
+	void SaveData();
 #endif // USE_IMGUI
 };
 

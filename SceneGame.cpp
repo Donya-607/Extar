@@ -1,4 +1,5 @@
 #include <array>
+#include <string>
 
 #include "DxLib.h"
 #include "Common.h"
@@ -49,6 +50,7 @@ void Game::Init()
 
 	FileIO::ReadAllCamera();
 	FileIO::ReadAllStars();
+	FileIO::ReadAllNumMoves();
 
 	GameImage::Load();
 	CameraImage::Load();
@@ -64,12 +66,16 @@ void Game::Init()
 	pStarMng.reset( new StarMng() );
 	pStarMng->Init( stageNumber );
 
+	pNumMoves.reset( new NumMoves() );
+	pNumMoves->Init( stageNumber );
+
 	ShakeInit();
 }
 void Game::Uninit()
 {
-	FileIO::ReadAllCamera();
-	FileIO::ReadAllStars();
+	FileIO::ReleaseCameraData();
+	FileIO::ReleaseStarsData();
+	FileIO::ReleaseNumMovesData();
 
 	GameImage::Release();
 	CameraImage::Release();
@@ -79,6 +85,7 @@ void Game::Uninit()
 
 	pCamera->Uninit();
 	pStarMng->Uninit();
+	pNumMoves->Uninit();
 
 	ShakeUninit();
 }
@@ -191,6 +198,37 @@ void Game::GameUpdate()
 			}
 		}
 	}
+
+	if ( pNumMoves )
+	{
+		pNumMoves->Update();
+	}
+
+#if USE_IMGUI
+
+	FileIO::UpdateNowStageNumberByImGui();
+	if ( FileIO::IsCreateNewStage() )
+	{
+		if ( pCamera )
+		{
+			pCamera->SaveData();
+		}
+		if ( pStarMng )
+		{
+			pStarMng->SaveData();
+		}
+		if ( pNumMoves )
+		{
+			pNumMoves->SaveData();
+		}
+
+		FileIO::ReadAllCamera();
+		FileIO::ReadAllStars();
+		FileIO::ReadAllNumMoves();
+	}
+
+#endif // USE_IMGUI
+
 
 	ShakeUpdate();
 }
@@ -344,29 +382,98 @@ void Game::Draw()
 		ShowCollisionArea();
 	}
 
-	if ( state == State::Clear )
-	{
-		DrawExtendFormatString
-		(
-			360, 300,
-			6.0, 6.0,
-			GetColor( 200, 200, 200 ),
-			"Stage Clear!"
-		);
-	}
-
 #endif	// DEBUG_MODE
 }
 
 void Game::DrawUI()
 {
+	// 手数
+	{
+		DrawExtendFormatString
+		(
+			10, 10,
+			2.0, 2.0,
+			GetColor( 200, 200, 200 ),
+			"今の手数：%d", numMoves
+		);
+	}
+
+	// 星レベルの表示
+	if ( pStarMng )
+	{
+		const Vector2 BASE{ scast<float>( FRAME_POS_X + FRAME_WIDTH ),scast<float>( FRAME_POS_Y ) };
+		const Vector2 TWEAK{ 48.0f, 0 };
+		const Vector2 HALF_SIZE{ Grid::GetSize().x * 0.5f , Grid::GetSize().y * 0.5f };
+
+		for ( int i = 1; i <= Star::MAX_LEVEL; i++ )
+		{
+			double angle = ( i % 2 ) ? 45.0 : 0;
+
+			DrawExtendFormatString
+			(
+				scast<int>( BASE.x ),
+				scast<int>( BASE.y ) + ( ( i - 1 ) * StarImage::SIZE ),
+				1.0, 1.0,
+				GetColor( 200, 200, 200 ),
+				"レベル %d", i
+			);
+
+			DrawRotaGraph
+			(
+				scast<int>( BASE.x + TWEAK.x + HALF_SIZE.x ),									// 中心座標
+				scast<int>( BASE.y + TWEAK.y + HALF_SIZE.y ) + ( ( i - 1 ) * StarImage::SIZE ),	// 中心座標
+				1.0, ToRadian( angle ),
+				StarImage::GetHandle( i, 0 ),
+				TRUE
+			);
+		}
+	}
+
+	if ( state != State::Clear )
+	{
+		return;
+	}
+	// else
+
+#if DEBUG_MODE
+
 	DrawExtendFormatString
 	(
-		10, 10,
-		2.0, 2.0,
+		360, 300,
+		6.0, 6.0,
 		GetColor( 200, 200, 200 ),
-		"今の手数：%d", numMoves
+		"Stage Clear!"
 	);
+
+	if ( pNumMoves )
+	{
+		int nowRank = pNumMoves->CalcRank( numMoves );
+
+		std::array<unsigned int, 4> colours =
+		{
+			GetColor( 200, 200, 32 ),
+			GetColor( 200, 64, 32 ),
+			GetColor( 64, 200, 32 ),
+			GetColor( 32, 64, 200 )
+		};
+		std::array<char, 4> ranks =
+		{
+			'S', 'A', 'B', 'C'
+		};
+		std::string result = "Rank : ";
+		result.push_back( ranks[nowRank] );
+
+		DrawExtendString
+		(
+			360, 360,
+			6.0, 6.0,
+			result.c_str(),
+			colours[nowRank]
+		);
+	}
+
+#endif // DEBUG_MODE
+
 }
 
 void Game::CollisionCheck()

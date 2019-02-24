@@ -15,11 +15,11 @@ namespace
 
 namespace StarImage
 {
-	constexpr int NUM_ROW		= 3;	// X
+	constexpr int NUM_ROW		= 6;	// X
 	constexpr int NUM_COLUMN	= 6;	// Y
 	constexpr int NUM_ALL		= NUM_ROW * NUM_COLUMN;
 
-	constexpr int SPD			= 6;
+	constexpr int SPD = 16777215;// 6;
 
 	static int hStars[NUM_ALL];
 
@@ -155,7 +155,6 @@ void StarMng::Init( int stageNumber )
 
 #if USE_IMGUI
 
-	this->stageNumber	= stageNumber;;
 	choiseRow			= 0;
 	choiseColumn		= 0;
 	width				= 1;
@@ -301,40 +300,7 @@ bool StarMng::IsEqualLevels() const
 
 void StarMng::ChangeParametersByImGui()
 {
-	ImGui::Begin( "Star_Parameters", nullptr, ImGuiWindowFlags_MenuBar );
-
-	if ( ImGui::BeginMenuBar() )
-	{
-		if ( ImGui::BeginMenu( "File" ) )
-		{
-			if ( ImGui::MenuItem( "Save" ) )
-			{
-				FileIO::WriteStars( stageNumber, &stars );
-
-				// ファイルに保存するだけで適用しないため，ついでにまとめて読み込みなおす
-				FileIO::ReadAllCamera();
-				FileIO::ReadAllStars();
-
-				PlaySE( M_E_NEXT );
-			}
-			if ( ImGui::MenuItem( "Load" ) )
-			{
-				stars = FileIO::FetchStarsInfo( stageNumber );
-				for ( Star &it : stars )
-				{
-					it.Init( NULL, NULL, NULL, NULL, NULL, /* flagSetAnimeOnly = */true );
-				}
-
-				PlaySE( M_E_BACK );
-			}
-
-			ImGui::EndMenu();
-		}
-
-		ImGui::EndMenuBar();
-	}
-
-	ImGui::SliderInt( "IO_StageNumber", &stageNumber,	1, 30 );
+	ImGui::Begin( "Star_Parameters" );
 
 	ImGui::SliderInt( "Choice_X",		&choiseRow,		0, Grid::GetRowMax() - 1 );
 	ImGui::SliderInt( "Choice_Y",		&choiseColumn,	0, Grid::GetColumnMax() - 1 );
@@ -358,6 +324,33 @@ void StarMng::ChangeParametersByImGui()
 		RemoveStar();
 
 		PlaySE( M_E_BACK );
+	}
+
+	ImGui::Text( "" ); // Space
+
+	if ( FileIO::GetNowStageNumber() <= FileIO::GetMaxStageNumber() )
+	{
+		if ( ImGui::Button( "Save" ) )
+		{
+			SaveData();
+
+			// ファイルに保存するだけで適用しないため，ついでにまとめて読み込みなおす
+			FileIO::ReadAllCamera();
+			FileIO::ReadAllStars();
+			FileIO::ReadAllNumMoves();
+
+			PlaySE( M_E_NEXT );
+		}
+		if ( ImGui::Button( "Load" ) )
+		{
+			stars = FileIO::FetchStarsInfo( FileIO::GetNowStageNumber() );
+			for ( Star &it : stars )
+			{
+				it.Init( NULL, NULL, NULL, NULL, NULL, /* flagSetAnimeOnly = */true );
+			}
+
+			PlaySE( M_E_BACK );
+		}
 	}
 
 	ImGui::End();
@@ -418,6 +411,11 @@ void StarMng::DrawUI() const
 
 	}
 	SetDrawBlendMode( DX_BLENDMODE_NOBLEND, 255 );
+}
+
+void StarMng::SaveData()
+{
+	FileIO::WriteStars( FileIO::GetNowStageNumber(), &stars );
 }
 
 #endif // USE_IMGUI
