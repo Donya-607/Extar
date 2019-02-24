@@ -387,13 +387,47 @@ void Game::Draw()
 
 void Game::DrawUI()
 {
-	DrawExtendFormatString
-	(
-		10, 10,
-		2.0, 2.0,
-		GetColor( 200, 200, 200 ),
-		"今の手数：%d", numMoves
-	);
+	// 手数
+	{
+		DrawExtendFormatString
+		(
+			10, 10,
+			2.0, 2.0,
+			GetColor( 200, 200, 200 ),
+			"今の手数：%d", numMoves
+		);
+	}
+
+	// 星レベルの表示
+	if ( pStarMng )
+	{
+		const Vector2 BASE{ scast<float>( FRAME_POS_X + FRAME_WIDTH ),scast<float>( FRAME_POS_Y ) };
+		const Vector2 TWEAK{ 48.0f, 0 };
+		const Vector2 HALF_SIZE{ Grid::GetSize().x * 0.5f , Grid::GetSize().y * 0.5f };
+
+		for ( int i = 1; i <= Star::MAX_LEVEL; i++ )
+		{
+			double angle = ( i % 2 ) ? 45.0 : 0;
+
+			DrawExtendFormatString
+			(
+				scast<int>( BASE.x ),
+				scast<int>( BASE.y ) + ( ( i - 1 ) * StarImage::SIZE ),
+				1.0, 1.0,
+				GetColor( 200, 200, 200 ),
+				"レベル %d", i
+			);
+
+			DrawRotaGraph
+			(
+				scast<int>( BASE.x + TWEAK.x + HALF_SIZE.x ),									// 中心座標
+				scast<int>( BASE.y + TWEAK.y + HALF_SIZE.y ) + ( ( i - 1 ) * StarImage::SIZE ),	// 中心座標
+				1.0, ToRadian( angle ),
+				StarImage::GetHandle( i, 0 ),
+				TRUE
+			);
+		}
+	}
 
 	if ( state != State::Clear )
 	{

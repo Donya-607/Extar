@@ -20,7 +20,7 @@
 
 namespace StarImage
 {
-	constexpr int SIZE = 96;// 64;
+	constexpr int SIZE = 96;
 
 	void Load();
 	void Release();
