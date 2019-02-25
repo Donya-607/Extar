@@ -21,20 +21,31 @@ private:
 	{
 		Main = 0,
 		HowToPlay,
+		GotoGame,
+		Null
 	};
 public:
 	State	state;
+	State	nextState;
 public:
 	Title( SceneMng *pMng ) : Scene( pMng ),
-	state( State::Main )
+	state( State::Main ), nextState( State::Null )
 	{}
 	~Title() {}
 
 	void Init();
+	void MainInit();
+
 	void Uninit();
+	void MainUninit();
 
 	void Update();
 	void MainUpdate();
+
+	void FadeBegin();
+	void FadeCheck();
+	void FadeDone();
+	void FadeEnd();
 
 	void PrepareChangeSceneToGame();
 

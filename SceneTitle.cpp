@@ -8,6 +8,8 @@
 #include "SceneGame.h"
 #include "SceneTitle.h"
 
+#include "Fade.h"
+
 #if USE_IMGUI
 
 #include <imgui.h>
@@ -45,11 +47,22 @@ void Title::Init()
 
 	PlayBGM( M_Title );
 }
+
+void Title::MainInit()
+{
+
+}
+
 void Title::Uninit()
 {
 	TitleImage::Release();
 
 	ShakeUninit();
+}
+
+void Title::MainUninit()
+{
+
 }
 
 void Title::Update()
@@ -63,6 +76,15 @@ void Title::Update()
 
 #endif // DEBUG_MODE
 
+	if ( Fade::GetInstance()->IsDoneFade() && nextState == State::GotoGame )
+	{
+		PrepareChangeSceneToGame();
+
+		delete this;
+		return;
+	}
+	// else
+
 	ShakeUpdate();
 
 	switch ( state )
@@ -74,19 +96,38 @@ void Title::Update()
 		break;
 	}
 
+	FadeCheck();
+
 #if DEBUG_MODE
 
-	if ( TRG( KEY_INPUT_RETURN ) )
+	if ( TRG( KEY_INPUT_RETURN ) && state != State::GotoGame )
 	{
-		PrepareChangeSceneToGame();
-		delete this;
-		return;
+		nextState = State::GotoGame;
+		FadeBegin();
+
+		PlaySE( M_E_NEXT );
 	}
 
 #endif // DEBUG_MODE
 }
+
 void Title::MainUpdate()
 {
+
+#if DEBUG_MODE
+
+	if ( IS_TRG_EXPOSURE && state != State::GotoGame )
+	{
+		nextState = State::GotoGame;
+		FadeBegin();
+
+		PlaySE( M_E_NEXT );
+	}
+
+#endif // DEBUG_MODE
+
+
+
 #if USE_IMGUI
 
 	ImGui::Begin( "test_window" );
@@ -98,6 +139,67 @@ void Title::MainUpdate()
 
 #endif // USE_IMGUI
 }
+
+void Title::FadeBegin()
+{
+	// SceneGameものと同じものを使用している
+
+	constexpr int MOVE_INTERVAL = 1;
+	Vector2 pos = FadeImage::GetSize();
+	pos *= -1;
+	pos.x += scast<float>( SCREEN_WIDTH ) * 0.2f/* 位置の調整 */;
+	pos.y -= scast<float>( SCREEN_HEIGHT ) * 1.0f/* 位置の調整 */;
+
+	Fade::GetInstance()->Init( MOVE_INTERVAL, pos );
+}
+
+void Title::FadeCheck()
+{
+	if ( nextState != State::Null && Fade::GetInstance()->IsDoneFade() )
+	{
+		FadeDone();
+	}
+
+	if ( Fade::GetInstance()->IsLeave() )
+	{
+		FadeEnd();
+	}
+}
+
+void Title::FadeDone()
+{
+	// シーン遷移チェックは先にしているので，これに引っかかるはずはない想定
+	assert( nextState != State::GotoGame );
+
+	switch ( state )
+	{
+	case State::Main:
+		MainUninit();		break;
+	default:
+		assert( !"Error:SceneGame state error." );
+		exit( EXIT_FAILURE );
+		return;
+	}
+
+	state = nextState;
+	nextState = State::Null;
+
+	switch ( state )
+	{
+	case State::Main:
+		MainInit();		break;
+	default:
+		assert( !"Error:SceneGame state error." );
+		exit( EXIT_FAILURE );
+		return;
+	}
+}
+
+void Title::FadeEnd()
+{
+	Fade::GetInstance()->Uninit();
+}
+
 void Title::PrepareChangeSceneToGame()
 {
 	Uninit();

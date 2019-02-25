@@ -18,6 +18,8 @@
 
 #include "FileIO.h"
 
+#include "Fade.h"
+
 namespace SelectImage
 {
 	static int hSelectBG;
@@ -79,7 +81,6 @@ void Game::Init()
 	StarImage::Load();
 	StageImage::Load();
 	CursorImage::Load();
-	FadeImage::Load();
 
 	switch ( state )
 	{
@@ -124,8 +125,6 @@ void Game::ClearInit()
 
 void Game::Uninit()
 {
-	FadeEnd();
-
 	SelectUninit();
 	GameUninit();
 	ClearUninit();
@@ -140,7 +139,6 @@ void Game::Uninit()
 	StarImage::Release();
 	StageImage::Release();
 	CursorImage::Release();
-	FadeImage::Release();
 
 	Grid::SetSize( { 0, 0 } );
 
@@ -153,12 +151,11 @@ void Game::SelectUninit()
 void Game::GameUninit()
 {
 	if ( pCamera   ) { pCamera->Uninit();   }
-	if ( pStarMng  ) { pStarMng->Uninit();  }
-	if ( pNumMoves ) { pNumMoves->Uninit(); }
 }
 void Game::ClearUninit()
 {
-
+	if ( pStarMng  ) { pStarMng->Uninit();  }
+	if ( pNumMoves ) { pNumMoves->Uninit(); }
 }
 
 void Game::Update()
@@ -177,12 +174,20 @@ void Game::Update()
 
 #endif // DEBUG_MODE
 
+	if ( Fade::GetInstance()->IsDoneFade() && nextState == State::GotoTitle )
+	{
+		PrepareChangeSceneToTitle();
+
+		delete this;
+		return;
+	}
+	// else
+
 	if ( IsInputPauseButton() )
 	{
 		isPause = !isPause;
 		PlaySE( M_E_NEXT );
 	}
-
 	if ( isPause )
 	{
 		PauseUpdate();
@@ -211,30 +216,18 @@ void Game::Update()
 		return;
 	}
 
-	FadeUpdate();
+	FadeCheck();
 
 	CollisionCheck();
 
 #if DEBUG_MODE	// TODO:ここをデバッグビルドかどうか判定するやつに変えたい
 
-	constexpr int DEBUG_CHANGE_SCENE_TIME = 45;
-	static int debugTimerForChangeScene = 0;
-	if ( state == State::Clear )
+	if ( TRG( KEY_INPUT_RETURN ) )
 	{
-		debugTimerForChangeScene++;
-	}
+		nextState = State::GotoTitle;
+		FadeBegin();
 
-	if	(
-			TRG( KEY_INPUT_RETURN )
-			|| ( state == State::Clear && DEBUG_CHANGE_SCENE_TIME <= debugTimerForChangeScene )
-		)
-	{
-		PrepareChangeSceneToTitle();
-
-		debugTimerForChangeScene = 0;
-
-		delete this;
-		return;
+		PlaySE( M_E_NEXT );
 	}
 
 #endif // DEBUG_MODE
@@ -297,12 +290,11 @@ void Game::GameUpdate()
 
 	if ( IS_TRG_EXPOSURE && pCursor->IsDecision() )
 	{
-		nextState = State::Game;
+		nextState = State::Clear;
 		FadeBegin();
 	}
 
 #endif // DEBUG_MODE
-
 
 #if USE_IMGUI
 
@@ -329,7 +321,6 @@ void Game::GameUpdate()
 
 #endif // USE_IMGUI
 
-
 	ShakeUpdate();
 }
 
@@ -340,6 +331,16 @@ void Game::ClearUpdate()
 		pStarMng->ClearUpdate();
 	}
 
+#if DEBUG_MODE
+
+	if ( IS_TRG_EXPOSURE && pCursor->IsDecision() )
+	{
+		nextState = State::Select;
+		FadeBegin();
+	}
+
+#endif // DEBUG_MODE
+
 	ShakeUpdate();
 }
 
@@ -348,13 +349,13 @@ void Game::FadeBegin()
 	constexpr int MOVE_INTERVAL = 1;
 	Vector2 pos = FadeImage::GetSize();
 	pos *= -1;
-	pos.x += scast<float>( SCREEN_WIDTH  ) * 0.2f;
-	pos.y -= scast<float>( SCREEN_HEIGHT ) * 1.0f;
+	pos.x += scast<float>( SCREEN_WIDTH  ) * 0.2f/* 位置の調整 */;
+	pos.y -= scast<float>( SCREEN_HEIGHT ) * 1.0f/* 位置の調整 */;
 
 	Fade::GetInstance()->Init( MOVE_INTERVAL, pos );
 }
 
-void Game::FadeUpdate()
+void Game::FadeCheck()
 {
 	if ( nextState != State::Null && Fade::GetInstance()->IsDoneFade() )
 	{
@@ -369,6 +370,9 @@ void Game::FadeUpdate()
 
 void Game::FadeDone()
 {
+	// シーン遷移チェックは先にしているので，これに引っかかるはずはない想定
+	assert( nextState != State::GotoTitle );
+
 	switch ( state )
 	{
 	case State::Select:
@@ -597,7 +601,34 @@ void Game::GameDraw()
 
 void Game::ClearDraw()
 {
+	Vector2 shake = GetShakeAmount();
 
+	// 背景
+	{
+		// 仮置きなので，ExtendGraph
+		DrawExtendGraph
+		(
+			scast<int>( 0 - shake.x ),
+			scast<int>( 0 - shake.y ),
+			scast<int>( SCREEN_WIDTH - shake.x ),
+			scast<int>( SCREEN_HEIGHT - shake.y ),
+			GameImage::hGameBG,
+			TRUE
+		);
+
+		// 枠
+		DrawGraph
+		(
+			0, 0,
+			GameImage::hFrameBG,
+			TRUE
+		);
+	}
+
+	if ( pStarMng )
+	{
+		pStarMng->Draw( shake );
+	}
 }
 
 void Game::SelectDrawUI()
@@ -647,12 +678,10 @@ void Game::GameDrawUI()
 			);
 		}
 	}
+}
 
-	if ( state != State::Clear )
-	{
-		return;
-	}
-	// else
+void Game::ClearDrawUI()
+{
 
 #if DEBUG_MODE
 
@@ -684,7 +713,7 @@ void Game::GameDrawUI()
 
 		DrawExtendString
 		(
-			360, 360,
+			360, 400,
 			6.0, 6.0,
 			result.c_str(),
 			colours[nowRank]
@@ -692,11 +721,6 @@ void Game::GameDrawUI()
 	}
 
 #endif // DEBUG_MODE
-
-}
-
-void Game::ClearDrawUI()
-{
 
 }
 

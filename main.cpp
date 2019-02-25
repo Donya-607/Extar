@@ -76,6 +76,8 @@ int WINAPI WinMain(	HINSTANCE	hCurInst/*インスタンスハンドル*/,	HINSTANCE	hPrevI
 
 	MusicInit();
 
+	FadeImage::Load();
+
 	// シーンマネージャを生成
 	SceneMng *pManager = nullptr;
 	pManager = new SceneMng();
@@ -125,6 +127,8 @@ int WINAPI WinMain(	HINSTANCE	hCurInst/*インスタンスハンドル*/,	HINSTANCE	hPrevI
 	// 終了処理
 	delete pManager;
 	pManager = nullptr;
+
+	FadeImage::Release();
 
 #if USE_IMGUI
 

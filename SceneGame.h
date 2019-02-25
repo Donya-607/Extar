@@ -10,7 +10,6 @@
 #include "Star.h"
 #include "NumMoves.h"
 #include "Cursor.h"
-#include "Fade.h"
 
 //--------------------
 //
@@ -71,7 +70,7 @@ public:
 	void ClearUpdate();
 
 	void FadeBegin();
-	void FadeUpdate();
+	void FadeCheck();
 	void FadeDone();
 	void FadeEnd();
 
