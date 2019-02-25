@@ -28,12 +28,16 @@ namespace SelectImage
 	void Release();
 
 	int  GetHandle( int stageNumber );
+	int  GetBackHandle();
 }
 namespace SelectStage
 {
 	Vector2 GetPosLeftTop();
 	Vector2 GetSize();
 	Vector2 GetMargin();	// Stage‚ÆStage‚Æ‚ÌŠÔ‚ÌŒ„ŠÔ
+
+	Vector2 GetBackPosLeftTop();
+	Vector2 GetBackSize();
 
 	int  GetMaxRow();
 	int  GetMaxColumn();
@@ -51,6 +55,7 @@ private:
 	Vector2 velo;	// velocity
 
 	bool isDoneMove;
+	bool isChooseBack;
 #if USE_IMGUI
 
 #endif // USE_IMGUI
@@ -58,7 +63,8 @@ private:
 public:
 	Cursor() : nowStageNumber( 1 ),
 		pos(), velo(),
-		isDoneMove( false )
+		isDoneMove( false ),
+		isChooseBack( false )
 	{}
 	~Cursor() {}
 

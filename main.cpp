@@ -43,12 +43,13 @@ int WINAPI WinMain(	HINSTANCE	hCurInst/*インスタンスハンドル*/,	HINSTANCE	hPrevI
 	SetWindowIconID( 128 );							// タイトルバーのアイコンを変更
 	SetMainWindowText( "エクスタ" );					// タイトルバーのテキストを変更
 	ChangeWindowMode( TRUE );						// TRUE:ウィンドウモードで起動
-	SetDrawScreen( DX_SCREEN_BACK );				// DX_SCREEN_BACK:描画先を裏画面に設定
 
 	if ( DxLib_Init() == -1 )
 	{
 		return -1;	// エラー処理, 終了させる
 	}
+
+	SetDrawScreen( DX_SCREEN_BACK );				// DX_SCREEN_BACK:描画先を裏画面に設定
 
 	srand( scast<unsigned int>( time( NULL ) ) );
 

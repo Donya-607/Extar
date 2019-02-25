@@ -44,6 +44,7 @@ namespace CursorImage
 namespace SelectImage
 {
 	static std::vector<int> hThumbnails;
+	static int hBack;
 
 	void Load()
 	{
@@ -70,6 +71,8 @@ namespace SelectImage
 
 			hThumbnails.push_back( result );
 		}
+
+		hBack = LoadGraph( "./Data/Images/Thumbnails/Back.png" );
 	}
 	void Release()
 	{
@@ -78,6 +81,9 @@ namespace SelectImage
 			DeleteGraph( hThumbnails.back() );
 			hThumbnails.pop_back();
 		}
+
+		DeleteGraph( hBack );
+		hBack = 0;
 	}
 
 	int  GetHandle( int stageNumber )
@@ -97,12 +103,19 @@ namespace SelectImage
 		// else
 		return hThumbnails.at( stageNumber );
 	}
+	int  GetBackHandle()
+	{
+		return hBack;
+	}
 }
 namespace SelectStage
 {
 	const Vector2 LEFT_TOP_POS{ 128.0f, 160.0f };
 	const Vector2 SIZE{ 512.0f, 378.0f };
 	const Vector2 MARGIN{ 64.0f, 64.0f };
+
+	const Vector2 BACK_LEFT_TOP_POS{ 128.0f, 64.0f };
+	const Vector2 BACK_SIZE{ 96.0f, 96.0f };
 
 	static const int maxRow  = 3;
 	static const int maxClum = 2;
@@ -118,6 +131,15 @@ namespace SelectStage
 	Vector2 GetMargin()
 	{
 		return MARGIN;
+	}
+
+	Vector2 GetBackPosLeftTop()
+	{
+		return BACK_LEFT_TOP_POS;
+	}
+	Vector2 GetBackSize()
+	{
+		return BACK_SIZE;
 	}
 
 	int  GetMaxRow()
@@ -161,6 +183,19 @@ namespace SelectStage
 				TRUE
 			);
 		}
+
+		// Back
+		{
+			DrawExtendGraph
+			(
+				scast<int>( SelectStage::GetBackPosLeftTop().x ),
+				scast<int>( SelectStage::GetBackPosLeftTop().y ),
+				scast<int>( SelectStage::GetBackPosLeftTop().x + SelectStage::GetBackSize().x ),
+				scast<int>( SelectStage::GetBackPosLeftTop().y + SelectStage::GetBackSize().y ),
+				SelectImage::GetBackHandle(),
+				TRUE
+			);
+		}
 	}
 }
 
@@ -186,7 +221,59 @@ void Cursor::Move()
 {
 	constexpr float RESPONSE_MOVE_AMOUNT = 16.0f;	// 押した瞬間に，かならず移動させる量
 
-	bool isUp	= false, isDown		= false, isInput = false;
+	bool isLB = false, isRB = false, isInput = false;
+
+	if ( IS_TRG_LB ) { isLB = true; }
+	if ( IS_TRG_RB ) { isRB = true; }
+	if ( !isChooseBack && isLB && !isRB ) { pos.y -= RESPONSE_MOVE_AMOUNT; isInput = true; }
+	if ( !isChooseBack && isRB && !isLB ) { pos.y -= RESPONSE_MOVE_AMOUNT; isInput = true; }
+
+	if ( isInput )
+	{
+		isDoneMove = false;
+
+		int moveAmount = SelectStage::GetMaxDisplayNumber();
+		int pageNum = ( ( nowStageNumber - 1 ) / SelectStage::GetMaxDisplayNumber() ); // 0始まり
+
+		if ( isLB )
+		{
+			if ( 0 == pageNum )
+			{
+				// 最初のステージにカーソルが合っている場合のみ，最後に合わせる
+				nowStageNumber =
+					( 1 == nowStageNumber )
+					? FileIO::GetMaxStageNumber()
+					: 1;
+			}
+			else
+			{
+				nowStageNumber -= moveAmount;
+			}
+		}
+		if ( isRB )
+		{
+			// 開いているのが最後のページだったら
+			if ( FileIO::GetMaxStageNumber() - 1 < ( pageNum + 1 ) * SelectStage::GetMaxDisplayNumber() )
+			{
+				// 最後のステージにカーソルが合っている場合のみ，最初に合わせる
+				nowStageNumber =
+					( FileIO::GetMaxStageNumber()  == nowStageNumber )
+					? 1
+					: FileIO::GetMaxStageNumber();
+			}
+			else
+			{
+				nowStageNumber += moveAmount;
+			}
+		}
+
+		return;
+	}
+	// else
+
+	isInput = false;
+
+	bool isUp	= false, isDown		= false;
 
 	if ( IS_TRG_UP		) { isUp	= true; }
 	if ( IS_TRG_DOWN	) { isDown	= true; }
@@ -199,15 +286,31 @@ void Cursor::Move()
 
 		int moveAmount = SelectStage::GetMaxRow();
 
-		// ２列のうち，カーソルの上下によって条件している（？），列が増えるとおじゃんになる
+		int remStageNumber = ( nowStageNumber - 1 ) % SelectStage::GetMaxDisplayNumber();	// 0始まり
+		int clum = remStageNumber / SelectStage::GetMaxRow();	// 0始まり
 
-		if ( isUp	&& ( nowStageNumber % SelectStage::GetMaxColumn() ) >= SelectStage::GetMaxRow() )
+		if ( isUp )
 		{
-			nowStageNumber -= moveAmount;
+			if ( !isChooseBack && 0 == clum )
+			{
+				isChooseBack = true;
+				nowStageNumber -= remStageNumber % SelectStage::GetMaxRow();	// Backから下入力した際に，左上にカーソルを合わせるため
+			}
+			if ( 0 < clum )
+			{
+				nowStageNumber -= moveAmount;
+			}
 		}
-		if ( isDown	&& ( nowStageNumber % SelectStage::GetMaxColumn() ) <= SelectStage::GetMaxRow() )
+		if ( isDown )
 		{
-			nowStageNumber += moveAmount;
+			if ( isChooseBack )
+			{
+				isChooseBack = false;
+			}
+			else if ( nowStageNumber <= FileIO::GetMaxStageNumber() - moveAmount && clum != ( SelectStage::GetMaxColumn() - 1 ) )
+			{
+				nowStageNumber += moveAmount;
+			}
 		}
 
 		return;
@@ -219,8 +322,8 @@ void Cursor::Move()
 
 	if ( IS_TRG_LEFT	) { isLeft	= true; }
 	if ( IS_TRG_RIGHT	) { isRight	= true; }
-	if ( isLeft		&& !isRight	) { pos.x -= RESPONSE_MOVE_AMOUNT; isInput = true; }
-	if ( isRight	&& !isLeft	) { pos.x += RESPONSE_MOVE_AMOUNT; isInput = true; }
+	if ( !isChooseBack && isLeft		&& !isRight	) { pos.x -= RESPONSE_MOVE_AMOUNT; isInput = true; }
+	if ( !isChooseBack && isRight	&& !isLeft	) { pos.x += RESPONSE_MOVE_AMOUNT; isInput = true; }
 
 	if ( isInput )
 	{
@@ -228,13 +331,21 @@ void Cursor::Move()
 
 		int moveAmount = 1;
 
-		if ( isLeft		&& moveAmount < nowStageNumber )
+		if ( isLeft )
 		{
 			nowStageNumber -= moveAmount;
+			if ( !nowStageNumber )
+			{
+				nowStageNumber = FileIO::GetMaxStageNumber();
+			}
 		}
-		if ( isRight	&& nowStageNumber < FileIO::GetMaxStageNumber() )
+		if ( isRight )
 		{
 			nowStageNumber += moveAmount;
+			if ( FileIO::GetMaxStageNumber() < nowStageNumber )
+			{
+				nowStageNumber = 1;
+			}
 		}
 	}
 }
@@ -244,11 +355,21 @@ void Cursor::Interpolate()
 	constexpr float RESISTANCE		= 0.3f;
 	constexpr float LOWER_DISTANCE	= 8.0f;
 
-	int row  = ( ( nowStageNumber - 1 ) % SelectStage::GetMaxDisplayNumber() ) % SelectStage::GetMaxRow();
-	int clum = ( ( nowStageNumber - 1 ) % SelectStage::GetMaxDisplayNumber() ) / SelectStage::GetMaxRow();
 	Vector2 targetPos;
-	targetPos.x = SelectStage::GetPosLeftTop().x + ( row  * ( SelectStage::GetSize().x + SelectStage::GetMargin().x ) );
-	targetPos.y = SelectStage::GetPosLeftTop().y + ( clum * ( SelectStage::GetSize().y + SelectStage::GetMargin().y ) );
+
+	if ( isChooseBack )
+	{
+		pos = SelectStage::GetBackPosLeftTop();
+		return;
+	}
+	// else
+
+	{
+		int row  = ( ( nowStageNumber - 1 ) % SelectStage::GetMaxDisplayNumber() ) % SelectStage::GetMaxRow();
+		int clum = ( ( nowStageNumber - 1 ) % SelectStage::GetMaxDisplayNumber() ) / SelectStage::GetMaxRow();
+		targetPos.x = SelectStage::GetPosLeftTop().x + ( row  * ( SelectStage::GetSize().x + SelectStage::GetMargin().x ) );
+		targetPos.y = SelectStage::GetPosLeftTop().y + ( clum * ( SelectStage::GetSize().y + SelectStage::GetMargin().y ) );
+	}
 
 	Vector2 dir = targetPos - pos;
 	float dist = fabsf( dir.Length() );
@@ -269,12 +390,17 @@ void Cursor::Interpolate()
 
 void Cursor::Draw( Vector2 shake ) const
 {
+	const Vector2 SIZE =
+		( isChooseBack )
+		? SelectStage::GetBackSize()
+		: SelectStage::GetSize();
+
 	DrawExtendGraph
 	(
 		scast<int>( pos.x ),
 		scast<int>( pos.y ),
-		scast<int>( pos.x + SelectStage::GetSize().x ),
-		scast<int>( pos.y + SelectStage::GetSize().y ),
+		scast<int>( pos.x + SIZE.x ),
+		scast<int>( pos.y + SIZE.y ),
 		CursorImage::GetHandle(),
 		TRUE
 	);
