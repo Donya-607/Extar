@@ -88,6 +88,10 @@ public:
 	{
 		return nowStageNumber;
 	}
+	bool IsChoiceBack() const
+	{
+		return isChooseBack;
+	}
 	bool IsDecision() const
 	{
 		return isDecision;

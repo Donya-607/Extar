@@ -1,6 +1,8 @@
 #ifndef INCLUDED_MANAGER_H_
 #define INCLUDED_MANAGER_H_
 
+#include "Fade.h"
+
 //--------------------
 //
 //		Manager.h
@@ -30,10 +32,12 @@ public:
 	void Update()
 	{
 		mpScene->Update();
+		Fade::GetInstance()->Update();
 	}
 	void Draw()
 	{
 		mpScene->Draw();
+		Fade::GetInstance()->Draw();
 	}
 };
 

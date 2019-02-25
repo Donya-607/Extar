@@ -1,6 +1,8 @@
 #ifndef INCLUDED_FADE_H_
 #define INCLUDED_FADE_H_
 
+#include <memory>
+
 #include "Common.h"
 
 #if USE_IMGUI
@@ -25,6 +27,8 @@ namespace FadeImage
 class Fade
 {
 private:
+	static std::unique_ptr<Fade> instance;
+private:
 	int moveInterval;	// Frame
 	int frame;
 
@@ -38,20 +42,31 @@ private:
 
 #endif // USE_IMGUI
 
-public:
+private:
 	Fade() : moveInterval( 0 ), frame( 0 ),
 		pos(),
 		isDoneFade( false ), isLeave( false ),
 		isDraw( false )
 	{}
+public:
 	~Fade() {}
 
+	static Fade *GetInstance()
+	{
+		if ( !instance )
+		{
+			instance.reset( new Fade );
+		}
+
+		return instance.get();
+	}
+public:
 	void Init( int moveIntervalFrame, Vector2 posLeftTop );
 	void Uninit();
 
 	void Update();
 
-	void Draw( Vector2 shake ) const;
+	void Draw() const;
 public:
 	bool IsDoneFade() const
 	{

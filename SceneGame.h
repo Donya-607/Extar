@@ -26,6 +26,7 @@ private:
 		Select = 0,
 		Game,
 		Clear,
+		GotoTitle,
 		Null
 	};
 private:
@@ -35,8 +36,6 @@ private:
 
 	State state;
 	State nextState;
-
-	std::unique_ptr<Fade>	  pFade;
 
 	std::unique_ptr<Cursor>   pCursor;
 
@@ -50,7 +49,6 @@ public:
 	Game( SceneMng *pMng ) : Scene( pMng ),
 		stageNumber( 1 ), numMoves( 0 ),
 		state( State::Select ), nextState( State::Null ),
-		pFade( nullptr ),
 		pCursor( nullptr ),
 		pCamera( nullptr ), pStarMng( nullptr ), pNumMoves( nullptr ),
 		isPause( false ), isDrawCollision( false )

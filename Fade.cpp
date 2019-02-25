@@ -35,6 +35,8 @@ namespace FadeImage
 	}
 }
 
+std::unique_ptr<Fade> Fade::instance = nullptr;
+
 void Fade::Init( int moveIntervalFrame, Vector2 posLeftTop )
 {
 	moveInterval = moveIntervalFrame;
@@ -54,6 +56,12 @@ void Fade::Uninit()
 
 void Fade::Update()
 {
+	if ( !isDraw )
+	{
+		return;
+	}
+	// else
+
 	Move();
 }
 
@@ -87,7 +95,7 @@ void Fade::Move()
 	}
 }
 
-void Fade::Draw( Vector2 shake ) const
+void Fade::Draw() const
 {
 	if ( !isDraw )
 	{

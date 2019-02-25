@@ -81,8 +81,6 @@ void Game::Init()
 	CursorImage::Load();
 	FadeImage::Load();
 
-	pFade.reset( new Fade() );
-
 	switch ( state )
 	{
 	case State::Select:
@@ -213,10 +211,7 @@ void Game::Update()
 		return;
 	}
 
-	if ( pFade )
-	{
-		FadeUpdate();
-	}
+	FadeUpdate();
 
 	CollisionCheck();
 
@@ -255,7 +250,11 @@ void Game::SelectUpdate()
 
 		if ( nextState == State::Null && pCursor->IsDecision() )
 		{
-			nextState = State::Game;
+			nextState =
+				( pCursor->IsChoiceBack() )
+				? State::GotoTitle
+				: State::Game;
+
 			FadeBegin();
 		}
 	}
@@ -352,19 +351,17 @@ void Game::FadeBegin()
 	pos.x += scast<float>( SCREEN_WIDTH  ) * 0.2f;
 	pos.y -= scast<float>( SCREEN_HEIGHT ) * 1.0f;
 
-	pFade->Init( MOVE_INTERVAL, pos );
+	Fade::GetInstance()->Init( MOVE_INTERVAL, pos );
 }
 
 void Game::FadeUpdate()
 {
-	pFade->Update();
-
-	if ( nextState != State::Null && pFade->IsDoneFade() )
+	if ( nextState != State::Null && Fade::GetInstance()->IsDoneFade() )
 	{
 		FadeDone();
 	}
 
-	if ( pFade->IsLeave() )
+	if ( Fade::GetInstance()->IsLeave() )
 	{
 		FadeEnd();
 	}
@@ -406,7 +403,7 @@ void Game::FadeDone()
 
 void Game::FadeEnd()
 {
-	pFade->Uninit();
+	Fade::GetInstance()->Uninit();
 }
 
 
@@ -521,11 +518,6 @@ void Game::Draw()
 		assert( !"Error:SceneGame state error." );
 		exit( EXIT_FAILURE );
 		return;
-	}
-
-	if ( pFade )
-	{
-		pFade->Draw( shake );
 	}
 
 #if	DEBUG_MODE
