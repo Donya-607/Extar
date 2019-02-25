@@ -9,6 +9,8 @@
 
 #include "FileIO.h"
 
+#include "Star.h"
+
 namespace CursorImage
 {
 	const Vector2 SIZE{ 512.0f, 378.0f };
@@ -114,9 +116,9 @@ namespace StageImage
 }
 namespace StageSelect
 {
-	const Vector2 LEFT_TOP_POS{ 128.0f, 160.0f };
+	const Vector2 LEFT_TOP_POS{ 128.0f, 144.0f };
 	const Vector2 SIZE{ 512.0f, 378.0f };
-	const Vector2 MARGIN{ 64.0f, 64.0f };
+	const Vector2 MARGIN{ 64.0f, 32.0f };
 
 	const Vector2 BACK_LEFT_TOP_POS{ 128.0f, 64.0f };
 	const Vector2 BACK_SIZE{ 96.0f, 96.0f };
@@ -209,6 +211,39 @@ namespace StageSelect
 				TRUE
 			);
 		}
+
+		// ページ数アイコン表示
+		{
+			const int CHOICE_STAR_LEVEL = 1;
+			const int NOT_CHOICE_STAR_LEVEL = 5;
+
+			int maxPageNum = ( ( FileIO::GetMaxStageNumber() - 1 ) / StageSelect::GetMaxDisplayNumber() ) + 1;
+
+			Vector2 base{ scast<float>( SCREEN_WIDTH >> 1 ), 960.0f };
+			base.x -= StarImage::SIZE * ( maxPageNum >> 1 );
+
+			for ( int i = 0; i < maxPageNum; i++ )
+			{
+				bool isChoicePage = false;
+				if ( i == pageNum )
+				{
+					isChoicePage = true;
+				}
+
+				int level =
+					( isChoicePage )
+					? CHOICE_STAR_LEVEL
+					: NOT_CHOICE_STAR_LEVEL;
+
+				DrawGraph
+				(
+					scast<int>( base.x + ( i * StarImage::SIZE ) ),
+					scast<int>( base.y ),
+					StarImage::GetHandle( level, 0 ),
+					TRUE
+				);
+			}
+		}
 	}
 }
 
@@ -236,8 +271,8 @@ void Cursor::Move()
 
 	bool isLB = false, isRB = false, isInput = false;
 
-	if ( IS_TRG_LB ) { isLB = true; }
-	if ( IS_TRG_RB ) { isRB = true; }
+	if ( IS_TRG_L ) { isLB = true; }
+	if ( IS_TRG_R ) { isRB = true; }
 	if ( !isChooseBack && isLB && !isRB ) { pos.y -= RESPONSE_MOVE_AMOUNT; isInput = true; }
 	if ( !isChooseBack && isRB && !isLB ) { pos.y -= RESPONSE_MOVE_AMOUNT; isInput = true; }
 
@@ -277,6 +312,10 @@ void Cursor::Move()
 			else
 			{
 				nowStageNumber += moveAmount;
+				if ( FileIO::GetMaxStageNumber() < nowStageNumber )
+				{
+					nowStageNumber = FileIO::GetMaxStageNumber();
+				}
 			}
 		}
 
