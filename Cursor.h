@@ -16,12 +16,18 @@
 
 namespace CursorImage
 {
-	// constexpr int SIZE = 96;
-
 	void Load();
 	void Release();
 
 	int  GetHandle();
+	Vector2 GetSize();
+}
+namespace SelectImage
+{
+	void Load();
+	void Release();
+
+	int  GetHandle( int stageNumber );
 }
 namespace SelectStage
 {
@@ -30,15 +36,15 @@ namespace SelectStage
 	Vector2 GetMargin();	// StageÇ∆StageÇ∆ÇÃä‘ÇÃåÑä‘
 
 	int  GetMaxRow();
-	int  CalcMaxColumn();
+	int  GetMaxColumn();
+	int  GetMaxDisplayNumber();
 
-	void Draw();
+	void Draw( int nowStageNumber );
 }
 
 class Cursor
 {
 private:
-	int  oldStageNumber;	// 1énÇ‹ÇË
 	int  nowStageNumber;	// 1énÇ‹ÇË
 
 	Vector2 pos;	// ç∂è„
@@ -50,7 +56,7 @@ private:
 #endif // USE_IMGUI
 
 public:
-	Cursor() : oldStageNumber( 1 ), nowStageNumber( 1 ),
+	Cursor() : nowStageNumber( 1 ),
 		pos(), velo(),
 		isDoneMove( false )
 	{}
@@ -69,7 +75,7 @@ public:
 	}
 private:
 	void Move();
-	bool Interpolate();	// äÆóπÇµÇΩÇÁTRUEÇï‘Ç∑
+	void Interpolate();
 
 #if USE_IMGUI
 

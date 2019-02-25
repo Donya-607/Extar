@@ -55,7 +55,32 @@ void Game::Init()
 	GameImage::Load();
 	CameraImage::Load();
 	StarImage::Load();
+	SelectImage::Load();
+	CursorImage::Load();
 
+	switch ( state )
+	{
+	case State::Select:
+		SelectInit();		break;
+	case State::Game:
+		GameInit();			break;
+	case State::Clear:
+		ClearInit();		break;
+	default:
+		assert( !"Error:SceneGame state error." );
+		exit( EXIT_FAILURE );
+		return;
+	}
+
+	ShakeInit();
+}
+void Game::SelectInit()
+{
+	pCursor.reset( new Cursor() );
+	pCursor->Init();
+}
+void Game::GameInit()
+{
 	const float GRID_SIZE = scast<float>( StarImage::SIZE );
 	Vector2 gridSize{ GRID_SIZE, GRID_SIZE };
 	Grid::SetSize( gridSize );
@@ -68,16 +93,6 @@ void Game::Init()
 
 	pNumMoves.reset( new NumMoves() );
 	pNumMoves->Init( stageNumber );
-
-	ShakeInit();
-}
-void Game::SelectInit()
-{
-
-}
-void Game::GameInit()
-{
-
 }
 void Game::ClearInit()
 {
@@ -86,6 +101,10 @@ void Game::ClearInit()
 
 void Game::Uninit()
 {
+	SelectUninit();
+	GameUninit();
+	ClearUninit();
+
 	FileIO::ReleaseCameraData();
 	FileIO::ReleaseStarsData();
 	FileIO::ReleaseNumMovesData();
@@ -93,22 +112,22 @@ void Game::Uninit()
 	GameImage::Release();
 	CameraImage::Release();
 	StarImage::Release();
+	SelectImage::Release();
+	CursorImage::Release();
 
 	Grid::SetSize( { 0, 0 } );
-
-	pCamera->Uninit();
-	pStarMng->Uninit();
-	pNumMoves->Uninit();
 
 	ShakeUninit();
 }
 void Game::SelectUninit()
 {
-
+	if ( pCursor )   { pCursor->Uninit();   }
 }
 void Game::GameUninit()
 {
-
+	if ( pCamera   ) { pCamera->Uninit();   }
+	if ( pStarMng  ) { pStarMng->Uninit();  }
+	if ( pNumMoves ) { pNumMoves->Uninit(); }
 }
 void Game::ClearUninit()
 {
@@ -161,7 +180,8 @@ void Game::Update()
 		ClearUpdate();			break;
 	default:
 		assert( !"Error:SceneGame state error." );
-		break;
+		exit( EXIT_FAILURE );
+		return;
 	}
 
 	CollisionCheck();
@@ -193,7 +213,12 @@ void Game::Update()
 
 void Game::SelectUpdate()
 {
+	if ( pCursor )
+	{
+		pCursor->Update();
 
+		stageNumber = pCursor->GetNowStageNumber();
+	}
 }
 
 void Game::GameUpdate()
@@ -362,7 +387,48 @@ void Game::PrepareChangeSceneToTitle()
 
 void Game::Draw()
 {
-	Vector2 shake  = GetShakeAmount();
+	switch ( state )
+	{
+	case State::Select:
+		SelectDraw();
+		SelectDrawUI();		break;
+	case State::Game:
+		GameDraw();
+		GameDrawUI();		break;
+	case State::Clear:
+		ClearDraw();
+		ClearDrawUI();		break;
+	default:
+		assert( !"Error:SceneGame state error." );
+		exit( EXIT_FAILURE );
+		return;
+	}
+
+#if	DEBUG_MODE
+
+	if ( isDrawCollision )
+	{
+		ShowCollisionArea();
+	}
+
+#endif	// DEBUG_MODE
+}
+
+void Game::SelectDraw()
+{
+	Vector2 shake = GetShakeAmount();
+
+	SelectStage::Draw( stageNumber );
+
+	if ( pCursor )
+	{
+		pCursor->Draw( shake );
+	}
+}
+
+void Game::GameDraw()
+{
+	Vector2 shake = GetShakeAmount();
 
 	// îwåi
 	{
@@ -371,7 +437,7 @@ void Game::Draw()
 		(
 			scast<int>( 0 - shake.x ),
 			scast<int>( 0 - shake.y ),
-			scast<int>( SCREEN_WIDTH  - shake.x ),
+			scast<int>( SCREEN_WIDTH - shake.x ),
 			scast<int>( SCREEN_HEIGHT - shake.y ),
 			GameImage::hGameBG,
 			TRUE
@@ -397,20 +463,19 @@ void Game::Draw()
 	{
 		pCamera->Draw( shake );
 	}
-
-	DrawUI();
-
-#if	DEBUG_MODE
-
-	if ( isDrawCollision )
-	{
-		ShowCollisionArea();
-	}
-
-#endif	// DEBUG_MODE
 }
 
-void Game::DrawUI()
+void Game::ClearDraw()
+{
+
+}
+
+void Game::SelectDrawUI()
+{
+
+}
+
+void Game::GameDrawUI()
 {
 	// éËêî
 	{
@@ -431,7 +496,7 @@ void Game::DrawUI()
 
 		for ( int i = 1; i <= Star::MAX_LEVEL; i++ )
 		{
-			double angle = ( i % 2 ) ? 45.0 : 0;
+			double angle = ( i % 2 ) ? 0 : 45.0;
 
 			DrawExtendFormatString
 			(
@@ -497,6 +562,11 @@ void Game::DrawUI()
 	}
 
 #endif // DEBUG_MODE
+
+}
+
+void Game::ClearDrawUI()
+{
 
 }
 

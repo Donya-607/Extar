@@ -9,6 +9,7 @@
 #include "Camera.h"
 #include "Star.h"
 #include "NumMoves.h"
+#include "Cursor.h"
 
 //--------------------
 //
@@ -32,6 +33,8 @@ private:
 
 	State state;
 
+	std::unique_ptr<Cursor>   pCursor;
+
 	std::unique_ptr<Camera>   pCamera;
 	std::unique_ptr<StarMng>  pStarMng;
 	std::unique_ptr<NumMoves> pNumMoves;
@@ -41,7 +44,8 @@ private:
 public:
 	Game( SceneMng *pMng ) : Scene( pMng ),
 		stageNumber( 1 ), numMoves( 0 ),
-		state( State::Game ),
+		state( State::Select ),
+		pCursor( nullptr ),
 		pCamera( nullptr ), pStarMng( nullptr ), pNumMoves( nullptr ),
 		isPause( false ), isDrawCollision( false )
 		{}
@@ -70,7 +74,13 @@ public:
 	void PrepareChangeSceneToTitle();
 
 	void Draw();
-	void DrawUI();
+	void SelectDraw();
+	void GameDraw();
+	void ClearDraw();
+
+	void SelectDrawUI();
+	void GameDrawUI();
+	void ClearDrawUI();
 private:
 	void CollisionCheck();
 	void ShowCollisionArea();

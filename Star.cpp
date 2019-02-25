@@ -112,7 +112,7 @@ void Star::Update()
 
 void Star::CalcRotate()
 {
-	angle = ( level % 2 ) ? 45.0f : 0;
+	angle = ( level % 2 ) ? 0 : 45.0f;
 }
 
 void Star::Draw( Vector2 shake ) const

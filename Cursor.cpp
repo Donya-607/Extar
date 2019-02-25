@@ -1,3 +1,5 @@
+#include <string>
+
 #include "DxLib.h"
 #include "Common.h"
 #include "Music.h"
@@ -9,6 +11,8 @@
 
 namespace CursorImage
 {
+	const Vector2 SIZE{ 512.0f, 378.0f };
+
 	static int hCursor;
 
 	void Load()
@@ -32,14 +36,76 @@ namespace CursorImage
 	{
 		return hCursor;
 	}
+	Vector2 GetSize()
+	{
+		return SIZE;
+	}
+}
+namespace SelectImage
+{
+	static std::vector<int> hThumbnails;
+
+	void Load()
+	{
+		// すでに値が入っていたら，読み込んだものとみなして飛ばす
+		if ( scast<int>( hThumbnails.size() ) )
+		{
+			return;
+		}
+		// else
+
+		hThumbnails.push_back( LoadGraph( "./Data/Images/Thumbnails/NoImage.png" ) );
+
+		for ( int i = 1; true; i++ )
+		{
+			std::string filePath = "./Data/Images/Thumbnails/Stage" + std::to_string( i ) + ".png";
+			int result = LoadGraph( filePath.c_str() );
+
+			// HACK:エラーが起きたものは，DeleteGraphしなくて大丈夫なのかどうか？
+			if ( result == -1 )
+			{
+				break;
+			}
+			// else
+
+			hThumbnails.push_back( result );
+		}
+	}
+	void Release()
+	{
+		for ( ; !hThumbnails.empty(); )
+		{
+			DeleteGraph( hThumbnails.back() );
+			hThumbnails.pop_back();
+		}
+	}
+
+	int  GetHandle( int stageNumber )
+	{
+		// stageNumberは１始まりの想定
+
+		if ( stageNumber <= 0 )
+		{
+			assert( !"Error : SelectStage::GetHandle()" );
+			return NULL;
+		}
+		// else
+		if( scast<int>( hThumbnails.size() ) <= stageNumber )
+		{
+			return hThumbnails.at( 0 );
+		}
+		// else
+		return hThumbnails.at( stageNumber );
+	}
 }
 namespace SelectStage
 {
-	const Vector2 LEFT_TOP_POS{ 192.0f, 64.0f };
-	const Vector2 SIZE{ 672.0f, 378.0f };
-	const Vector2 MARGIN{ 64.0f, 32.0f };
+	const Vector2 LEFT_TOP_POS{ 128.0f, 160.0f };
+	const Vector2 SIZE{ 512.0f, 378.0f };
+	const Vector2 MARGIN{ 64.0f, 64.0f };
 
-	static const int maxRow = 4;
+	static const int maxRow  = 3;
+	static const int maxClum = 2;
 
 	Vector2 GetPosLeftTop()
 	{
@@ -58,17 +124,43 @@ namespace SelectStage
 	{
 		return maxRow;
 	}
-	int  CalcMaxColumn()
+	int  GetMaxColumn()
 	{
-		int div = FileIO::GetMaxStageNumber() / maxRow;
-		int rem = FileIO::GetMaxStageNumber() % maxRow;
-
-		return div + rem;
+		return maxClum;
+	}
+	int  GetMaxDisplayNumber()
+	{
+		return GetMaxRow() * GetMaxColumn();
 	}
 
-	void Draw()
+	void Draw( int nowStageNumber )
 	{
+		int pageNum = ( ( nowStageNumber - 1 ) / SelectStage::GetMaxDisplayNumber() ); // 0始まり
+		int end = ( pageNum * SelectStage::GetMaxDisplayNumber() ) + SelectStage::GetMaxDisplayNumber() + 1;
+		for
+			(
+			int stageNumber = 1 + ( pageNum * SelectStage::GetMaxDisplayNumber() );
+				stageNumber < end;
+				stageNumber++
+			)
+		{
+			int slidePos = ( ( stageNumber - 1 ) % SelectStage::GetMaxRow() ) * scast<int>( SelectStage::GetSize().x + SelectStage::GetMargin().x );
+			int dropPos  = 0;
+			if ( ( pageNum * SelectStage::GetMaxDisplayNumber() ) + GetMaxRow() < stageNumber )
+			{
+				dropPos = scast<int>( SelectStage::GetSize().y + SelectStage::GetMargin().y );
+			}
 
+			DrawExtendGraph
+			(
+				scast<int>( SelectStage::GetPosLeftTop().x ) + slidePos,
+				scast<int>( SelectStage::GetPosLeftTop().y ) + dropPos,
+				scast<int>( SelectStage::GetPosLeftTop().x + SelectStage::GetSize().x ) + slidePos,
+				scast<int>( SelectStage::GetPosLeftTop().y + SelectStage::GetSize().y ) + dropPos,
+				SelectImage::GetHandle( stageNumber ),
+				TRUE
+			);
+		}
 	}
 }
 
@@ -103,16 +195,17 @@ void Cursor::Move()
 
 	if ( isInput )
 	{
-		oldStageNumber = nowStageNumber;
 		isDoneMove = false;
 
 		int moveAmount = SelectStage::GetMaxRow();
 
-		if ( isUp	&& moveAmount < nowStageNumber )
+		// ２列のうち，カーソルの上下によって条件している（？），列が増えるとおじゃんになる
+
+		if ( isUp	&& ( nowStageNumber % SelectStage::GetMaxColumn() ) >= SelectStage::GetMaxRow() )
 		{
 			nowStageNumber -= moveAmount;
 		}
-		if ( isDown	&& nowStageNumber <= ( ( SelectStage::CalcMaxColumn() - 1 ) * SelectStage::GetMaxRow() ) )
+		if ( isDown	&& ( nowStageNumber % SelectStage::GetMaxColumn() ) <= SelectStage::GetMaxRow() )
 		{
 			nowStageNumber += moveAmount;
 		}
@@ -131,7 +224,6 @@ void Cursor::Move()
 
 	if ( isInput )
 	{
-		oldStageNumber = nowStageNumber;
 		isDoneMove = false;
 
 		int moveAmount = 1;
@@ -147,16 +239,43 @@ void Cursor::Move()
 	}
 }
 
-bool Cursor::Interpolate()
+void Cursor::Interpolate()
 {
-	int row  = nowStageNumber % SelectStage::GetMaxRow();
-	int clum = nowStageNumber / SelectStage::GetMaxRow();;
-	Vector2 targetPos;
+	constexpr float RESISTANCE		= 0.3f;
+	constexpr float LOWER_DISTANCE	= 8.0f;
 
-	return isDoneMove;
+	int row  = ( ( nowStageNumber - 1 ) % SelectStage::GetMaxDisplayNumber() ) % SelectStage::GetMaxRow();
+	int clum = ( ( nowStageNumber - 1 ) % SelectStage::GetMaxDisplayNumber() ) / SelectStage::GetMaxRow();
+	Vector2 targetPos;
+	targetPos.x = SelectStage::GetPosLeftTop().x + ( row  * ( SelectStage::GetSize().x + SelectStage::GetMargin().x ) );
+	targetPos.y = SelectStage::GetPosLeftTop().y + ( clum * ( SelectStage::GetSize().y + SelectStage::GetMargin().y ) );
+
+	Vector2 dir = targetPos - pos;
+	float dist = fabsf( dir.Length() );
+
+	if ( dist < LOWER_DISTANCE )
+	{
+		pos = targetPos;
+		isDoneMove = true;
+
+		return;
+	}
+	// else
+
+	dir *= RESISTANCE;
+
+	pos += dir;
 }
 
 void Cursor::Draw( Vector2 shake ) const
 {
-
+	DrawExtendGraph
+	(
+		scast<int>( pos.x ),
+		scast<int>( pos.y ),
+		scast<int>( pos.x + SelectStage::GetSize().x ),
+		scast<int>( pos.y + SelectStage::GetSize().y ),
+		CursorImage::GetHandle(),
+		TRUE
+	);
 }
