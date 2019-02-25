@@ -16,7 +16,7 @@
 
 namespace CursorImage
 {
-	constexpr int SIZE = 96;
+	// constexpr int SIZE = 96;
 
 	void Load();
 	void Release();

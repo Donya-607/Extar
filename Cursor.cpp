@@ -36,7 +36,7 @@ namespace CursorImage
 namespace SelectStage
 {
 	const Vector2 LEFT_TOP_POS{ 192.0f, 64.0f };
-	const Vector2 SIZE{ 288.0f, 96.0f };
+	const Vector2 SIZE{ 672.0f, 378.0f };
 	const Vector2 MARGIN{ 64.0f, 32.0f };
 
 	static const int maxRow = 4;
