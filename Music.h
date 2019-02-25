@@ -19,6 +19,8 @@ enum SE
 	M_EXPOSURE = 0,
 	M_FAILURE,
 
+	M_SELECT,
+
 	// 仮，ポーズ時に鳴らしている
 	M_E_NEXT,
 	M_E_BACK,

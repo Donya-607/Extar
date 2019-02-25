@@ -162,6 +162,7 @@
     <ClCompile Include="External\ImguiDx\imgui_demo.cpp" />
     <ClCompile Include="External\ImguiDx\imgui_draw.cpp" />
     <ClCompile Include="External\ImguiDx\imgui_impl_dxlib.cpp" />
+    <ClCompile Include="Fade.cpp" />
     <ClCompile Include="Grid.cpp" />
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="Joypad.cpp" />
@@ -191,6 +192,7 @@
     <ClInclude Include="External\ImguiDx\stb_rect_pack.h" />
     <ClInclude Include="External\ImguiDx\stb_textedit.h" />
     <ClInclude Include="External\ImguiDx\stb_truetype.h" />
+    <ClInclude Include="Fade.h" />
     <ClInclude Include="Grid.h" />
     <ClInclude Include="Input.h" />
     <ClInclude Include="Joypad.h" />

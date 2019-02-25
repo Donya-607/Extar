@@ -29,6 +29,7 @@ namespace StageImage
 
 	int  GetHandle( int stageNumber );
 	int  GetBackHandle();
+	int  GetLRHandle( bool isL, bool isGlow );
 }
 namespace StageSelect
 {
@@ -43,6 +44,8 @@ namespace StageSelect
 	int  GetMaxColumn();
 	int  GetMaxDisplayNumber();
 
+	void SetLRGlow( bool isL, bool isGlow );
+
 	void Draw( int nowStageNumber );
 }
 
@@ -51,20 +54,26 @@ class Cursor
 private:
 	int  nowStageNumber;	// 1énÇ‹ÇË
 
+	int	 glowTimer[2];		// 0:L, 1:R, LRÉ{É^ÉìÇåıÇÁÇπÇÈéûä‘
+
 	Vector2 pos;	// ç∂è„
 	Vector2 velo;	// velocity
 
 	bool isDoneMove;
 	bool isChooseBack;
+
+	bool isDecision;
 #if USE_IMGUI
 
 #endif // USE_IMGUI
 
 public:
 	Cursor() : nowStageNumber( 1 ),
+		glowTimer(),
 		pos(), velo(),
 		isDoneMove( false ),
-		isChooseBack( false )
+		isChooseBack( false ),
+		isDecision( false)
 	{}
 	~Cursor() {}
 
@@ -79,9 +88,14 @@ public:
 	{
 		return nowStageNumber;
 	}
+	bool IsDecision() const
+	{
+		return isDecision;
+	}
 private:
 	void Move();
 	void Interpolate();
+	void GlowUpdate();
 
 #if USE_IMGUI
 

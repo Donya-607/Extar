@@ -10,6 +10,7 @@
 #include "Star.h"
 #include "NumMoves.h"
 #include "Cursor.h"
+#include "Fade.h"
 
 //--------------------
 //
@@ -24,7 +25,8 @@ private:
 	{
 		Select = 0,
 		Game,
-		Clear
+		Clear,
+		Null
 	};
 private:
 	int  stageNumber;	// 1始まり
@@ -32,6 +34,9 @@ private:
 	int  numMoves;		// 今の手数，0始まり，アンドゥで減る
 
 	State state;
+	State nextState;
+
+	std::unique_ptr<Fade>	  pFade;
 
 	std::unique_ptr<Cursor>   pCursor;
 
@@ -44,7 +49,8 @@ private:
 public:
 	Game( SceneMng *pMng ) : Scene( pMng ),
 		stageNumber( 1 ), numMoves( 0 ),
-		state( State::Select ),
+		state( State::Select ), nextState( State::Null ),
+		pFade( nullptr ),
 		pCursor( nullptr ),
 		pCamera( nullptr ), pStarMng( nullptr ), pNumMoves( nullptr ),
 		isPause( false ), isDrawCollision( false )
@@ -65,6 +71,11 @@ public:
 	void SelectUpdate();
 	void GameUpdate();
 	void ClearUpdate();
+
+	void FadeBegin();
+	void FadeUpdate();
+	void FadeDone();
+	void FadeEnd();
 
 	bool Exposure();	// 成功したらTRUE
 

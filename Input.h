@@ -21,8 +21,8 @@
 
 #else
 
-#define IS_TRG_EXPOSURE		( ( !PRESS_CTRL && TRG( KEY_INPUT_Z ) ) || TRG_J_X( XB_X ) || TRG_J_X( XB_Y ) )
-#define IS_TRG_UNDO			( TRG( KEY_INPUT_X )       || TRG_J_X( XB_A )      || TRG_J_X( XB_B ) )
+#define IS_TRG_EXPOSURE		( ( !PRESS_CTRL && TRG( KEY_INPUT_Z ) ) || TRG_J_X( XB_X ) || TRG_J_X( XB_A ) )
+#define IS_TRG_UNDO			( TRG( KEY_INPUT_X )       || TRG_J_X( XB_Y )      || TRG_J_X( XB_B ) )
 
 #define IS_TRG_L			( TRG( KEY_INPUT_L )       || TRG_J_X( XB_L ) || TRG_J_TRIGGER_X( XT_LEFT  ) )
 #define IS_TRG_R			( TRG( KEY_INPUT_R )       || TRG_J_X( XB_R ) || TRG_J_TRIGGER_X( XT_RIGHT ) )

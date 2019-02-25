@@ -79,6 +79,9 @@ void Game::Init()
 	StarImage::Load();
 	StageImage::Load();
 	CursorImage::Load();
+	FadeImage::Load();
+
+	pFade.reset( new Fade() );
 
 	switch ( state )
 	{
@@ -123,6 +126,8 @@ void Game::ClearInit()
 
 void Game::Uninit()
 {
+	FadeEnd();
+
 	SelectUninit();
 	GameUninit();
 	ClearUninit();
@@ -137,6 +142,7 @@ void Game::Uninit()
 	StarImage::Release();
 	StageImage::Release();
 	CursorImage::Release();
+	FadeImage::Release();
 
 	Grid::SetSize( { 0, 0 } );
 
@@ -207,6 +213,11 @@ void Game::Update()
 		return;
 	}
 
+	if ( pFade )
+	{
+		FadeUpdate();
+	}
+
 	CollisionCheck();
 
 #if DEBUG_MODE	// TODO:ここをデバッグビルドかどうか判定するやつに変えたい
@@ -241,6 +252,12 @@ void Game::SelectUpdate()
 		pCursor->Update();
 
 		stageNumber = pCursor->GetNowStageNumber();
+
+		if ( nextState == State::Null && pCursor->IsDecision() )
+		{
+			nextState = State::Game;
+			FadeBegin();
+		}
 	}
 }
 
@@ -276,6 +293,17 @@ void Game::GameUpdate()
 	{
 		pNumMoves->Update();
 	}
+
+#if DEBUG_MODE
+
+	if ( IS_TRG_EXPOSURE && pCursor->IsDecision() )
+	{
+		nextState = State::Game;
+		FadeBegin();
+	}
+
+#endif // DEBUG_MODE
+
 
 #if USE_IMGUI
 
@@ -315,6 +343,72 @@ void Game::ClearUpdate()
 
 	ShakeUpdate();
 }
+
+void Game::FadeBegin()
+{
+	constexpr int MOVE_INTERVAL = 1;
+	Vector2 pos = FadeImage::GetSize();
+	pos *= -1;
+	pos.x += scast<float>( SCREEN_WIDTH  ) * 0.2f;
+	pos.y -= scast<float>( SCREEN_HEIGHT ) * 1.0f;
+
+	pFade->Init( MOVE_INTERVAL, pos );
+}
+
+void Game::FadeUpdate()
+{
+	pFade->Update();
+
+	if ( nextState != State::Null && pFade->IsDoneFade() )
+	{
+		FadeDone();
+	}
+
+	if ( pFade->IsLeave() )
+	{
+		FadeEnd();
+	}
+}
+
+void Game::FadeDone()
+{
+	switch ( state )
+	{
+	case State::Select:
+		SelectUninit();		break;
+	case State::Game:
+		GameUninit();		break;
+	case State::Clear:
+		ClearUninit();		break;
+	default:
+		assert( !"Error:SceneGame state error." );
+		exit( EXIT_FAILURE );
+		return;
+	}
+
+	state = nextState;
+	nextState = State::Null;
+
+	switch ( state )
+	{
+	case State::Select:
+		SelectInit();		break;
+	case State::Game:
+		GameInit();			break;
+	case State::Clear:
+		ClearInit();		break;
+	default:
+		assert( !"Error:SceneGame state error." );
+		exit( EXIT_FAILURE );
+		return;
+	}
+}
+
+void Game::FadeEnd()
+{
+	pFade->Uninit();
+}
+
 
 bool Game::Exposure()
 {
@@ -410,6 +504,8 @@ void Game::PrepareChangeSceneToTitle()
 
 void Game::Draw()
 {
+	Vector2 shake = GetShakeAmount();
+
 	switch ( state )
 	{
 	case State::Select:
@@ -425,6 +521,11 @@ void Game::Draw()
 		assert( !"Error:SceneGame state error." );
 		exit( EXIT_FAILURE );
 		return;
+	}
+
+	if ( pFade )
+	{
+		pFade->Draw( shake );
 	}
 
 #if	DEBUG_MODE

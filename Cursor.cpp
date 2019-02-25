@@ -49,8 +49,13 @@ namespace CursorImage
 }
 namespace StageImage
 {
+	constexpr int NUM_LR_ROW = 2;
+	constexpr int SIZE_LR_X  = 96;
+	constexpr int SIZE_LR_Y  = 128;
+
 	static std::vector<int> hThumbnails;
 	static int hBack;
+	static int hLR[NUM_LR_ROW * 2];
 
 	void Load()
 	{
@@ -79,6 +84,15 @@ namespace StageImage
 		}
 
 		hBack = LoadGraph( "./Data/Images/Thumbnails/Back.png" );
+
+		LoadDivGraph
+		(
+			"./Data/Images/UI/UseLR.png",
+			NUM_LR_ROW * 2,
+			NUM_LR_ROW, 2,
+			SIZE_LR_X, SIZE_LR_Y,
+			hLR
+		);
 	}
 	void Release()
 	{
@@ -90,6 +104,12 @@ namespace StageImage
 
 		DeleteGraph( hBack );
 		hBack = 0;
+
+		for ( int i = 0; i < ( NUM_LR_ROW * 2 ); i++ )
+		{
+			DeleteGraph( hLR[i] );
+			hLR[i] = 0;
+		}
 	}
 
 	int  GetHandle( int stageNumber )
@@ -112,6 +132,17 @@ namespace StageImage
 	int  GetBackHandle()
 	{
 		return hBack;
+	}
+
+	int GetLRHandle( bool isL, bool isGlow )
+	{
+		int index = ( isL ) ? 0 : 2;
+		if ( isGlow )
+		{
+			index += 1;
+		}
+
+		return hLR[index];
 	}
 }
 namespace StageSelect
@@ -159,6 +190,13 @@ namespace StageSelect
 	int  GetMaxDisplayNumber()
 	{
 		return GetMaxRow() * GetMaxColumn();
+	}
+
+	static bool isGlowLR[2] = { false, false };
+
+	void SetLRGlow( bool isL, bool isGlow )
+	{
+		isGlowLR[( isL ) ? 0 : 1] = isGlow;
 	}
 
 	void Draw( int nowStageNumber )
@@ -244,6 +282,39 @@ namespace StageSelect
 				);
 			}
 		}
+
+		// LRï\é¶
+		{
+			int baseX = 16 + ( StageImage::SIZE_LR_X >> 1 );
+			int baseY = SCREEN_HEIGHT >> 1;
+
+			// L
+			{
+				double scale = ( isGlowLR[0] ) ? 1.5 : 1.0;
+				DrawRotaGraph
+				(
+					baseX,
+					baseY,
+					scale,
+					ToRadian( 0 ),
+					StageImage::GetLRHandle( /* isL = */true, isGlowLR[0] ),
+					TRUE
+				);
+			}
+			// R
+			{
+				double scale = ( isGlowLR[1] ) ? 1.5 : 1.0;
+				DrawRotaGraph
+				(
+					SCREEN_WIDTH - baseX,
+					baseY,
+					scale,
+					ToRadian( 0 ),
+					StageImage::GetLRHandle( /* isL = */false, isGlowLR[1] ),
+					TRUE
+				);
+			}
+		}
 	}
 }
 
@@ -258,16 +329,30 @@ void Cursor::Uninit()
 
 void Cursor::Update()
 {
+	if ( isDecision )
+	{
+		return;
+	}
+	// else
+
 	Move();
 	if ( !isDoneMove )
 	{
 		Interpolate();
 	}
+
+	GlowUpdate();
+
+	if ( IS_TRG_EXPOSURE )
+	{
+		isDecision = true;
+		PlaySE( M_E_NEXT );
+	}
 }
 
 void Cursor::Move()
 {
-	constexpr float RESPONSE_MOVE_AMOUNT = 16.0f;	// âüÇµÇΩèuä‘Ç…ÅCÇ©Ç»ÇÁÇ∏à⁄ìÆÇ≥ÇπÇÈó 
+	constexpr float RESPONSE_MOVE_AMOUNT = 48.0f;	// âüÇµÇΩèuä‘Ç…ÅCÇ©Ç»ÇÁÇ∏à⁄ìÆÇ≥ÇπÇÈó 
 
 	bool isLB = false, isRB = false, isInput = false;
 
@@ -278,6 +363,15 @@ void Cursor::Move()
 
 	if ( isInput )
 	{
+		// Reaction
+		{
+			constexpr int GLOW_TIME = 10;
+
+			StageSelect::SetLRGlow( isLB, /* isGlow = */true );
+			glowTimer[( isLB ) ? 0 : 1] = GLOW_TIME;
+			PlaySE( M_SELECT );
+		}
+
 		isDoneMove = false;
 
 		int moveAmount = StageSelect::GetMaxDisplayNumber();
@@ -334,6 +428,8 @@ void Cursor::Move()
 
 	if ( isInput )
 	{
+		PlaySE( M_SELECT );
+
 		isDoneMove = false;
 
 		int moveAmount = StageSelect::GetMaxRow();
@@ -379,6 +475,8 @@ void Cursor::Move()
 
 	if ( isInput )
 	{
+		PlaySE( M_SELECT );
+
 		isDoneMove = false;
 
 		int moveAmount = 1;
@@ -438,6 +536,21 @@ void Cursor::Interpolate()
 	dir *= RESISTANCE;
 
 	pos += dir;
+}
+
+void Cursor::GlowUpdate()
+{
+	for ( int i = 0; i < 2; i++ )
+	{
+		if ( glowTimer[i] )
+		{
+			if ( !( --glowTimer[i] ) )
+			{
+				bool isL = ( 0 == i ) ? true : false;
+				StageSelect::SetLRGlow( isL, false );
+			}
+		}
+	}
 }
 
 void Cursor::Draw( Vector2 shake ) const
