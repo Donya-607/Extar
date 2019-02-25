@@ -18,6 +18,27 @@
 
 #include "FileIO.h"
 
+namespace SelectImage
+{
+	static int hSelectBG;
+
+	void Load()
+	{
+		// すでに値が入っていたら，読み込んだものとみなして飛ばす
+		if ( 0 != hSelectBG )
+		{
+			return;
+		}
+		// else
+
+		hSelectBG = LoadGraph( "./Data/Images/BG/Select.png" );
+	}
+	void Release()
+	{
+		DeleteGraph( hSelectBG );
+		hSelectBG = 0;
+	}
+}
 namespace GameImage
 {
 	static int hGameBG;
@@ -52,10 +73,11 @@ void Game::Init()
 	FileIO::ReadAllStars();
 	FileIO::ReadAllNumMoves();
 
+	SelectImage::Load();
 	GameImage::Load();
 	CameraImage::Load();
 	StarImage::Load();
-	SelectImage::Load();
+	StageImage::Load();
 	CursorImage::Load();
 
 	switch ( state )
@@ -109,10 +131,11 @@ void Game::Uninit()
 	FileIO::ReleaseStarsData();
 	FileIO::ReleaseNumMovesData();
 
+	SelectImage::Release();
 	GameImage::Release();
 	CameraImage::Release();
 	StarImage::Release();
-	SelectImage::Release();
+	StageImage::Release();
 	CursorImage::Release();
 
 	Grid::SetSize( { 0, 0 } );
@@ -418,7 +441,21 @@ void Game::SelectDraw()
 {
 	Vector2 shake = GetShakeAmount();
 
-	SelectStage::Draw( stageNumber );
+	// 背景
+	{
+		// 仮置きなので，ExtendGraph
+		DrawExtendGraph
+		(
+			scast<int>( 0 - shake.x ),
+			scast<int>( 0 - shake.y ),
+			scast<int>( SCREEN_WIDTH - shake.x ),
+			scast<int>( SCREEN_HEIGHT - shake.y ),
+			SelectImage::hSelectBG,
+			TRUE
+		);
+	}
+
+	StageSelect::Draw( stageNumber );
 
 	if ( pCursor )
 	{

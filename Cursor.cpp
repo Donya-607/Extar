@@ -14,6 +14,7 @@ namespace CursorImage
 	const Vector2 SIZE{ 512.0f, 378.0f };
 
 	static int hCursor;
+	static int hNotChoice;
 
 	void Load()
 	{
@@ -23,25 +24,28 @@ namespace CursorImage
 			return;
 		}
 		// else
-
+		
 		hCursor = LoadGraph( "./Data/Images/Camera/CameraFrame.png" );
+		hNotChoice = LoadGraph( "./Data/Images/Camera/NotChoice.png" );
 	}
 	void Release()
 	{
 		DeleteGraph( hCursor );
+		DeleteGraph( hNotChoice );
 		hCursor = 0;
+		hNotChoice = 0;
 	}
 
-	int  GetHandle()
+	int  GetHandle( bool isChoice )
 	{
-		return hCursor;
+		return ( isChoice ) ? hCursor : hNotChoice;
 	}
 	Vector2 GetSize()
 	{
 		return SIZE;
 	}
 }
-namespace SelectImage
+namespace StageImage
 {
 	static std::vector<int> hThumbnails;
 	static int hBack;
@@ -108,7 +112,7 @@ namespace SelectImage
 		return hBack;
 	}
 }
-namespace SelectStage
+namespace StageSelect
 {
 	const Vector2 LEFT_TOP_POS{ 128.0f, 160.0f };
 	const Vector2 SIZE{ 512.0f, 378.0f };
@@ -157,29 +161,38 @@ namespace SelectStage
 
 	void Draw( int nowStageNumber )
 	{
-		int pageNum = ( ( nowStageNumber - 1 ) / SelectStage::GetMaxDisplayNumber() ); // 0始まり
-		int end = ( pageNum * SelectStage::GetMaxDisplayNumber() ) + SelectStage::GetMaxDisplayNumber() + 1;
+		int pageNum = ( ( nowStageNumber - 1 ) / StageSelect::GetMaxDisplayNumber() ); // 0始まり
+		int end = ( pageNum * StageSelect::GetMaxDisplayNumber() ) + StageSelect::GetMaxDisplayNumber() + 1;
 		for
 			(
-			int stageNumber = 1 + ( pageNum * SelectStage::GetMaxDisplayNumber() );
+			int stageNumber = 1 + ( pageNum * StageSelect::GetMaxDisplayNumber() );
 				stageNumber < end;
 				stageNumber++
 			)
 		{
-			int slidePos = ( ( stageNumber - 1 ) % SelectStage::GetMaxRow() ) * scast<int>( SelectStage::GetSize().x + SelectStage::GetMargin().x );
+			int slidePos = ( ( stageNumber - 1 ) % StageSelect::GetMaxRow() ) * scast<int>( StageSelect::GetSize().x + StageSelect::GetMargin().x );
 			int dropPos  = 0;
-			if ( ( pageNum * SelectStage::GetMaxDisplayNumber() ) + GetMaxRow() < stageNumber )
+			if ( ( pageNum * StageSelect::GetMaxDisplayNumber() ) + GetMaxRow() < stageNumber )
 			{
-				dropPos = scast<int>( SelectStage::GetSize().y + SelectStage::GetMargin().y );
+				dropPos = scast<int>( StageSelect::GetSize().y + StageSelect::GetMargin().y );
 			}
 
 			DrawExtendGraph
 			(
-				scast<int>( SelectStage::GetPosLeftTop().x ) + slidePos,
-				scast<int>( SelectStage::GetPosLeftTop().y ) + dropPos,
-				scast<int>( SelectStage::GetPosLeftTop().x + SelectStage::GetSize().x ) + slidePos,
-				scast<int>( SelectStage::GetPosLeftTop().y + SelectStage::GetSize().y ) + dropPos,
-				SelectImage::GetHandle( stageNumber ),
+				scast<int>( StageSelect::GetPosLeftTop().x ) + slidePos,
+				scast<int>( StageSelect::GetPosLeftTop().y ) + dropPos,
+				scast<int>( StageSelect::GetPosLeftTop().x + StageSelect::GetSize().x ) + slidePos,
+				scast<int>( StageSelect::GetPosLeftTop().y + StageSelect::GetSize().y ) + dropPos,
+				StageImage::GetHandle( stageNumber ),
+				TRUE
+			);
+			DrawExtendGraph
+			(
+				scast<int>( StageSelect::GetPosLeftTop().x ) + slidePos,
+				scast<int>( StageSelect::GetPosLeftTop().y ) + dropPos,
+				scast<int>( StageSelect::GetPosLeftTop().x + StageSelect::GetSize().x ) + slidePos,
+				scast<int>( StageSelect::GetPosLeftTop().y + StageSelect::GetSize().y ) + dropPos,
+				CursorImage::GetHandle( false ),
 				TRUE
 			);
 		}
@@ -188,11 +201,11 @@ namespace SelectStage
 		{
 			DrawExtendGraph
 			(
-				scast<int>( SelectStage::GetBackPosLeftTop().x ),
-				scast<int>( SelectStage::GetBackPosLeftTop().y ),
-				scast<int>( SelectStage::GetBackPosLeftTop().x + SelectStage::GetBackSize().x ),
-				scast<int>( SelectStage::GetBackPosLeftTop().y + SelectStage::GetBackSize().y ),
-				SelectImage::GetBackHandle(),
+				scast<int>( StageSelect::GetBackPosLeftTop().x ),
+				scast<int>( StageSelect::GetBackPosLeftTop().y ),
+				scast<int>( StageSelect::GetBackPosLeftTop().x + StageSelect::GetBackSize().x ),
+				scast<int>( StageSelect::GetBackPosLeftTop().y + StageSelect::GetBackSize().y ),
+				StageImage::GetBackHandle(),
 				TRUE
 			);
 		}
@@ -201,7 +214,7 @@ namespace SelectStage
 
 void Cursor::Init()
 {
-	pos = SelectStage::GetPosLeftTop();
+	pos = StageSelect::GetPosLeftTop();
 }
 void Cursor::Uninit()
 {
@@ -232,8 +245,8 @@ void Cursor::Move()
 	{
 		isDoneMove = false;
 
-		int moveAmount = SelectStage::GetMaxDisplayNumber();
-		int pageNum = ( ( nowStageNumber - 1 ) / SelectStage::GetMaxDisplayNumber() ); // 0始まり
+		int moveAmount = StageSelect::GetMaxDisplayNumber();
+		int pageNum = ( ( nowStageNumber - 1 ) / StageSelect::GetMaxDisplayNumber() ); // 0始まり
 
 		if ( isLB )
 		{
@@ -253,7 +266,7 @@ void Cursor::Move()
 		if ( isRB )
 		{
 			// 開いているのが最後のページだったら
-			if ( FileIO::GetMaxStageNumber() - 1 < ( pageNum + 1 ) * SelectStage::GetMaxDisplayNumber() )
+			if ( FileIO::GetMaxStageNumber() - 1 < ( pageNum + 1 ) * StageSelect::GetMaxDisplayNumber() )
 			{
 				// 最後のステージにカーソルが合っている場合のみ，最初に合わせる
 				nowStageNumber =
@@ -284,17 +297,17 @@ void Cursor::Move()
 	{
 		isDoneMove = false;
 
-		int moveAmount = SelectStage::GetMaxRow();
+		int moveAmount = StageSelect::GetMaxRow();
 
-		int remStageNumber = ( nowStageNumber - 1 ) % SelectStage::GetMaxDisplayNumber();	// 0始まり
-		int clum = remStageNumber / SelectStage::GetMaxRow();	// 0始まり
+		int remStageNumber = ( nowStageNumber - 1 ) % StageSelect::GetMaxDisplayNumber();	// 0始まり
+		int clum = remStageNumber / StageSelect::GetMaxRow();	// 0始まり
 
 		if ( isUp )
 		{
 			if ( !isChooseBack && 0 == clum )
 			{
 				isChooseBack = true;
-				nowStageNumber -= remStageNumber % SelectStage::GetMaxRow();	// Backから下入力した際に，左上にカーソルを合わせるため
+				nowStageNumber -= remStageNumber % StageSelect::GetMaxRow();	// Backから下入力した際に，左上にカーソルを合わせるため
 			}
 			if ( 0 < clum )
 			{
@@ -307,7 +320,7 @@ void Cursor::Move()
 			{
 				isChooseBack = false;
 			}
-			else if ( nowStageNumber <= FileIO::GetMaxStageNumber() - moveAmount && clum != ( SelectStage::GetMaxColumn() - 1 ) )
+			else if ( nowStageNumber <= FileIO::GetMaxStageNumber() - moveAmount && clum != ( StageSelect::GetMaxColumn() - 1 ) )
 			{
 				nowStageNumber += moveAmount;
 			}
@@ -322,7 +335,7 @@ void Cursor::Move()
 
 	if ( IS_TRG_LEFT	) { isLeft	= true; }
 	if ( IS_TRG_RIGHT	) { isRight	= true; }
-	if ( !isChooseBack && isLeft		&& !isRight	) { pos.x -= RESPONSE_MOVE_AMOUNT; isInput = true; }
+	if ( !isChooseBack && isLeft	&& !isRight	) { pos.x -= RESPONSE_MOVE_AMOUNT; isInput = true; }
 	if ( !isChooseBack && isRight	&& !isLeft	) { pos.x += RESPONSE_MOVE_AMOUNT; isInput = true; }
 
 	if ( isInput )
@@ -359,16 +372,16 @@ void Cursor::Interpolate()
 
 	if ( isChooseBack )
 	{
-		pos = SelectStage::GetBackPosLeftTop();
+		pos = StageSelect::GetBackPosLeftTop();
 		return;
 	}
 	// else
 
 	{
-		int row  = ( ( nowStageNumber - 1 ) % SelectStage::GetMaxDisplayNumber() ) % SelectStage::GetMaxRow();
-		int clum = ( ( nowStageNumber - 1 ) % SelectStage::GetMaxDisplayNumber() ) / SelectStage::GetMaxRow();
-		targetPos.x = SelectStage::GetPosLeftTop().x + ( row  * ( SelectStage::GetSize().x + SelectStage::GetMargin().x ) );
-		targetPos.y = SelectStage::GetPosLeftTop().y + ( clum * ( SelectStage::GetSize().y + SelectStage::GetMargin().y ) );
+		int row  = ( ( nowStageNumber - 1 ) % StageSelect::GetMaxDisplayNumber() ) % StageSelect::GetMaxRow();
+		int clum = ( ( nowStageNumber - 1 ) % StageSelect::GetMaxDisplayNumber() ) / StageSelect::GetMaxRow();
+		targetPos.x = StageSelect::GetPosLeftTop().x + ( row  * ( StageSelect::GetSize().x + StageSelect::GetMargin().x ) );
+		targetPos.y = StageSelect::GetPosLeftTop().y + ( clum * ( StageSelect::GetSize().y + StageSelect::GetMargin().y ) );
 	}
 
 	Vector2 dir = targetPos - pos;
@@ -392,8 +405,8 @@ void Cursor::Draw( Vector2 shake ) const
 {
 	const Vector2 SIZE =
 		( isChooseBack )
-		? SelectStage::GetBackSize()
-		: SelectStage::GetSize();
+		? StageSelect::GetBackSize()
+		: StageSelect::GetSize();
 
 	DrawExtendGraph
 	(
@@ -401,7 +414,7 @@ void Cursor::Draw( Vector2 shake ) const
 		scast<int>( pos.y ),
 		scast<int>( pos.x + SIZE.x ),
 		scast<int>( pos.y + SIZE.y ),
-		CursorImage::GetHandle(),
+		CursorImage::GetHandle( true ),
 		TRUE
 	);
 }

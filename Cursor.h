@@ -19,10 +19,10 @@ namespace CursorImage
 	void Load();
 	void Release();
 
-	int  GetHandle();
+	int  GetHandle( bool isChoice );
 	Vector2 GetSize();
 }
-namespace SelectImage
+namespace StageImage
 {
 	void Load();
 	void Release();
@@ -30,7 +30,7 @@ namespace SelectImage
 	int  GetHandle( int stageNumber );
 	int  GetBackHandle();
 }
-namespace SelectStage
+namespace StageSelect
 {
 	Vector2 GetPosLeftTop();
 	Vector2 GetSize();
