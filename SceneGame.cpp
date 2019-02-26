@@ -45,6 +45,7 @@ namespace GameImage
 {
 	static int hGameBG;
 	static int hFrameBG;
+	static int hFrameUI;
 
 	void Load()
 	{
@@ -57,13 +58,16 @@ namespace GameImage
 
 		hGameBG		= LoadGraph( "./Data/Images/BG/Game.png"  );
 		hFrameBG	= LoadGraph( "./Data/Images/BG/Frame.png" );
+		hFrameUI	= LoadGraph( "./Data/Images/UI/FrameUI.png" );
 	}
 	void Release()
 	{
 		DeleteGraph( hGameBG	);
 		DeleteGraph( hFrameBG	);
+		DeleteGraph( hFrameUI	);
 		hGameBG		= 0;
 		hFrameBG	= 0;
+		hFrameUI	= 0;
 	}
 }
 
@@ -626,22 +630,28 @@ void Game::GameDraw()
 
 	// îwåi
 	{
-		// âºíuÇ´Ç»ÇÃÇ≈ÅCExtendGraph
-		DrawExtendGraph
+		DrawGraph
 		(
-			scast<int>( 0 - shake.x ),
-			scast<int>( 0 - shake.y ),
-			scast<int>( SCREEN_WIDTH - shake.x ),
-			scast<int>( SCREEN_HEIGHT - shake.y ),
+			0, 0,
 			GameImage::hGameBG,
 			TRUE
 		);
 
+		SetDrawBlendMode( DX_BLENDMODE_ADD, 255 );
 		// òg
 		DrawGraph
 		(
 			0, 0,
 			GameImage::hFrameBG,
+			TRUE
+		);
+		SetDrawBlendMode( DX_BLENDMODE_NOBLEND, 255 );
+
+		// ògÇÃâÊëú
+		DrawGraph
+		(
+			0, 0,
+			GameImage::hFrameUI,
 			TRUE
 		);
 	}
@@ -672,22 +682,28 @@ void Game::ClearDraw()
 
 	// îwåi
 	{
-		// âºíuÇ´Ç»ÇÃÇ≈ÅCExtendGraph
-		DrawExtendGraph
+		DrawGraph
 		(
-			scast<int>( 0 - shake.x ),
-			scast<int>( 0 - shake.y ),
-			scast<int>( SCREEN_WIDTH - shake.x ),
-			scast<int>( SCREEN_HEIGHT - shake.y ),
+			0, 0,
 			GameImage::hGameBG,
 			TRUE
 		);
 
+		SetDrawBlendMode( DX_BLENDMODE_ADD, 255 );
 		// òg
 		DrawGraph
 		(
 			0, 0,
 			GameImage::hFrameBG,
+			TRUE
+		);
+		SetDrawBlendMode( DX_BLENDMODE_NOBLEND, 255 );
+
+		// ògÇÃâÊëú
+		DrawGraph
+		(
+			0, 0,
+			GameImage::hFrameUI,
 			TRUE
 		);
 	}
