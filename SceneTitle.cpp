@@ -56,10 +56,10 @@ namespace TitleImage
 		hTitleBG = LoadGraph( "./Data/Images/BG/Title.png" );
 
 
-		hTitlePushUI = LoadGraph( "./Data/Images/UI/push.png" );
+		hTitlePushUI = LoadGraph( "./Data/Images/Title/PressAButton.png" );
 		LoadDivGraph
 		(
-			"./Data/Images/UI/title_char_2.png",
+			"./Data/Images/Title/TitleCharacter.png",
 			STAR_ALL,
 			STAR_NUM_X,
 			STAR_NUM_Y,
@@ -70,7 +70,7 @@ namespace TitleImage
 
 		LoadDivGraph
 		(
-			"./Data/Images/UI/title_ekusuta.png",
+			"./Data/Images/Title/TitleName.png",
 			CHAR_ALL,
 			CHAR_NUM_X,
 			CHAR_NUM_Y,
@@ -288,8 +288,8 @@ void Title::Draw()
 	{
 		DrawGraph
 		(
-			star_pos.x + 180,
-			star_pos.y + 180 + sin( PI * 2 / 240 * Count ) * 20,
+			scast<int>( star_pos.x + 180.0f ),
+			scast<int>( star_pos.y + 180.0f + sin( PI * 2.0f / 240.0f * Count ) * 20.0f ),
 			TitleImage::hSTAR[0],
 			TRUE
 		);
@@ -301,20 +301,21 @@ void Title::Draw()
 		SetDrawBlendMode( DX_BLENDMODE_ADD, flash_val );
 		DrawGraph
 		(
-			star_pos.x + 180,
-			star_pos.y + 180 + sin( PI * 2 / 240 * Count ) * 20,
+			scast<int>( star_pos.x + 180.0f ),
+			scast<int>( star_pos.y + 180.0f + sin( PI * 2.0f / 240.0f * Count ) * 20.0f ),
 			TitleImage::hSTAR[0],
 			TRUE
 		);
 
 	}
 	SetDrawBlendMode( DX_BLENDGRAPHTYPE_NORMAL, 0 );
+	timer++;	// éûä‘ç∑ÇçÏÇÈÇΩÇﬂ
 	//ÉG
 	{
 		DrawGraph
 		(
-			E_pos.x + 200,
-			E_pos.y + 200 + sin( PI * 2 / 240 * Count ) * 20,
+			scast<int>( E_pos.x + 200.0f ),
+			scast<int>( E_pos.y + 200.0f + sin( PI * 2.0f / 240.0f * Count ) * 20.0f ),
 			TitleImage::hChar[0],
 			TRUE
 		);
@@ -323,8 +324,8 @@ void Title::Draw()
 	{
 		DrawGraph
 		(
-			Ku_pos.x + 330,
-			Ku_pos.y + 200 + sin( PI * 2 / 240 * Count2 ) * 20,
+			scast<int>( Ku_pos.x + 330.0f ),
+			scast<int>( Ku_pos.y + 200.0f + sin( PI * 2.0f / 240.0f * Count2 ) * 20.0f ),
 			TitleImage::hChar[2],
 			TRUE
 		);
@@ -338,8 +339,8 @@ void Title::Draw()
 	{
 		DrawGraph
 		(
-			Su_pos.x + 460,
-			Su_pos.y + 200 + sin( PI * 2 / 240 * Count3 ) * 20,
+			scast<int>( Su_pos.x + 460.0f ),
+			scast<int>( Su_pos.y + 200.0f + sin( PI * 2.0f / 240.0f * Count3 ) * 20.0f ),
 			TitleImage::hChar[4],
 			TRUE
 		);
@@ -353,8 +354,8 @@ void Title::Draw()
 	{
 		DrawGraph
 		(
-			Ta_pos.x + 590,
-			Ta_pos.y + 200 + sin( PI * 2 / 240 * Count4 ) * 20,
+			scast<int>( Ta_pos.x + 590.0f ),
+			scast<int>( Ta_pos.y + 200.0f + sin( PI * 2.0f / 240.0f * Count4 ) * 20.0f ),
 			TitleImage::hChar[6],
 			TRUE
 		);
@@ -370,8 +371,8 @@ void Title::Draw()
 	{
 		DrawRotaGraph3
 		(
-			star_pos.x + 690,
-			star_pos.y + 310 + sin( PI * 2 / 240 * Count4 ) * 20,
+			scast<int>( star_pos.x + 690.0f ),
+			scast<int>( star_pos.y + 310.0f + sin( PI * 2.0f / 240.0f * Count4 ) * 20.0f ),
 			TitleImage::SIZE >> 1,
 			TitleImage::SIZE >> 1,
 			0,
@@ -389,8 +390,8 @@ void Title::Draw()
 
 	DrawGraph
 	(
-		push_pos.x,
-		push_pos.y,
+		scast<int>( push_pos.x ),
+		scast<int>( push_pos.y ),
 		TitleImage::hTitlePushUI,
 		TRUE
 	);
@@ -414,8 +415,8 @@ void Title::Draw()
 			SetDrawBlendMode( DX_BLENDMODE_ADD, flash_val );
 			DrawRotaGraph3
 			(
-				star_pos.x + 690,
-				star_pos.y + 310 + sin( PI * 2 / 240 * Count4 ) * 20,
+				scast<int>( star_pos.x + 690.0f ),
+				scast<int>( star_pos.y + 310.0f + sin( PI * 2.0f / 240.0f * Count4 ) * 20 ),
 				TitleImage::SIZE >> 1,
 				TitleImage::SIZE >> 1,
 				flash_scale.x + 0.01f,
@@ -428,8 +429,8 @@ void Title::Draw()
 
 			DrawRotaGraph3
 			(
-				star_pos.x + 690,
-				star_pos.y + 310 + sin( PI * 2 / 240 * Count4 ) * 20,
+				scast<int>( star_pos.x + 690.0f ),
+				scast<int>( star_pos.y + 310.0f + sin( PI * 2.0f / 240.0f * Count4 ) * 20 ),
 				TitleImage::SIZE >> 1,
 				TitleImage::SIZE >> 1,
 				flash_scale.x + 0.02f,
@@ -441,8 +442,8 @@ void Title::Draw()
 			);
 			DrawRotaGraph3
 			(
-				star_pos.x + 690,
-				star_pos.y + 310 + sin( PI * 2 / 240 * Count4 ) * 20,
+				scast<int>( star_pos.x + 690.0f ),
+				scast<int>( star_pos.y + 310.0f + sin( PI * 2.0f / 240.0f * Count4 ) * 20 ),
 				TitleImage::SIZE >> 1,
 				TitleImage::SIZE >> 1,
 				flash_scale.x + 0.03f,
@@ -488,8 +489,8 @@ void Title::Draw()
 			SetDrawBlendMode( DX_BLENDMODE_ALPHA, alpha_val );
 			DrawRotaGraph3
 			(
-				star_pos.x + 690,
-				star_pos.y + 310 + sin( PI * 2 / 240 * Count4 ) * 20,
+				scast<int>( star_pos.x + 690.0f ),
+				scast<int>( star_pos.y + 310.0f + sin( PI * 2.0f / 240.0f * Count4 ) * 20.0f ),
 				TitleImage::SIZE >> 1,
 				TitleImage::SIZE >> 1,
 				flash_scale.x + 0.01f,
@@ -503,8 +504,8 @@ void Title::Draw()
 			SetDrawBlendMode( DX_BLENDMODE_ADD, flash_val );
 			DrawRotaGraph3
 			(
-				star_pos.x + 690,
-				star_pos.y + 310 + sin( PI * 2 / 240 * Count4 ) * 20,
+				scast<int>( star_pos.x + 690.0f ),
+				scast<int>( star_pos.y + 310.0f + sin( PI * 2.0f / 240.0f * Count4 ) * 20.0f ),
 				TitleImage::SIZE >> 1,
 				TitleImage::SIZE >> 1,
 				flash_scale.x + 0.02f,
@@ -516,8 +517,8 @@ void Title::Draw()
 			);
 			DrawRotaGraph3
 			(
-				star_pos.x + 690,
-				star_pos.y + 310 + sin( PI * 2 / 240 * Count4 ) * 20,
+				scast<int>( star_pos.x + 690.0f ),
+				scast<int>( star_pos.y + 310.0f + sin( PI * 2.0f / 240.0f * Count4 ) * 20 ),
 				TitleImage::SIZE >> 1,
 				TitleImage::SIZE >> 1,
 				flash_scale.x + 0.03f,

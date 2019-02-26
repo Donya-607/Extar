@@ -227,6 +227,7 @@ void StarMng::Update()
 	for ( Star &it : stars )
 	{
 		it.Update();
+		it.EffectRelatedUpdate();
 	}
 
 #if USE_IMGUI

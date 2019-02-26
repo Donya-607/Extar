@@ -21,6 +21,8 @@ enum SE
 
 	M_SELECT,
 
+	M_RECORD_STAR,
+
 	// 仮，ポーズ時に鳴らしている
 	M_E_NEXT,
 	M_E_BACK,

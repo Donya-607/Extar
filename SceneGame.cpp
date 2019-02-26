@@ -50,8 +50,7 @@ namespace GameImage
 	static int hFrameUI;
 
 
-	static int hshutter_up;
-	static int hshutter_down;
+	static int hshutter;
 
 
 	void Load()
@@ -68,8 +67,7 @@ namespace GameImage
 		hFrameUI	= LoadGraph( "./Data/Images/UI/FrameUI.png" );
 
 
-		hshutter_up = LoadGraph( "./Data/Images/Camera/Shutter.png" );
-		hshutter_down = LoadGraph( "./Data/Images/Camera/Shutter.png" );
+		hshutter	= LoadGraph( "./Data/Images/Camera/Shutter.png" );
 
 
 	}
@@ -83,12 +81,53 @@ namespace GameImage
 		hFrameUI	= 0;
 
 
-		DeleteGraph( hshutter_up	);
-		DeleteGraph( hshutter_down	);
-		hshutter_up		= 0;
-		hshutter_down	= 0;
+		DeleteGraph( hshutter	);
+		hshutter		= 0;
 
 
+	}
+}
+namespace ClearImage
+{
+	constexpr int SIZE_STAR_X = 192;
+	constexpr int SIZE_STAR_Y = 224;
+
+	static int hClearBG;
+	static int hRecordStatement;
+	static int hRecordStar[2];	// 0:Dark, 1:Glow
+
+	void Load()
+	{
+		// すでに値が入っていたら，読み込んだものとみなして飛ばす
+		if ( 0 != hClearBG )
+		{
+			return;
+		}
+		// else
+
+		hClearBG = LoadGraph( "./Data/Images/BG/Clear.png" );
+		hRecordStatement = LoadGraph( "./Data/Images/Result/RecordStatement.png" );
+
+		LoadDivGraph
+		(
+			"./Data/Images/Result/RecordStar.png",
+			2,
+			2, 1,
+			SIZE_STAR_X, SIZE_STAR_Y,
+			hRecordStar
+		);
+	}
+	void Release()
+	{
+		DeleteGraph( hClearBG			);
+		DeleteGraph( hRecordStatement	);
+		hClearBG			= 0;
+		hRecordStatement	= 0;
+
+		DeleteGraph( hRecordStar[0] );
+		DeleteGraph( hRecordStar[1] );
+		hRecordStar[0] = 0;
+		hRecordStar[1] = 0;
 	}
 }
 namespace PauseImage
@@ -136,6 +175,83 @@ namespace PauseImage
 	}
 }
 
+void RecordStar::Init( Vector2 centerPos, bool isGlowStar )
+{
+	pos		= centerPos;
+	isGlow	= isGlowStar;
+
+	if ( isGlow )
+	{
+		rotateSpd	= 24.0f;
+
+		magniSpd	= -0.3f;
+		scale		= 2.0f;
+
+		return;
+	}
+	// else
+
+	rotateSpd	= 19.0f;
+
+	magniSpd	= -0.1f;
+}
+
+void RecordStar::Update()
+{
+	if( angle < 360.0f )
+	{
+		constexpr float MINUS_SPD	= 0.3f;
+		constexpr float LOWER_SPD	= 0.5f;
+
+		rotateSpd -= MINUS_SPD;
+		if ( rotateSpd < LOWER_SPD )
+		{
+			rotateSpd = LOWER_SPD;
+		}
+
+		angle += rotateSpd;
+	}
+	else
+	{
+		angle = 360.0f;
+	}
+
+	if ( 1.0f < scale )
+	{
+		constexpr float MINUS_SPD	= 0.15f;
+		constexpr float LOWER_SPD	= 0.1f;
+
+		magniSpd += MINUS_SPD;
+		if ( LOWER_SPD < magniSpd )
+		{
+			magniSpd = LOWER_SPD;
+		}
+
+		scale -= magniSpd;
+	}
+	else
+	{
+		scale = 1.0f;
+	}
+}
+
+void RecordStar::Draw( Vector2 shake ) const
+{
+	int x = 0 , y = 0;
+	GetMousePoint( &x, &y );
+
+	int r = DrawRotaGraph
+	(
+		scast<int>( pos.x ),
+		scast<int>( pos.y ),
+		scale,
+		ToRadian( angle ),
+		ClearImage::hRecordStar[( isGlow ) ? 1 : 0],
+		TRUE
+	);
+	r++;
+}
+
 void Game::Init()
 {
 	PlayBGM( M_Game );
@@ -147,6 +263,7 @@ void Game::Init()
 	Number::Load();
 	SelectImage::Load();
 	GameImage::Load();
+	ClearImage::Load();
 	PauseImage::Load();
 	CameraImage::Load();
 	StarImage::Load();
@@ -180,6 +297,8 @@ void Game::Init()
 }
 void Game::SelectInit()
 {
+	numMoves = 0;
+
 	pCursor.reset( new Cursor() );
 	pCursor->Init();
 }
@@ -204,9 +323,12 @@ void Game::GameInit()
 void Game::ClearInit()
 {
 	choice = 0;
+	clearTimer = 0;
 
 	pBoard.reset( new Board() );
 	pBoard->Init( { 0, 0 } );
+
+	recordStars.clear();
 }
 
 void Game::Uninit()
@@ -222,6 +344,7 @@ void Game::Uninit()
 	Number::Release();
 	SelectImage::Release();
 	GameImage::Release();
+	ClearImage::Release();
 	PauseImage::Release();
 	CameraImage::Release();
 	StarImage::Release();
@@ -245,12 +368,16 @@ void Game::GameUninit()
 }
 void Game::ClearUninit()
 {
+	clearTimer = 0;
+
 	DeleteGraph( hScreenShot );
 	hScreenShot = 0;
 
 	if ( pStarMng  ) { pStarMng->Uninit();  }
 	if ( pNumMoves ) { pNumMoves->Uninit(); }
 	if ( pBoard	   ) { pBoard->Uninit();	}
+
+	recordStars.clear();
 }
 
 void Game::Update()
@@ -439,7 +566,7 @@ void Game::GameUpdate()
 
 #if DEBUG_MODE
 
-	if ( TRG( KEY_INPUT_E ) && nextState == State::Null/* 連打防止 */ )
+	if ( TRG( KEY_INPUT_E ) && isOpenFade/* 連打防止 */ )
 	{
 		PlaySE( M_E_NEXT );
 
@@ -482,6 +609,8 @@ void Game::GameUpdate()
 
 void Game::ClearUpdate()
 {
+	clearTimer++;
+
 	if ( pStarMng )
 	{
 		pStarMng->ClearUpdate();
@@ -492,9 +621,44 @@ void Game::ClearUpdate()
 		pBoard->Update();
 	}
 
+	// RecordStarの生成管理
+	{
+		// HACK:星の数が３つじゃないなら，ここも変える必要がある
+		const std::array<int, 3> generateFrames =
+		{
+			60/* 基準 */,
+			60 + 30/* 間隔 */,
+			60 + ( 30 * 2 )
+		};
+
+		int nextGenerate = scast<int>( recordStars.size() );
+		if	(
+				nextGenerate < scast<int>( generateFrames.size() ) &&
+				clearTimer == generateFrames[nextGenerate]
+			)
+		{
+			Vector2 base{ 602.0f, 512.0f };
+			float interval = scast<float>( ( 32 + ClearImage::SIZE_STAR_X ) * nextGenerate );
+			base.x += interval;
+
+			int nowRank = pNumMoves->CalcRank( numMoves );	// １始まり
+			// 達成難易度は，左からの降順で並んでいるとする（右のほうが達成されやすい）
+			bool isGlow = ( nowRank - 1 <= nextGenerate ) ? true : false;
+
+			recordStars.push_back( RecordStar() );
+			recordStars.back().Init( base, isGlow );
+
+			PlaySE( M_RECORD_STAR );
+		}
+	}
+	for ( RecordStar &it : recordStars )
+	{
+		it.Update();
+	}
+
 #if DEBUG_MODE
 
-	if ( TRG( KEY_INPUT_E ) && pCursor->IsDecision() && nextState == State::Null/* 連打防止 */ )
+	if ( TRG( KEY_INPUT_E ) && isOpenFade/* 連打防止 */ )
 	{
 		PlaySE( M_E_NEXT );
 
@@ -838,6 +1002,48 @@ void Game::GameDraw()
 			TRUE
 		);
 
+		// 他ＰＧによる作業
+		if ( shutter_flag )
+		{
+			constexpr int MAX_SIZE_Y = 768;
+
+			// 上から下
+			{
+				int size = scast<int>( str_up_pos.y + MAX_SIZE_Y ) - FRAME_POS_Y;
+
+				if ( 0 < size )
+				{
+					DrawRectGraph
+					(
+						FRAME_POS_X, FRAME_POS_Y,
+						0, 0,
+						FRAME_WIDTH,
+						size,
+						GameImage::hshutter,
+						TRUE
+					);
+				}
+			}
+			// 下から上
+			{
+				int size = FRAME_POS_Y - scast<int>( str_down_pos.y );
+
+				if ( 0 < size )
+				{
+					DrawRectGraph
+					(
+						FRAME_POS_X, FRAME_POS_Y - size,
+						0, 0,
+						FRAME_WIDTH,
+						size,
+						GameImage::hshutter,
+						TRUE
+					);
+				}
+			}
+
+		}
+
 		SetDrawBlendMode( DX_BLENDMODE_ADD, 255 );
 		// 枠
 		DrawGraph
@@ -874,27 +1080,6 @@ void Game::GameDraw()
 	if ( pCamera )
 	{
 		pCamera->Draw( shake );
-	}
-
-	// 他ＰＧによる作業
-	{
-		//シャッター(上から下)
-		DrawGraph
-		(
-			str_up_pos.x,
-			str_up_pos.y - 768.0f,
-			GameImage::hshutter_up,
-			TRUE
-		);
-
-		//シャッター(下から上)
-		DrawGraph
-		(
-			str_down_pos.x,
-			str_down_pos.y + 768.0f,
-			GameImage::hshutter_down,
-			TRUE
-		);
 	}
 
 }
@@ -941,22 +1126,10 @@ void Game::ClearDraw()
 		pBoard->Draw( hScreenShot, shake );
 	}
 
-	/*
-	if ( hScreenShot != 0 )
+	for ( const RecordStar &it : recordStars )
 	{
-		int x = 0;
-		int y = 0;
-
-		GetMousePoint( &x, &y );
-
-		DrawGraph
-		(
-			x, y,
-			hScreenShot,
-			TRUE
-		);
+		it.Draw( shake );
 	}
-	*/
 }
 
 void Game::PauseDraw()
