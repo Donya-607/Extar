@@ -44,11 +44,20 @@ private:
 	float angle;// Degree, ClockWise
 
 	Anim anim;
+private:	// ëºÇoÇfÇ…ÇÊÇÈçÏã∆
+	int val;
+	int val_state;
+	int val_timer;
 public:
 	Star() : row( 0 ), column( 0 ), width( 1 ), height( 1 ),
 		level( 6 ),
 		angle( 0 ),
-		anim()
+		anim(),
+
+		val( 0 ),
+		val_state( 0 ),
+		val_timer( 0 )
+
 	{}
 	~Star() {}
 
@@ -56,6 +65,8 @@ public:
 	void Uninit();
 
 	void Update();
+
+	void EffectRelatedUpdate();
 
 	void CalcRotate();
 

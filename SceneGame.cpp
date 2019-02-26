@@ -49,6 +49,10 @@ namespace GameImage
 	static int hFrameBG;
 	static int hFrameUI;
 
+
+	static int hshutter;
+
+
 	void Load()
 	{
 		// ‚·‚Å‚É’l‚ª“ü‚Á‚Ä‚¢‚½‚çC“Ç‚İ‚ñ‚¾‚à‚Ì‚Æ‚İ‚È‚µ‚Ä”ò‚Î‚·
@@ -61,6 +65,11 @@ namespace GameImage
 		hGameBG		= LoadGraph( "./Data/Images/BG/Game.png"  );
 		hFrameBG	= LoadGraph( "./Data/Images/BG/Frame.png" );
 		hFrameUI	= LoadGraph( "./Data/Images/UI/FrameUI.png" );
+
+
+		hshutter	= LoadGraph( "./Data/Images/Camera/Shutter.png" );
+
+
 	}
 	void Release()
 	{
@@ -70,6 +79,55 @@ namespace GameImage
 		hGameBG		= 0;
 		hFrameBG	= 0;
 		hFrameUI	= 0;
+
+
+		DeleteGraph( hshutter	);
+		hshutter		= 0;
+
+
+	}
+}
+namespace ClearImage
+{
+	constexpr int SIZE_STAR_X = 192;
+	constexpr int SIZE_STAR_Y = 224;
+
+	static int hClearBG;
+	static int hRecordStatement;
+	static int hRecordStar[2];	// 0:Dark, 1:Glow
+
+	void Load()
+	{
+		// ‚·‚Å‚É’l‚ª“ü‚Á‚Ä‚¢‚½‚çC“Ç‚İ‚ñ‚¾‚à‚Ì‚Æ‚İ‚È‚µ‚Ä”ò‚Î‚·
+		if ( 0 != hClearBG )
+		{
+			return;
+		}
+		// else
+
+		hClearBG = LoadGraph( "./Data/Images/BG/Clear.png" );
+		hRecordStatement = LoadGraph( "./Data/Images/Result/RecordStatement.png" );
+
+		LoadDivGraph
+		(
+			"./Data/Images/Result/RecordStar.png",
+			2,
+			2, 1,
+			SIZE_STAR_X, SIZE_STAR_Y,
+			hRecordStar
+		);
+	}
+	void Release()
+	{
+		DeleteGraph( hClearBG			);
+		DeleteGraph( hRecordStatement	);
+		hClearBG			= 0;
+		hRecordStatement	= 0;
+
+		DeleteGraph( hRecordStar[0] );
+		DeleteGraph( hRecordStar[1] );
+		hRecordStar[0] = 0;
+		hRecordStar[1] = 0;
 	}
 }
 namespace PauseImage
@@ -117,6 +175,83 @@ namespace PauseImage
 	}
 }
 
+void RecordStar::Init( Vector2 centerPos, bool isGlowStar )
+{
+	pos		= centerPos;
+	isGlow	= isGlowStar;
+
+	if ( isGlow )
+	{
+		rotateSpd	= 24.0f;
+
+		magniSpd	= -0.3f;
+		scale		= 2.0f;
+
+		return;
+	}
+	// else
+
+	rotateSpd	= 19.0f;
+
+	magniSpd	= -0.1f;
+}
+
+void RecordStar::Update()
+{
+	if( angle < 360.0f )
+	{
+		constexpr float MINUS_SPD	= 0.3f;
+		constexpr float LOWER_SPD	= 0.5f;
+
+		rotateSpd -= MINUS_SPD;
+		if ( rotateSpd < LOWER_SPD )
+		{
+			rotateSpd = LOWER_SPD;
+		}
+
+		angle += rotateSpd;
+	}
+	else
+	{
+		angle = 360.0f;
+	}
+
+	if ( 1.0f < scale )
+	{
+		constexpr float MINUS_SPD	= 0.15f;
+		constexpr float LOWER_SPD	= 0.1f;
+
+		magniSpd += MINUS_SPD;
+		if ( LOWER_SPD < magniSpd )
+		{
+			magniSpd = LOWER_SPD;
+		}
+
+		scale -= magniSpd;
+	}
+	else
+	{
+		scale = 1.0f;
+	}
+}
+
+void RecordStar::Draw( Vector2 shake ) const
+{
+	int x = 0 , y = 0;
+	GetMousePoint( &x, &y );
+
+	int r = DrawRotaGraph
+	(
+		scast<int>( pos.x ),
+		scast<int>( pos.y ),
+		scale,
+		ToRadian( angle ),
+		ClearImage::hRecordStar[( isGlow ) ? 1 : 0],
+		TRUE
+	);
+	r++;
+}
+
 void Game::Init()
 {
 	PlayBGM( M_Game );
@@ -128,6 +263,7 @@ void Game::Init()
 	Number::Load();
 	SelectImage::Load();
 	GameImage::Load();
+	ClearImage::Load();
 	PauseImage::Load();
 	CameraImage::Load();
 	StarImage::Load();
@@ -161,6 +297,8 @@ void Game::Init()
 }
 void Game::SelectInit()
 {
+	numMoves = 0;
+
 	pCursor.reset( new Cursor() );
 	pCursor->Init();
 }
@@ -185,9 +323,12 @@ void Game::GameInit()
 void Game::ClearInit()
 {
 	choice = 0;
+	clearTimer = 0;
 
 	pBoard.reset( new Board() );
 	pBoard->Init( { 0, 0 } );
+
+	recordStars.clear();
 }
 
 void Game::Uninit()
@@ -203,6 +344,7 @@ void Game::Uninit()
 	Number::Release();
 	SelectImage::Release();
 	GameImage::Release();
+	ClearImage::Release();
 	PauseImage::Release();
 	CameraImage::Release();
 	StarImage::Release();
@@ -226,12 +368,16 @@ void Game::GameUninit()
 }
 void Game::ClearUninit()
 {
+	clearTimer = 0;
+
 	DeleteGraph( hScreenShot );
 	hScreenShot = 0;
 
 	if ( pStarMng  ) { pStarMng->Uninit();  }
 	if ( pNumMoves ) { pNumMoves->Uninit(); }
 	if ( pBoard	   ) { pBoard->Uninit();	}
+
+	recordStars.clear();
 }
 
 void Game::Update()
@@ -381,9 +527,46 @@ void Game::GameUpdate()
 		pNumMoves->Update();
 	}
 
+	// ‘¼‚o‚f‚É‚æ‚éì‹Æ
+	{
+		
+	#if DEBUG_MODE
+
+		if ( TRG( KEY_INPUT_O ) )shutter_flag = true;
+
+	#endif // DEBUG_MODE
+
+
+		if ( shutter_flag == true )
+		{
+			switch ( shutter_state )
+			{
+			case 0:
+				str_up_pos.y += str_speed.y;
+				str_down_pos.y -= str_speed.y;
+				if ( str_up_pos.y >= 768 >> 1 )shutter_state++;
+				break;
+
+			case 1:
+				str_up_pos.y -= str_speed.y;
+				str_down_pos.y += str_speed.y;
+				if ( str_up_pos.y < 64 - 768 )
+				{
+					shutter_flag = false;
+					shutter_state = 0;
+					str_up_pos.y = str_up_pos.y - 768.0f;
+					str_down_pos.y = str_down_pos.y + 768.0f;
+				}
+				break;
+
+			}
+		}
+	}
+
+
 #if DEBUG_MODE
 
-	if ( TRG( KEY_INPUT_E ) && nextState == State::Null/* ˜A‘Å–h~ */ )
+	if ( TRG( KEY_INPUT_E ) && isOpenFade/* ˜A‘Å–h~ */ )
 	{
 		PlaySE( M_E_NEXT );
 
@@ -426,6 +609,8 @@ void Game::GameUpdate()
 
 void Game::ClearUpdate()
 {
+	clearTimer++;
+
 	if ( pStarMng )
 	{
 		pStarMng->ClearUpdate();
@@ -436,9 +621,44 @@ void Game::ClearUpdate()
 		pBoard->Update();
 	}
 
+	// RecordStar‚Ì¶¬ŠÇ—
+	{
+		// HACK:¯‚Ì”‚ª‚R‚Â‚¶‚á‚È‚¢‚È‚çC‚±‚±‚à•Ï‚¦‚é•K—v‚ª‚ ‚é
+		const std::array<int, 3> generateFrames =
+		{
+			60/* Šî€ */,
+			60 + 30/* ŠÔŠu */,
+			60 + ( 30 * 2 )
+		};
+
+		int nextGenerate = scast<int>( recordStars.size() );
+		if	(
+				nextGenerate < scast<int>( generateFrames.size() ) &&
+				clearTimer == generateFrames[nextGenerate]
+			)
+		{
+			Vector2 base{ 602.0f, 512.0f };
+			float interval = scast<float>( ( 32 + ClearImage::SIZE_STAR_X ) * nextGenerate );
+			base.x += interval;
+
+			int nowRank = pNumMoves->CalcRank( numMoves );	// ‚Pn‚Ü‚è
+			// ’B¬“ïˆÕ“x‚ÍC¶‚©‚ç‚Ì~‡‚Å•À‚ñ‚Å‚¢‚é‚Æ‚·‚éi‰E‚Ì‚Ù‚¤‚ª’B¬‚³‚ê‚â‚·‚¢j
+			bool isGlow = ( nowRank - 1 <= nextGenerate ) ? true : false;
+
+			recordStars.push_back( RecordStar() );
+			recordStars.back().Init( base, isGlow );
+
+			PlaySE( M_RECORD_STAR );
+		}
+	}
+	for ( RecordStar &it : recordStars )
+	{
+		it.Update();
+	}
+
 #if DEBUG_MODE
 
-	if ( TRG( KEY_INPUT_E ) && pCursor->IsDecision() && nextState == State::Null/* ˜A‘Å–h~ */ )
+	if ( TRG( KEY_INPUT_E ) && isOpenFade/* ˜A‘Å–h~ */ )
 	{
 		PlaySE( M_E_NEXT );
 
@@ -782,6 +1002,48 @@ void Game::GameDraw()
 			TRUE
 		);
 
+		// ‘¼‚o‚f‚É‚æ‚éì‹Æ
+		if ( shutter_flag )
+		{
+			constexpr int MAX_SIZE_Y = 768;
+
+			// ã‚©‚ç‰º
+			{
+				int size = scast<int>( str_up_pos.y + MAX_SIZE_Y ) - FRAME_POS_Y;
+
+				if ( 0 < size )
+				{
+					DrawRectGraph
+					(
+						FRAME_POS_X, FRAME_POS_Y,
+						0, 0,
+						FRAME_WIDTH,
+						size,
+						GameImage::hshutter,
+						TRUE
+					);
+				}
+			}
+			// ‰º‚©‚çã
+			{
+				int size = FRAME_POS_Y - scast<int>( str_down_pos.y );
+
+				if ( 0 < size )
+				{
+					DrawRectGraph
+					(
+						FRAME_POS_X, FRAME_POS_Y - size,
+						0, 0,
+						FRAME_WIDTH,
+						size,
+						GameImage::hshutter,
+						TRUE
+					);
+				}
+			}
+
+		}
+
 		SetDrawBlendMode( DX_BLENDMODE_ADD, 255 );
 		// ˜g
 		DrawGraph
@@ -819,6 +1081,7 @@ void Game::GameDraw()
 	{
 		pCamera->Draw( shake );
 	}
+
 }
 
 void Game::ClearDraw()
@@ -863,22 +1126,10 @@ void Game::ClearDraw()
 		pBoard->Draw( hScreenShot, shake );
 	}
 
-	/*
-	if ( hScreenShot != 0 )
+	for ( const RecordStar &it : recordStars )
 	{
-		int x = 0;
-		int y = 0;
-
-		GetMousePoint( &x, &y );
-
-		DrawGraph
-		(
-			x, y,
-			hScreenShot,
-			TRUE
-		);
+		it.Draw( shake );
 	}
-	*/
 }
 
 void Game::PauseDraw()
