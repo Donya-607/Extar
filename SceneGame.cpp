@@ -49,6 +49,11 @@ namespace GameImage
 	static int hFrameBG;
 	static int hFrameUI;
 
+
+	static int hshutter_up;
+	static int hshutter_down;
+
+
 	void Load()
 	{
 		// すでに値が入っていたら，読み込んだものとみなして飛ばす
@@ -61,6 +66,12 @@ namespace GameImage
 		hGameBG		= LoadGraph( "./Data/Images/BG/Game.png"  );
 		hFrameBG	= LoadGraph( "./Data/Images/BG/Frame.png" );
 		hFrameUI	= LoadGraph( "./Data/Images/UI/FrameUI.png" );
+
+
+		hshutter_up = LoadGraph( "./Data/Images/Camera/Shutter.png" );
+		hshutter_down = LoadGraph( "./Data/Images/Camera/Shutter.png" );
+
+
 	}
 	void Release()
 	{
@@ -70,6 +81,14 @@ namespace GameImage
 		hGameBG		= 0;
 		hFrameBG	= 0;
 		hFrameUI	= 0;
+
+
+		DeleteGraph( hshutter_up	);
+		DeleteGraph( hshutter_down	);
+		hshutter_up		= 0;
+		hshutter_down	= 0;
+
+
 	}
 }
 namespace PauseImage
@@ -380,6 +399,43 @@ void Game::GameUpdate()
 	{
 		pNumMoves->Update();
 	}
+
+	// 他ＰＧによる作業
+	{
+		
+	#if DEBUG_MODE
+
+		if ( TRG( KEY_INPUT_O ) )shutter_flag = true;
+
+	#endif // DEBUG_MODE
+
+
+		if ( shutter_flag == true )
+		{
+			switch ( shutter_state )
+			{
+			case 0:
+				str_up_pos.y += str_speed.y;
+				str_down_pos.y -= str_speed.y;
+				if ( str_up_pos.y >= 768 >> 1 )shutter_state++;
+				break;
+
+			case 1:
+				str_up_pos.y -= str_speed.y;
+				str_down_pos.y += str_speed.y;
+				if ( str_up_pos.y < 64 - 768 )
+				{
+					shutter_flag = false;
+					shutter_state = 0;
+					str_up_pos.y = str_up_pos.y - 768.0f;
+					str_down_pos.y = str_down_pos.y + 768.0f;
+				}
+				break;
+
+			}
+		}
+	}
+
 
 #if DEBUG_MODE
 
@@ -819,6 +875,28 @@ void Game::GameDraw()
 	{
 		pCamera->Draw( shake );
 	}
+
+	// 他ＰＧによる作業
+	{
+		//シャッター(上から下)
+		DrawGraph
+		(
+			str_up_pos.x,
+			str_up_pos.y - 768.0f,
+			GameImage::hshutter_up,
+			TRUE
+		);
+
+		//シャッター(下から上)
+		DrawGraph
+		(
+			str_down_pos.x,
+			str_down_pos.y + 768.0f,
+			GameImage::hshutter_down,
+			TRUE
+		);
+	}
+
 }
 
 void Game::ClearDraw()

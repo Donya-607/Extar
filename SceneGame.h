@@ -60,6 +60,12 @@ private:
 
 	bool isPause;
 	bool isDrawCollision;
+private:	// ëºÇoÇfÇ…ÇÊÇÈçÏã∆
+	Vector2 str_up_pos;
+	Vector2 str_down_pos;
+	Vector2 str_speed;
+	bool shutter_flag;
+	int shutter_state;
 public:
 	Game( SceneMng *pMng ) : Scene( pMng ),
 		stageNumber( 1 ), numMoves( 0 ),
@@ -72,7 +78,14 @@ public:
 		isOpenFade( false ),
 		isClearMoment( false ), isTakeScreenShot( false ),
 		isShowClearMenu( false ),
-		isPause( false ), isDrawCollision( false )
+		isPause( false ), isDrawCollision( false ),
+
+		str_up_pos( { 192.0f,64.0f } ),
+		str_down_pos( { 192.0f,64.0f } ),
+		str_speed( { 0.0f,70.0f } ),
+		shutter_flag( false ),
+		shutter_state( 0 )
+
 		{}
 	~Game() {}
 
