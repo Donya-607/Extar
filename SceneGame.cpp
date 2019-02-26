@@ -1156,9 +1156,81 @@ void Game::ClearDraw()
 		ClearImage::hRecordStatement,
 		TRUE
 	);
-	// Number
+	// StageNumber
 	{
+		const int STAGE_POS_X = 368;
+		const int STAGE_POS_Y = 144;
 
+		const int MOVES_POS_X = 288;
+		const int MOVES_POS_Y = 476;
+
+		const int MAGNI_X = 2;
+		const int MAGNI_Y = 2;
+
+		int stgNum = stageNumber;
+		int movNum = numMoves;
+		// HACK:ステージ数は２ケタにおさまる想定である
+		for ( int digit = 0; digit < 2; digit++ )
+		{
+			if ( stageNumber < 10 )
+			{
+				if ( digit != 0 )
+				{
+					continue;
+				}
+				// else
+
+				// StageNumber
+				DrawExtendGraph
+				(
+					STAGE_POS_X - Number::SIZE_X,
+					STAGE_POS_Y,
+					STAGE_POS_X - Number::SIZE_X + ( Number::SIZE_X * MAGNI_X ),
+					STAGE_POS_Y + ( Number::SIZE_Y * MAGNI_Y ),
+					Number::GetHandle( stgNum, true ),
+					TRUE
+				);
+
+				// MovesNumber
+				DrawExtendGraph
+				(
+					MOVES_POS_X - Number::SIZE_X,
+					MOVES_POS_Y,
+					MOVES_POS_X - Number::SIZE_X + ( Number::SIZE_X * MAGNI_X ),
+					MOVES_POS_Y + ( Number::SIZE_Y * MAGNI_Y ),
+					Number::GetHandle( movNum, true ),
+					TRUE
+				);
+
+				continue;
+			}
+			// else
+
+			// StageNumber
+			DrawExtendGraph
+			(
+				STAGE_POS_X - ( Number::SIZE_X >> 1 ) - ( Number::SIZE_X * digit ),
+				STAGE_POS_Y,
+				STAGE_POS_X - ( Number::SIZE_X >> 1 ) - ( Number::SIZE_X * digit ) + ( Number::SIZE_X * MAGNI_X ),
+				STAGE_POS_Y + ( Number::SIZE_Y * MAGNI_Y ),
+				Number::GetHandle( stgNum % 10, true ),
+				TRUE
+			);
+
+			// MovesNumber
+			DrawExtendGraph
+			(
+				MOVES_POS_X - Number::SIZE_X,
+				MOVES_POS_Y,
+				MOVES_POS_X - Number::SIZE_X + ( Number::SIZE_X * MAGNI_X ),
+				MOVES_POS_Y + ( Number::SIZE_Y * MAGNI_Y ),
+				Number::GetHandle( movNum % 10, true ),
+				TRUE
+			);
+
+			stgNum /= 10;
+			movNum /= 10;
+		}
 	}
 
 	SetDrawBlendMode( DX_BLENDMODE_NOBLEND, 255 );
