@@ -649,9 +649,12 @@ void Game::ClearUpdate()
 			float interval = scast<float>( ( 160 + ClearImage::SIZE_STAR_X ) * nextGenerate );
 			base.x += interval;
 
-			int nowRank = pNumMoves->CalcRank( numMoves );	// １始まり
-			// 達成難易度は，左からの降順で並んでいるとする（右のほうが達成されやすい）
-			bool isGlow = ( nowRank - 1 <= nextGenerate ) ? true : false;
+			int nowRank = pNumMoves->CalcRank( numMoves );	// 0始まり
+			// 達成難易度は，右からの降順で並んでいるとする（左のほうが達成されやすい）
+			bool isGlow =
+				( nextGenerate <= scast<int>( generateFrames.size() ) - 1 - nowRank )
+				? true
+				: false;
 
 			recordStars.push_back( RecordStar() );
 			recordStars.back().Init( base, isGlow );
@@ -741,7 +744,6 @@ void Game::FadeDone()
 		return;
 	}
 
-	numMoves = 0;
 	isPause = false;
 	isOpenFade = false;
 }
@@ -1154,6 +1156,10 @@ void Game::ClearDraw()
 		ClearImage::hRecordStatement,
 		TRUE
 	);
+	// Number
+	{
+
+	}
 
 	SetDrawBlendMode( DX_BLENDMODE_NOBLEND, 255 );
 
