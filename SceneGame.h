@@ -30,10 +30,11 @@ private:
 	};
 private:
 	int  stageNumber;	// 1始まり
-
 	int  numMoves;		// 今の手数，0始まり，アンドゥで減る
 
 	int  hScreenShot;
+
+	int	 hFont;			// JFドットK12
 
 	State state;
 	State nextState;
@@ -52,7 +53,7 @@ private:
 public:
 	Game( SceneMng *pMng ) : Scene( pMng ),
 		stageNumber( 1 ), numMoves( 0 ),
-		hScreenShot( 0 ),
+		hScreenShot( 0 ), hFont( 0 ),
 		state( State::Select ), nextState( State::Null ),
 		pCursor( nullptr ),
 		pCamera( nullptr ), pStarMng( nullptr ), pNumMoves( nullptr ),

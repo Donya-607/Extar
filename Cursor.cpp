@@ -49,12 +49,16 @@ namespace CursorImage
 }
 namespace StageImage
 {
-	constexpr int NUM_LR_ROW = 2;
-	constexpr int SIZE_LR_X  = 96;
-	constexpr int SIZE_LR_Y  = 128;
+	constexpr int NUM_BACK		= 2;
+	constexpr int SIZE_BACK_X	= 96;
+	constexpr int SIZE_BACK_Y	= 96;
+
+	constexpr int NUM_LR_ROW	= 2;
+	constexpr int SIZE_LR_X		= 96;
+	constexpr int SIZE_LR_Y		= 128;
 
 	static std::vector<int> hThumbnails;
-	static int hBack;
+	static int hBack[2];
 	static int hLR[NUM_LR_ROW * 2];
 
 	void Load()
@@ -83,7 +87,14 @@ namespace StageImage
 			hThumbnails.push_back( result );
 		}
 
-		hBack = LoadGraph( "./Data/Images/UI/Back.png" );
+		LoadDivGraph
+		(
+			"./Data/Images/UI/Back.png",
+			NUM_BACK,
+			NUM_BACK, 1,
+			SIZE_BACK_X, SIZE_BACK_Y,
+			hBack
+		);
 
 		LoadDivGraph
 		(
@@ -102,8 +113,11 @@ namespace StageImage
 			hThumbnails.pop_back();
 		}
 
-		DeleteGraph( hBack );
-		hBack = 0;
+		for ( int i = 0; i < NUM_BACK; i++ )
+		{
+			DeleteGraph( hBack[i] );
+			hBack[i] = 0;
+		}
 
 		for ( int i = 0; i < ( NUM_LR_ROW * 2 ); i++ )
 		{
@@ -129,9 +143,9 @@ namespace StageImage
 		// else
 		return hThumbnails.at( stageNumber );
 	}
-	int  GetBackHandle()
+	int  GetBackHandle( bool isGlow )
 	{
-		return hBack;
+		return hBack[( isGlow ) ? 1 : 0];
 	}
 
 	int GetLRHandle( bool isL, bool isGlow )
@@ -151,7 +165,7 @@ namespace StageSelect
 	const Vector2 SIZE{ 512.0f, 378.0f };
 	const Vector2 MARGIN{ 64.0f, 32.0f };
 
-	const Vector2 BACK_LEFT_TOP_POS{ 128.0f, 64.0f };
+	const Vector2 BACK_CENTER_POS{ 64.0f, 48.0f };
 	const Vector2 BACK_SIZE{ 96.0f, 96.0f };
 
 	static const int maxRow  = 3;
@@ -170,13 +184,14 @@ namespace StageSelect
 		return MARGIN;
 	}
 
-	Vector2 GetBackPosLeftTop()
+	Vector2 GetBackPosCenter()
 	{
-		return BACK_LEFT_TOP_POS;
+		return BACK_CENTER_POS;
 	}
-	Vector2 GetBackSize()
+	Vector2 GetBackSize( bool isGlow )
 	{
-		return BACK_SIZE;
+		float magni = ( isGlow ) ? 1.5f : 1.0f;
+		return BACK_SIZE * magni;
 	}
 
 	int  GetMaxRow()
@@ -192,8 +207,13 @@ namespace StageSelect
 		return GetMaxRow() * GetMaxColumn();
 	}
 
-	static bool isGlowLR[2] = { false, false };
+	static bool isGlowBack = false;
+	void SetbackGlow( bool isGlow )
+	{
+		isGlowBack = isGlow;
+	}
 
+	static bool isGlowLR[2] = { false, false };
 	void SetLRGlow( bool isL, bool isGlow )
 	{
 		isGlowLR[( isL ) ? 0 : 1] = isGlow;
@@ -240,15 +260,19 @@ namespace StageSelect
 		// Back
 		{
 			int tweakX = 0;
-			int tweakY = -16;
+			int tweakY = 0;
 
-			DrawExtendGraph
+			int baseX  = scast<int>( StageSelect::GetBackPosCenter().x ) + tweakX;
+			int baseY  = scast<int>( StageSelect::GetBackPosCenter().y ) + tweakY;
+
+			double scale = ( isGlowBack ) ? 1.5 : 1.0;
+			DrawRotaGraph
 			(
-				scast<int>( StageSelect::GetBackPosLeftTop().x ) + tweakX,
-				scast<int>( StageSelect::GetBackPosLeftTop().y ) + tweakY,
-				scast<int>( StageSelect::GetBackPosLeftTop().x + StageSelect::GetBackSize().x ) + tweakX,
-				scast<int>( StageSelect::GetBackPosLeftTop().y + StageSelect::GetBackSize().y ) + tweakY,
-				StageImage::GetBackHandle(),
+				baseX,
+				baseY,
+				scale,
+				ToRadian( 0 ),
+				StageImage::GetBackHandle( isGlowBack ),
 				TRUE
 			);
 		}
@@ -344,6 +368,7 @@ void Cursor::Update()
 		Interpolate();
 	}
 
+	StageSelect::SetbackGlow( isChooseBack );
 	GlowUpdate();
 
 	if ( IS_TRG_EXPOSURE )
@@ -426,8 +451,8 @@ void Cursor::Move()
 
 	if ( IS_TRG_UP		) { isUp	= true; }
 	if ( IS_TRG_DOWN	) { isDown	= true; }
-	if ( isUp	&& !isDown	) { pos.y -= RESPONSE_MOVE_AMOUNT; isInput = true; }
-	if ( isDown	&& !isUp	) { pos.y += RESPONSE_MOVE_AMOUNT; isInput = true; }
+	if ( !isChooseBack	&& isUp	&& !isDown	) { pos.y -= RESPONSE_MOVE_AMOUNT; isInput = true; }
+	if (				isDown	&& !isUp	) { pos.y += RESPONSE_MOVE_AMOUNT; isInput = true; }
 
 	if ( isInput )
 	{
@@ -512,7 +537,7 @@ void Cursor::Interpolate()
 
 	if ( isChooseBack )
 	{
-		pos = StageSelect::GetBackPosLeftTop();
+		pos = StageSelect::GetBackPosCenter() - StageSelect::GetBackSize(/* isGlow = */true );
 		return;
 	}
 	// else
@@ -560,7 +585,7 @@ void Cursor::Draw( Vector2 shake ) const
 {
 	const Vector2 SIZE =
 		( isChooseBack )
-		? StageSelect::GetBackSize()
+		? StageSelect::GetBackSize(/* isGlow = */true )
 		: StageSelect::GetSize();
 
 	DrawExtendGraph

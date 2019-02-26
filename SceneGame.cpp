@@ -82,6 +82,14 @@ void Game::Init()
 	StageImage::Load();
 	CursorImage::Load();
 
+	hFont = CreateFontToHandle
+	(
+		"JFドットK12",
+		-1,				// サイズ（-1：デフォルト）
+		-1,				// 太さ（-1：デフォルト）
+		DX_FONTTYPE_NORMAL
+	);
+
 	switch ( state )
 	{
 	case State::Select:
@@ -142,6 +150,8 @@ void Game::Uninit()
 	StageImage::Release();
 	CursorImage::Release();
 
+	DeleteFontToHandle( hFont );
+
 	Grid::SetSize( { 0, 0 } );
 
 	ShakeUninit();
@@ -174,7 +184,7 @@ void Game::Update()
 
 	if ( TRG( KEY_INPUT_V ) )
 	{
-		// もはやこれはいらない
+		// もはや当たり判定表示はいらない
 		// isDrawCollision = !isDrawCollision;
 	}
 
@@ -643,14 +653,16 @@ void Game::GameDraw()
 		pStarMng->Draw( shake );
 	}
 
-	if ( pCamera )
-	{
-		pCamera->Draw( shake );
-	}
-
 	if ( isClear )
 	{
 		TakeScreenShot();
+		return;
+	}
+	// else
+
+	if ( pCamera )
+	{
+		pCamera->Draw( shake );
 	}
 }
 
@@ -755,6 +767,15 @@ void Game::ClearDrawUI()
 
 #if DEBUG_MODE
 
+	DrawExtendFormatStringToHandle
+	(
+		300, 300,
+		6.0, 6.0,
+		GetColor( 32, 32, 32 ),
+		hFont,
+		"Stage Clear!"
+	);
+	/*
 	DrawExtendFormatString
 	(
 		360, 300,
@@ -762,6 +783,7 @@ void Game::ClearDrawUI()
 		GetColor( 200, 200, 200 ),
 		"Stage Clear!"
 	);
+	*/
 
 	if ( pNumMoves )
 	{
@@ -781,6 +803,15 @@ void Game::ClearDrawUI()
 		std::string result = "Rank : ";
 		result.push_back( ranks[nowRank] );
 
+		DrawExtendStringToHandle
+		(
+			360, 400,
+			6.0, 6.0,
+			result.c_str(),
+			colours[nowRank],
+			hFont
+		);
+		/*
 		DrawExtendString
 		(
 			360, 400,
@@ -788,6 +819,7 @@ void Game::ClearDrawUI()
 			result.c_str(),
 			colours[nowRank]
 		);
+		*/
 	}
 
 #endif // DEBUG_MODE

@@ -28,7 +28,7 @@ namespace StageImage
 	void Release();
 
 	int  GetHandle( int stageNumber );
-	int  GetBackHandle();
+	int  GetBackHandle( bool isGlow );
 	int  GetLRHandle( bool isL, bool isGlow );
 }
 namespace StageSelect
@@ -37,12 +37,14 @@ namespace StageSelect
 	Vector2 GetSize();
 	Vector2 GetMargin();	// Stage‚ÆStage‚Æ‚ÌŠÔ‚ÌŒ„ŠÔ
 
-	Vector2 GetBackPosLeftTop();
-	Vector2 GetBackSize();
+	Vector2 GetBackPosCenter();
+	Vector2 GetBackSize( bool isGlow );
 
 	int  GetMaxRow();
 	int  GetMaxColumn();
 	int  GetMaxDisplayNumber();
+
+	void SetbackGlow( bool isGlow );
 
 	void SetLRGlow( bool isL, bool isGlow );
 
