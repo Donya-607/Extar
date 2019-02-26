@@ -38,6 +38,12 @@ int  NumMoves::CalcRank( int numMoves )
 
 void NumMoves::ChangeParametersByImGui()
 {
+	if ( !FileIO::IsShowImGuiWindow() )
+	{
+		return;
+	}
+	// else
+
 	ImGui::Begin( "Number_of_Moves" );
 
 	ImGui::Text( "Now_Number_of_Ranks : %d", scast<int>( moves.size() ) );

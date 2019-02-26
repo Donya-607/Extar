@@ -27,6 +27,9 @@ namespace Grid
 
 	void Draw( Vector2 shake )
 	{
+		// TODO:‰æ‘œ‚Åo‚·‚æ‚¤‚É‚µ‚½‚È‚çC•`‰æ‚ğÄŠJ‚·‚é
+		return;
+
 		int iShakeX = scast<int>( shake.x );
 		int iShakeY = scast<int>( shake.y );
 

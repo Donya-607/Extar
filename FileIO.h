@@ -41,6 +41,9 @@ namespace FileIO
 
 #if USE_IMGUI
 
+	void UpdateShowWIndowState();
+	bool IsShowImGuiWindow();
+
 	void UpdateNowStageNumberByImGui();
 	int  GetNowStageNumber();
 

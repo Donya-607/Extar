@@ -83,7 +83,7 @@ namespace StageImage
 			hThumbnails.push_back( result );
 		}
 
-		hBack = LoadGraph( "./Data/Images/Thumbnails/Back.png" );
+		hBack = LoadGraph( "./Data/Images/UI/Back.png" );
 
 		LoadDivGraph
 		(
@@ -239,12 +239,15 @@ namespace StageSelect
 
 		// Back
 		{
+			int tweakX = 0;
+			int tweakY = -16;
+
 			DrawExtendGraph
 			(
-				scast<int>( StageSelect::GetBackPosLeftTop().x ),
-				scast<int>( StageSelect::GetBackPosLeftTop().y ),
-				scast<int>( StageSelect::GetBackPosLeftTop().x + StageSelect::GetBackSize().x ),
-				scast<int>( StageSelect::GetBackPosLeftTop().y + StageSelect::GetBackSize().y ),
+				scast<int>( StageSelect::GetBackPosLeftTop().x ) + tweakX,
+				scast<int>( StageSelect::GetBackPosLeftTop().y ) + tweakY,
+				scast<int>( StageSelect::GetBackPosLeftTop().x + StageSelect::GetBackSize().x ) + tweakX,
+				scast<int>( StageSelect::GetBackPosLeftTop().y + StageSelect::GetBackSize().y ) + tweakY,
 				StageImage::GetBackHandle(),
 				TRUE
 			);

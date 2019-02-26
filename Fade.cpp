@@ -51,7 +51,9 @@ void Fade::Init( int moveIntervalFrame, Vector2 posLeftTop )
 }
 void Fade::Uninit()
 {
-	isDraw = false;
+	isDoneFade	= false;
+	isLeave		= false;
+	isDraw		= false;
 }
 
 void Fade::Update()

@@ -117,6 +117,8 @@ void Game::GameInit()
 
 	pNumMoves.reset( new NumMoves() );
 	pNumMoves->Init( stageNumber );
+
+	numMoves = 0;
 }
 void Game::ClearInit()
 {
@@ -154,6 +156,9 @@ void Game::GameUninit()
 }
 void Game::ClearUninit()
 {
+	DeleteGraph( hScreenShot );
+	hScreenShot = 0;
+
 	if ( pStarMng  ) { pStarMng->Uninit();  }
 	if ( pNumMoves ) { pNumMoves->Uninit(); }
 }
@@ -169,7 +174,8 @@ void Game::Update()
 
 	if ( TRG( KEY_INPUT_V ) )
 	{
-		isDrawCollision = !isDrawCollision;
+		// もはやこれはいらない
+		// isDrawCollision = !isDrawCollision;
 	}
 
 #endif // DEBUG_MODE
@@ -243,6 +249,8 @@ void Game::SelectUpdate()
 
 		if ( nextState == State::Null && pCursor->IsDecision() )
 		{
+			PlaySE( M_E_NEXT );
+
 			nextState =
 				( pCursor->IsChoiceBack() )
 				? State::GotoTitle
@@ -255,6 +263,12 @@ void Game::SelectUpdate()
 
 void Game::GameUpdate()
 {
+	if ( isTakeScreenShot )
+	{
+		isTakeScreenShot = false;
+		FadeBegin();
+	}
+
 	if ( pCamera )
 	{
 		pCamera->Update();
@@ -264,6 +278,18 @@ void Game::GameUpdate()
 			if ( Exposure() )
 			{
 				numMoves++;
+			}
+
+			// 仮でこの場でクリア確認を行っているが，もし変化演出後とかに変えるのであれば，
+			// カメラまたは星に IsDoneExposureEffect() のようなのを作るとよさそう
+			if ( pStarMng->IsEqualLevels() )
+			{
+				PlaySE( M_E_NEXT );
+
+				nextState = State::Clear;
+				isClear = true;
+
+				FadeEnd();	// フラグの初期化したいため
 			}
 		}
 	}
@@ -288,16 +314,21 @@ void Game::GameUpdate()
 
 #if DEBUG_MODE
 
-	if ( IS_TRG_EXPOSURE && pCursor->IsDecision() )
+	if ( TRG( KEY_INPUT_E ) && nextState == State::Null/* 連打防止 */ )
 	{
+		PlaySE( M_E_NEXT );
+
 		nextState = State::Clear;
-		FadeBegin();
+		isClear = true;
+
+		FadeEnd();	// フラグの初期化したいため
 	}
 
 #endif // DEBUG_MODE
 
 #if USE_IMGUI
 
+	FileIO::UpdateShowWIndowState();
 	FileIO::UpdateNowStageNumberByImGui();
 	if ( FileIO::IsCreateNewStage() )
 	{
@@ -333,8 +364,10 @@ void Game::ClearUpdate()
 
 #if DEBUG_MODE
 
-	if ( IS_TRG_EXPOSURE && pCursor->IsDecision() )
+	if ( TRG( KEY_INPUT_E ) && pCursor->IsDecision() && nextState == State::Null/* 連打防止 */ )
 	{
+		PlaySE( M_E_NEXT );
+
 		nextState = State::Select;
 		FadeBegin();
 	}
@@ -462,13 +495,6 @@ bool Game::Exposure()
 		pStarMng->Expose( targets.at( i ) );
 	}
 
-	// 仮でこの場でクリア確認を行っているが，もし変化演出後とかに変えるのであれば，
-	// カメラまたは星に IsDoneExposureEffect() のようなのを作るとよさそう
-	if ( pStarMng->IsEqualLevels() )
-	{
-		state = State::Clear;
-	}
-
 	return true;
 }
 
@@ -501,6 +527,30 @@ void Game::PrepareChangeSceneToTitle()
 
 	mpMng->mpScene = new Title( mpMng );
 	mpMng->mpScene->Init();
+}
+
+void Game::TakeScreenShot()
+{
+	int result = SaveDrawScreenToPNG
+	(
+		FRAME_POS_X,
+		FRAME_POS_Y,
+		FRAME_POS_X + FRAME_WIDTH,
+		FRAME_POS_Y + FRAME_HEIGHT,
+		"./Data/Images/ScreenShot/ScreenShot.png"
+	);
+	if ( result != 0 )
+	{
+		assert( !"ScreenShot Error!" );
+		exit( EXIT_FAILURE );
+		return;
+	}
+	// else
+
+	hScreenShot = LoadGraph( "./Data/Images/ScreenShot/ScreenShot.png" );
+
+	isClear = false;
+	isTakeScreenShot = true;
 }
 
 void Game::Draw()
@@ -597,6 +647,11 @@ void Game::GameDraw()
 	{
 		pCamera->Draw( shake );
 	}
+
+	if ( isClear )
+	{
+		TakeScreenShot();
+	}
 }
 
 void Game::ClearDraw()
@@ -628,6 +683,21 @@ void Game::ClearDraw()
 	if ( pStarMng )
 	{
 		pStarMng->Draw( shake );
+	}
+
+	if ( hScreenShot != 0 )
+	{
+		int x = 0;
+		int y = 0;
+
+		GetMousePoint( &x, &y );
+
+		DrawGraph
+		(
+			x, y,
+			hScreenShot,
+			TRUE
+		);
 	}
 }
 

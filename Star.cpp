@@ -299,6 +299,12 @@ bool StarMng::IsEqualLevels() const
 
 void StarMng::ChangeParametersByImGui()
 {
+	if ( !FileIO::IsShowImGuiWindow() )
+	{
+		return;
+	}
+	// else
+
 	ImGui::Begin( "Star_Parameters" );
 
 	ImGui::SliderInt( "Choice_X",		&choiseRow,		0, Grid::GetRowMax() - 1 );
@@ -391,6 +397,12 @@ void StarMng::RemoveStar()
 
 void StarMng::DrawUI() const
 {
+	if ( !FileIO::IsShowImGuiWindow() )
+	{
+		return;
+	}
+	// else
+
 	SetDrawBlendMode( DX_BLENDMODE_ALPHA, 128 );
 	{
 		unsigned int red	= GetColor( 200, 32, 32 );

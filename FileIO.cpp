@@ -4,6 +4,8 @@
 #include <string>
 #include <fstream>
 
+#include "Input.h"	// ImGui用の，表示切替の条件に使用
+
 #include "FileIO.h"
 
 #include "Camera.h"
@@ -336,11 +338,30 @@ namespace FileIO
 
 #if USE_IMGUI
 
+	static bool isShowWIndows = true;
+	void UpdateShowWIndowState()
+	{
+		if ( TRG( KEY_INPUT_V ) )
+		{
+			isShowWIndows = !isShowWIndows;
+		}
+	}
+	bool IsShowImGuiWindow()
+	{
+		return isShowWIndows;
+	}
+
 	static int  nowStageNumber	 = 1;	// 1始まり
 	static bool isCreateNewStage = false;
 
 	void UpdateNowStageNumberByImGui()
 	{
+		if ( !FileIO::IsShowImGuiWindow() )
+		{
+			return;
+		}
+		// else
+
 		isCreateNewStage = false;
 
 		ImGui::Begin( "Change_Save&Load_StageNumber" );

@@ -33,6 +33,8 @@ private:
 
 	int  numMoves;		// 今の手数，0始まり，アンドゥで減る
 
+	int  hScreenShot;
+
 	State state;
 	State nextState;
 
@@ -42,14 +44,19 @@ private:
 	std::unique_ptr<StarMng>  pStarMng;
 	std::unique_ptr<NumMoves> pNumMoves;
 
+	bool isClear;		// これがオンならスクショを取り，オフにしてクリアへ遷移させる
+	bool isTakeScreenShot;
+
 	bool isPause;
 	bool isDrawCollision;
 public:
 	Game( SceneMng *pMng ) : Scene( pMng ),
 		stageNumber( 1 ), numMoves( 0 ),
+		hScreenShot( 0 ),
 		state( State::Select ), nextState( State::Null ),
 		pCursor( nullptr ),
 		pCamera( nullptr ), pStarMng( nullptr ), pNumMoves( nullptr ),
+		isClear( false ), isTakeScreenShot( false ),
 		isPause( false ), isDrawCollision( false )
 		{}
 	~Game() {}
@@ -80,6 +87,8 @@ public:
 	void PauseUpdate();
 
 	void PrepareChangeSceneToTitle();
+
+	void TakeScreenShot();
 
 	void Draw();
 	void SelectDraw();

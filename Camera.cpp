@@ -156,6 +156,12 @@ Box Camera::FetchColWorldPos() const
 
 void Camera::ChangeParametersByImGui()
 {
+	if ( !FileIO::IsShowImGuiWindow() )
+	{
+		return;
+	}
+	// else
+
 	ImGui::Begin( "Camera_Parameters" );
 
 	ImGui::SliderInt( "Width",  &width,  1, Grid::GetRowMax() - 1 );
