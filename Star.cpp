@@ -8,11 +8,6 @@
 #include "FileIO.h"
 #include "Grid.h"
 
-namespace
-{
-	constexpr int ROTATE_INTERVAL = 4;
-}
-
 namespace StarImage
 {
 	constexpr int NUM_ROW		= 2;	// X
@@ -110,6 +105,32 @@ void Star::Update()
 	assert( width == height );
 }
 
+void Star::EffectRelatedUpdate()
+{
+	if ( val >= 255 ) { val_state = 1; }
+	if ( val <= 100 ) { val_state = 0; }
+	if ( val_state == 0 )
+	{
+
+		if ( level == 1 )val += 5;
+		if ( level == 2 )val += 5;
+		if ( level == 3 )val += 4;
+		if ( level == 4 )val += 3;
+		if ( level == 5 )val += 2;
+		if ( level == 6 )val += 1;
+	}
+	if ( val_state == 1 )
+	{
+
+		if ( level == 1 )val -= 5;
+		if ( level == 2 )val -= 5;
+		if ( level == 3 )val -= 4;
+		if ( level == 4 )val -= 3;
+		if ( level == 5 )val -= 2;
+		if ( level == 6 )val -= 1;
+	}
+}
+
 void Star::CalcRotate()
 {
 	angle = ( level % 2 ) ? 0 : 45.0f;
@@ -121,18 +142,37 @@ void Star::Draw( Vector2 shake ) const
 	halfSize.x = ( ( width  * Grid::GetSize().x ) * 0.5f );
 	halfSize.y = ( ( height * Grid::GetSize().y ) * 0.5f );
 
+
+	SetDrawBlendMode( DX_BLENDMODE_NOBLEND, 255 );
+
 	DrawRotaGraph3
 	(
 		scast<int>( FRAME_POS_X + ( row		* Grid::GetSize().x ) + halfSize.x ),	// 画面上の中心座標
 		scast<int>( FRAME_POS_Y + ( column	* Grid::GetSize().y ) + halfSize.y ),	// 画面上の中心座標
 		StarImage::SIZE >> 1,	// 画像上の中心座標
 		StarImage::SIZE >> 1,	// 画像上の中心座標
-		scast<double>( width  ),
+		scast<double>( width ),
 		scast<double>( height ),
 		scast<double>( ToRadian( angle ) ),
 		StarImage::GetHandle( level, anim.index ),
 		TRUE
 	);
+
+	SetDrawBlendMode( DX_BLENDMODE_ADD, val );
+	DrawRotaGraph3
+	(
+		scast<int>( FRAME_POS_X + ( row		* Grid::GetSize().x ) + halfSize.x ),	// 画面上の中心座標
+		scast<int>( FRAME_POS_Y + ( column	* Grid::GetSize().y ) + halfSize.y ),	// 画面上の中心座標
+		StarImage::SIZE >> 1,	// 画像上の中心座標
+		StarImage::SIZE >> 1,	// 画像上の中心座標
+		scast<double>( width ),
+		scast<double>( height ),
+		scast<double>( ToRadian( angle ) ),
+		StarImage::GetHandle( level, anim.index ),
+		TRUE
+	);
+
+
 }
 
 void Star::BeExposed()
@@ -195,6 +235,7 @@ void StarMng::Update()
 
 #endif // USE_IMGUI
 }
+
 void StarMng::ClearUpdate()
 {
 	if ( scast<int>( stars.size() ) < 1 )
@@ -211,10 +252,14 @@ void StarMng::ClearUpdate()
 
 void StarMng::Draw( Vector2 shake ) const
 {
+	// SetDrawBlendMode( DX_BLENDMODE_ADD, 各Starが変更している );
+
 	for ( const Star &it : stars )
 	{
 		it.Draw( shake );
 	}
+
+	SetDrawBlendMode( DX_BLENDMODE_NOBLEND, 255 );
 
 #if USE_IMGUI
 
@@ -409,7 +454,7 @@ void StarMng::DrawUI() const
 		unsigned int green	= GetColor( 32, 200, 32 );
 		unsigned int blue	= GetColor( 32, 32, 200 );
 
-		// セットせんとする敵の画像
+		// セットせんとする星の画像
 		DrawExtendGraph
 		(
 			scast<int>( FRAME_POS_X + ( choiseRow		* Grid::GetSize().x ) ),
