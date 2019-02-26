@@ -21,6 +21,29 @@ namespace TitleImage
 {
 	static int hTitleBG;
 
+
+	static int hTitleUI;
+	static int hTitlePushUI;
+	//星
+	constexpr int SIZE = 96;
+	constexpr int STAR_NUM_X = 2;
+	constexpr int STAR_NUM_Y = 2;
+	constexpr int STAR_ALL = STAR_NUM_X * STAR_NUM_Y;
+	static int hSTAR[STAR_ALL];
+
+	//エクスタ文字
+	constexpr int CHAR_SIZE = 128;
+	constexpr int CHAR_NUM_X = 2;
+	constexpr int CHAR_NUM_Y = 4;
+	constexpr int CHAR_ALL = CHAR_NUM_X * CHAR_NUM_Y;
+	static int hChar[CHAR_ALL];
+
+	//タイトルUI
+	constexpr int TUI_SIZE_X = 640;
+	constexpr int TUI_SIZE_Y = 100;
+	static int hTUI;
+
+
 	void Load()
 	{
 		// すでに値が入っていたら，読み込んだものとみなして飛ばす
@@ -31,11 +54,45 @@ namespace TitleImage
 		// else
 
 		hTitleBG = LoadGraph( "./Data/Images/BG/Title.png" );
+
+
+		hTitlePushUI = LoadGraph( "./Data/Images/UI/push.png" );
+		LoadDivGraph
+		(
+			"./Data/Images/UI/title_char_2.png",
+			STAR_ALL,
+			STAR_NUM_X,
+			STAR_NUM_Y,
+			SIZE,
+			SIZE,
+			hSTAR
+		);
+
+		LoadDivGraph
+		(
+			"./Data/Images/UI/title_ekusuta.png",
+			CHAR_ALL,
+			CHAR_NUM_X,
+			CHAR_NUM_Y,
+			CHAR_SIZE,
+			CHAR_SIZE,
+			hChar
+		);
+
+
 	}
 	void Release()
 	{
 		DeleteGraph( hTitleBG	);
 		hTitleBG	= 0;
+
+
+		DeleteGraph( hTitleUI );
+		DeleteGraph( hTitlePushUI );
+		hTitleUI = 0;
+		hTitlePushUI = 0;
+
+
 	}
 }
 
@@ -130,10 +187,10 @@ void Title::MainUpdate()
 
 #if USE_IMGUI
 
-	ImGui::Begin( "test_window" );
+	ImGui::Begin( "title_window" );
 
-	static float foo = 0;
-	ImGui::SliderFloat( "foo", &foo, 1.0f, 10.0f );
+	ImGui::SliderFloat( "push_x", &push_pos.x, -1000.0f, 1000.0f );
+	ImGui::SliderFloat( "push_y", &push_pos.y, -1000.0f, 1000.0f );
 
 	ImGui::End();
 
@@ -212,16 +269,295 @@ void Title::Draw()
 {
 	Vector2 shake = GetShakeAmount();
 	
+	SetDrawBlendMode( DX_BLENDGRAPHTYPE_NORMAL, 0 );
+
 	// 背景
 	{
 		DrawExtendGraph
 		(
 			scast<int>( 0 - shake.x ),
 			scast<int>( 0 - shake.y ),
-			scast<int>( SCREEN_WIDTH  - shake.x ),
+			scast<int>( SCREEN_WIDTH - shake.x ),
 			scast<int>( SCREEN_HEIGHT - shake.y ),
 			TitleImage::hTitleBG,
 			TRUE
 		);
 	}
+
+	//後ろの星
+	{
+		DrawGraph
+		(
+			star_pos.x + 180,
+			star_pos.y + 180 + sin( PI * 2 / 240 * Count ) * 20,
+			TitleImage::hSTAR[0],
+			TRUE
+		);
+		Count++;
+		if ( Count >= 240 )Count = 0;
+	}
+	if ( flash_state == 2 || flash_state == 3 )
+	{
+		SetDrawBlendMode( DX_BLENDMODE_ADD, flash_val );
+		DrawGraph
+		(
+			star_pos.x + 180,
+			star_pos.y + 180 + sin( PI * 2 / 240 * Count ) * 20,
+			TitleImage::hSTAR[0],
+			TRUE
+		);
+
+	}
+	SetDrawBlendMode( DX_BLENDGRAPHTYPE_NORMAL, 0 );
+	//エ
+	{
+		DrawGraph
+		(
+			E_pos.x + 200,
+			E_pos.y + 200 + sin( PI * 2 / 240 * Count ) * 20,
+			TitleImage::hChar[0],
+			TRUE
+		);
+	}
+	//ク
+	{
+		DrawGraph
+		(
+			Ku_pos.x + 330,
+			Ku_pos.y + 200 + sin( PI * 2 / 240 * Count2 ) * 20,
+			TitleImage::hChar[2],
+			TRUE
+		);
+		if ( timer >= 10 )
+		{
+			Count2++;
+			if ( Count2 >= 240 )Count2 = 0;
+		}
+	}
+	//ス
+	{
+		DrawGraph
+		(
+			Su_pos.x + 460,
+			Su_pos.y + 200 + sin( PI * 2 / 240 * Count3 ) * 20,
+			TitleImage::hChar[4],
+			TRUE
+		);
+		if ( timer >= 18 )
+		{
+			Count3++;
+			if ( Count3 >= 240 )Count3 = 0;
+		}
+	}
+	//タ
+	{
+		DrawGraph
+		(
+			Ta_pos.x + 590,
+			Ta_pos.y + 200 + sin( PI * 2 / 240 * Count4 ) * 20,
+			TitleImage::hChar[6],
+			TRUE
+		);
+		if ( timer >= 27 )
+		{
+			Count4++;
+			if ( Count4 >= 240 )Count4 = 0;
+		}
+
+	}
+
+	//前の星
+	{
+		DrawRotaGraph3
+		(
+			star_pos.x + 690,
+			star_pos.y + 310 + sin( PI * 2 / 240 * Count4 ) * 20,
+			TitleImage::SIZE >> 1,
+			TitleImage::SIZE >> 1,
+			0,
+			0,
+			scast<double>( ToRadian( angle ) ),
+			TitleImage::hSTAR[2],
+			TRUE,
+			TRUE
+		);
+
+
+	}
+
+	SetDrawBlendMode( DX_BLENDGRAPHTYPE_NORMAL, 0 );
+
+	DrawGraph
+	(
+		push_pos.x,
+		push_pos.y,
+		TitleImage::hTitlePushUI,
+		TRUE
+	);
+
+	switch ( flash_state )
+	{
+	case 0:
+		{
+			flash_rand = 60/*360 + rand() % 360*/;
+			flash_state++;
+		}
+		break;
+	case 1:
+		{
+			flash_rand--;
+			if ( flash_rand <= 0 )flash_state++;
+		}
+		break;
+	case 2:
+		{
+			SetDrawBlendMode( DX_BLENDMODE_ADD, flash_val );
+			DrawRotaGraph3
+			(
+				star_pos.x + 690,
+				star_pos.y + 310 + sin( PI * 2 / 240 * Count4 ) * 20,
+				TitleImage::SIZE >> 1,
+				TitleImage::SIZE >> 1,
+				flash_scale.x + 0.01f,
+				flash_scale.y + 0.01f,
+				scast<double>( ToRadian( angle ) ),
+				TitleImage::hSTAR[2],
+				TRUE,
+				TRUE
+			);
+
+			DrawRotaGraph3
+			(
+				star_pos.x + 690,
+				star_pos.y + 310 + sin( PI * 2 / 240 * Count4 ) * 20,
+				TitleImage::SIZE >> 1,
+				TitleImage::SIZE >> 1,
+				flash_scale.x + 0.02f,
+				flash_scale.y + 0.02f,
+				scast<double>( ToRadian( angle ) ),
+				TitleImage::hSTAR[2],
+				TRUE,
+				TRUE
+			);
+			DrawRotaGraph3
+			(
+				star_pos.x + 690,
+				star_pos.y + 310 + sin( PI * 2 / 240 * Count4 ) * 20,
+				TitleImage::SIZE >> 1,
+				TitleImage::SIZE >> 1,
+				flash_scale.x + 0.03f,
+				flash_scale.y + 0.03f,
+				scast<double>( ToRadian( angle ) ),
+				TitleImage::hSTAR[2],
+				TRUE,
+				TRUE
+			);
+
+			flash_scale.x += scale_up_speed.x;
+			flash_scale.y += scale_up_speed.y;
+			scale_up_speed -= 0.015f;
+
+			if ( scale_up_speed.x <= 0.0f || scale_up_speed.y <= 0.0f )
+			{
+				scale_up_speed.x = 0.0f;
+
+				scale_up_speed.y = 0.0f;
+			}
+			if ( flash_scale.x >= 4.0f || flash_scale.y >= 4.0f )
+			{
+				flash_scale.x = 4.0f;
+				flash_scale.y = 4.0f;
+			}
+
+			angle += angle_speed;
+			if ( angle_speed != 5 )
+			{
+				angle_speed -= 0.05f;
+			}
+
+			flash_val += val_speed;
+			if ( val_speed <= 5 )
+			{
+				val_speed -= 10;
+			}
+			if ( flash_val >= 255 )flash_state++;
+		}
+		break;
+	case 3:
+		{
+			SetDrawBlendMode( DX_BLENDMODE_ALPHA, alpha_val );
+			DrawRotaGraph3
+			(
+				star_pos.x + 690,
+				star_pos.y + 310 + sin( PI * 2 / 240 * Count4 ) * 20,
+				TitleImage::SIZE >> 1,
+				TitleImage::SIZE >> 1,
+				flash_scale.x + 0.01f,
+				flash_scale.y + 0.01f,
+				scast<double>( ToRadian( angle ) ),
+				TitleImage::hSTAR[2],
+				TRUE,
+				TRUE
+			);
+
+			SetDrawBlendMode( DX_BLENDMODE_ADD, flash_val );
+			DrawRotaGraph3
+			(
+				star_pos.x + 690,
+				star_pos.y + 310 + sin( PI * 2 / 240 * Count4 ) * 20,
+				TitleImage::SIZE >> 1,
+				TitleImage::SIZE >> 1,
+				flash_scale.x + 0.02f,
+				flash_scale.y + 0.02f,
+				scast<double>( ToRadian( angle ) ),
+				TitleImage::hSTAR[2],
+				TRUE,
+				TRUE
+			);
+			DrawRotaGraph3
+			(
+				star_pos.x + 690,
+				star_pos.y + 310 + sin( PI * 2 / 240 * Count4 ) * 20,
+				TitleImage::SIZE >> 1,
+				TitleImage::SIZE >> 1,
+				flash_scale.x + 0.03f,
+				flash_scale.y + 0.03f,
+				scast<double>( ToRadian( angle ) ),
+				TitleImage::hSTAR[2],
+				TRUE,
+				TRUE
+			);
+			angle += angle_speed;
+			if ( angle_speed != 5 )
+			{
+				angle_speed -= 0.05f;
+			}
+
+			alpha_val -= 5;
+			flash_val -= 2;
+
+			flash_scale.x -= 0.02f;
+			if ( flash_scale.x <= 0.0f )flash_scale.x = 0.0f;
+			flash_scale.y -= 0.02f;
+			if ( flash_scale.y <= 0.0f )flash_scale.y = 0.0f;
+
+			if ( flash_val <= 0 )
+			{
+				scale_up_speed.x = 0.3f;
+				scale_up_speed.y = 0.3f;
+				flash_scale.x = 0.0f;
+				flash_scale.x = 0.0f;
+				flash_val = 0;
+				alpha_val = 255;
+				flash_state = 0;
+				angle = 0;
+				angle_speed = 100;
+			}
+		}
+		break;
+	}
+
+	SetDrawBlendMode( DX_BLENDGRAPHTYPE_NORMAL, 255 );
+
+
 }
