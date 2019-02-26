@@ -72,6 +72,50 @@ namespace GameImage
 		hFrameUI	= 0;
 	}
 }
+namespace PauseImage
+{
+	constexpr int SIZE_X = 736;
+	constexpr int SIZE_Y = 576;
+
+	constexpr int NUM_ROW = 5;
+
+	// 0:All, 1:ToGame, 2:Retry, 3:ToSelect, 4:ToTitle
+	static int hPauseStatements[NUM_ROW];
+
+	void Load()
+	{
+		// Ç∑Ç≈Ç…ílÇ™ì¸Ç¡ÇƒÇ¢ÇΩÇÁÅCì«Ç›çûÇÒÇæÇ‡ÇÃÇ∆Ç›Ç»ÇµÇƒîÚÇŒÇ∑
+		if ( 0 != hPauseStatements[0] )
+		{
+			return;
+		}
+		// else
+
+		LoadDivGraph
+		(
+			"./Data/Images/Pause/Statement.png",
+			NUM_ROW,
+			NUM_ROW, 1,
+			SIZE_X, SIZE_Y,
+			hPauseStatements
+		);
+	}
+	void Release()
+	{
+		for ( int i = 0; i < NUM_ROW; i++ )
+		{
+			DeleteGraph( hPauseStatements[i] );
+			hPauseStatements[i] = 0;
+		}
+	}
+
+	int  GetHandle( int index )
+	{
+		assert( 0 <= index && index <= NUM_ROW );
+
+		return hPauseStatements[index];
+	}
+}
 
 void Game::Init()
 {
@@ -84,6 +128,7 @@ void Game::Init()
 	Number::Load();
 	SelectImage::Load();
 	GameImage::Load();
+	PauseImage::Load();
 	CameraImage::Load();
 	StarImage::Load();
 	StageImage::Load();
@@ -134,10 +179,11 @@ void Game::GameInit()
 	pNumMoves->Init( stageNumber );
 
 	numMoves = 0;
+	choice = 0;
 }
 void Game::ClearInit()
 {
-
+	choice = 0;
 }
 
 void Game::Uninit()
@@ -153,6 +199,7 @@ void Game::Uninit()
 	Number::Release();
 	SelectImage::Release();
 	GameImage::Release();
+	PauseImage::Release();
 	CameraImage::Release();
 	StarImage::Release();
 	StageImage::Release();
@@ -198,14 +245,20 @@ void Game::Update()
 
 #endif // DEBUG_MODE
 
-	if ( Fade::GetInstance()->IsDoneFade() && nextState == State::GotoTitle )
+	if ( Fade::GetInstance()->IsDoneFade() )
 	{
-		PrepareChangeSceneToTitle();
+		if ( nextState == State::GotoTitle )
+		{
+			PrepareChangeSceneToTitle();
 
-		delete this;
-		return;
+			delete this;
+			return;
+		}
+		// else
 	}
 	// else
+
+	FadeCheck();
 
 	if ( IsInputPauseButton() )
 	{
@@ -215,12 +268,6 @@ void Game::Update()
 	if ( isPause )
 	{
 		PauseUpdate();
-
-		if ( IsInputPauseButton() )
-		{
-			PlaySE( M_E_BACK );
-			isPause = false;
-		}
 
 		return;
 	}
@@ -239,8 +286,6 @@ void Game::Update()
 		exit( EXIT_FAILURE );
 		return;
 	}
-
-	FadeCheck();
 
 	CollisionCheck();
 
@@ -454,13 +499,15 @@ void Game::FadeDone()
 		exit( EXIT_FAILURE );
 		return;
 	}
+
+	numMoves = 0;
+	isPause = false;
 }
 
 void Game::FadeEnd()
 {
 	Fade::GetInstance()->Uninit();
 }
-
 
 bool Game::Exposure()
 {
@@ -518,10 +565,7 @@ bool Game::Exposure()
 
 bool Game::IsInputPauseButton()
 {
-	if	(
-			0
-			// state != State::Game
-		)
+	if ( state != State::Game )
 	{
 		return false;
 	}
@@ -531,12 +575,85 @@ bool Game::IsInputPauseButton()
 		return false;
 	}
 	// else
+	if ( nextState != State::Null )
+	{
+		return false;
+	}
+	// else
+
+	if ( !isPause )
+	{
+		choice = 0;
+	}
 
 	return true;
 }
 void Game::PauseUpdate()
 {
-	
+	constexpr int MAX_MENU = 4;
+
+	bool isUp = false, isDown = false;
+
+	if ( IS_TRG_UP	 ) { isUp	= true; }
+	if ( IS_TRG_DOWN ) { isDown	= true; }
+
+	if ( ( 0		< choice		)	&& isUp		&& !isDown	) { choice -= 1; PlaySE( M_E_NEXT ); }
+	if ( ( choice	< MAX_MENU - 1	)	&& isDown	&& !isUp	) { choice += 1; PlaySE( M_E_NEXT ); }
+
+	assert( 0 <= choice  && choice < MAX_MENU );
+
+	if ( IS_TRG_EXPOSURE )
+	{
+		PlaySE( M_E_NEXT );
+
+		switch ( choice )
+		{
+		case 0:
+			{
+				if ( state == State::Game )
+				{
+					isPause = false;
+					return;
+				}
+				// else
+				if ( state == State::Clear )
+				{
+					nextState = State::Game;
+					if ( stageNumber <= FileIO::GetMaxStageNumber() )
+					{
+						stageNumber++;
+					}
+					else
+					{
+						assert( !"Error : Next_Stage is Not Exists." );
+						exit( EXIT_FAILURE );
+						return;
+					}
+
+					FadeBegin();
+				}
+			}
+			break;
+		case 1:
+			{
+				nextState = State::Game;
+				FadeBegin();
+			}
+			break;
+		case 2:
+			{
+				nextState = State::Select;
+				FadeBegin();
+			}
+			break;
+		case 3:
+			{
+				nextState = State::GotoTitle;
+				FadeBegin();
+			}
+			break;
+		}
+	}
 }
 
 void Game::PrepareChangeSceneToTitle()
@@ -573,23 +690,37 @@ void Game::TakeScreenShot()
 
 void Game::Draw()
 {
+	constexpr int PAUSE_BRIGHTNESS = 64;
+
 	Vector2 shake = GetShakeAmount();
+
+	if ( isPause ) { SetDrawBright( PAUSE_BRIGHTNESS, PAUSE_BRIGHTNESS, PAUSE_BRIGHTNESS ); }
 
 	switch ( state )
 	{
 	case State::Select:
 		SelectDraw();
+		if ( isPause ) { SetDrawBright( PAUSE_BRIGHTNESS, PAUSE_BRIGHTNESS, PAUSE_BRIGHTNESS ); }
 		SelectDrawUI();		break;
 	case State::Game:
 		GameDraw();
+		if ( isPause ) { SetDrawBright( PAUSE_BRIGHTNESS, PAUSE_BRIGHTNESS, PAUSE_BRIGHTNESS ); }
 		GameDrawUI();		break;
 	case State::Clear:
 		ClearDraw();
+		if ( isPause ) { SetDrawBright( PAUSE_BRIGHTNESS, PAUSE_BRIGHTNESS, PAUSE_BRIGHTNESS ); }
 		ClearDrawUI();		break;
 	default:
 		assert( !"Error:SceneGame state error." );
 		exit( EXIT_FAILURE );
 		return;
+	}
+
+	if ( isPause )
+	{
+		SetDrawBright( 255, 255, 255 );
+
+		PauseDraw();
 	}
 
 #if	DEBUG_MODE
@@ -731,6 +862,40 @@ void Game::ClearDraw()
 			TRUE
 		);
 	}
+}
+
+void Game::PauseDraw()
+{
+	/*
+	int x = 0;
+	int y = 0;
+
+	GetMousePoint( &x, &y );
+
+	DrawCircle
+	(
+		x, y,
+		16,
+		GetColor( 200, 200, 200 )
+	);
+	*/
+
+	// çÄñ⁄
+	DrawGraph
+	(
+		608,
+		288,
+		PauseImage::GetHandle( 0 ),
+		TRUE
+	);
+	// ã≠í≤
+	DrawGraph
+	(
+		608,
+		288,
+		PauseImage::GetHandle( choice + 1 ),
+		TRUE
+	);
 }
 
 void Game::SelectDrawUI()

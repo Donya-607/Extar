@@ -32,6 +32,8 @@ private:
 	int  stageNumber;	// 1始まり
 	int  numMoves;		// 今の手数，0始まり，アンドゥで減る
 
+	int	 choice;		// 0始まり, ポーズとリザルトを兼ねている
+
 	int  hScreenShot;
 
 	int	 hFont;			// JFドットK12
@@ -53,6 +55,7 @@ private:
 public:
 	Game( SceneMng *pMng ) : Scene( pMng ),
 		stageNumber( 1 ), numMoves( 0 ),
+		choice( 0 ),
 		hScreenShot( 0 ), hFont( 0 ),
 		state( State::Select ), nextState( State::Null ),
 		pCursor( nullptr ),
@@ -95,6 +98,8 @@ public:
 	void SelectDraw();
 	void GameDraw();
 	void ClearDraw();
+
+	void PauseDraw();
 
 	void SelectDrawUI();
 	void GameDrawUI();
