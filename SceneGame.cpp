@@ -130,6 +130,11 @@ namespace ClearImage
 		hRecordStar[1] = 0;
 	}
 }
+namespace ClearRelated
+{
+	constexpr int FADE_WAIT = 45;
+}
+
 namespace PauseImage
 {
 	constexpr int SIZE_X = 736;
@@ -326,7 +331,7 @@ void Game::ClearInit()
 	clearTimer = 0;
 
 	pBoard.reset( new Board() );
-	pBoard->Init( { 0, 0 } );
+	pBoard->Init( { 960.0f, scast<float>( -BoardImage::SIZE_Y ) } );
 
 	recordStars.clear();
 }
@@ -618,7 +623,10 @@ void Game::ClearUpdate()
 
 	if ( pBoard )
 	{
-		pBoard->Update();
+		if ( ClearRelated::FADE_WAIT < clearTimer )
+		{
+			pBoard->Update();
+		}
 	}
 
 	// RecordStar‚Ì¶¬ŠÇ—
@@ -626,19 +634,19 @@ void Game::ClearUpdate()
 		// HACK:¯‚Ì”‚ª‚R‚Â‚¶‚á‚È‚¢‚È‚çC‚±‚±‚à•Ï‚¦‚é•K—v‚ª‚ ‚é
 		const std::array<int, 3> generateFrames =
 		{
-			60/* Šî€ */,
-			60 + 30/* ŠÔŠu */,
-			60 + ( 30 * 2 )
+			ClearRelated::FADE_WAIT + 50/* Šî€ */,
+			ClearRelated::FADE_WAIT + 50 + 30/* ŠÔŠu */,
+			ClearRelated::FADE_WAIT + 50 + ( 30 * 2 )
 		};
 
 		int nextGenerate = scast<int>( recordStars.size() );
 		if	(
 				nextGenerate < scast<int>( generateFrames.size() ) &&
-				clearTimer == generateFrames[nextGenerate]
+				clearTimer == generateFrames[nextGenerate]	// ’Z—•]‰¿
 			)
 		{
-			Vector2 base{ 602.0f, 512.0f };
-			float interval = scast<float>( ( 32 + ClearImage::SIZE_STAR_X ) * nextGenerate );
+			Vector2 base{ 602.0f, 864.0f };
+			float interval = scast<float>( ( 160 + ClearImage::SIZE_STAR_X ) * nextGenerate );
 			base.x += interval;
 
 			int nowRank = pNumMoves->CalcRank( numMoves );	// ‚Pn‚Ü‚è
@@ -1121,6 +1129,40 @@ void Game::ClearDraw()
 		pStarMng->Draw( shake );
 	}
 
+	if ( clearTimer < 255 )
+	{
+		int alpha = ( 255 / ClearRelated::FADE_WAIT )/* AMPL */ * clearTimer;
+
+		SetDrawBlendMode( DX_BLENDMODE_ALPHA, alpha );
+	}
+	else
+	{
+		SetDrawBlendMode( DX_BLENDMODE_ALPHA, 255 );
+	}
+
+	// BG
+	DrawGraph
+	(
+		0, 0,
+		ClearImage::hClearBG,
+		TRUE
+	);
+	// Statement
+	DrawGraph
+	(
+		0, 0,
+		ClearImage::hRecordStatement,
+		TRUE
+	);
+
+	SetDrawBlendMode( DX_BLENDMODE_NOBLEND, 255 );
+
+	if ( clearTimer < ClearRelated::FADE_WAIT )
+	{
+		return;
+	}
+	// else
+
 	if ( pBoard )
 	{
 		pBoard->Draw( hScreenShot, shake );
@@ -1217,6 +1259,7 @@ void Game::GameDrawUI()
 
 void Game::ClearDrawUI()
 {
+	/*
 	DrawExtendFormatStringToHandle
 	(
 		300, 300,
@@ -1225,15 +1268,6 @@ void Game::ClearDrawUI()
 		hFont,
 		"Stage Clear!"
 	);
-	/*
-	DrawExtendFormatString
-	(
-		360, 300,
-		6.0, 6.0,
-		GetColor( 200, 200, 200 ),
-		"Stage Clear!"
-	);
-	*/
 
 	if ( pNumMoves )
 	{
@@ -1262,6 +1296,7 @@ void Game::ClearDrawUI()
 			hFont
 		);
 	}
+	*/
 }
 
 void Game::CollisionCheck()

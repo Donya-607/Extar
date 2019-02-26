@@ -64,7 +64,7 @@ void Board::Init( Vector2 centerPos )
 	pos.x = centerPos.x + ( BoardImage::SIZE_X >> 1 );
 	pos.y = centerPos.y + ( BoardImage::SIZE_Y >> 1 );
 
-	const Vector2 INIT_VELO{ 0, 0.0f };
+	const Vector2 INIT_VELO{ 0, 9.0f };
 	velo = INIT_VELO;
 
 	pPic.reset( new Picture() );
@@ -107,7 +107,15 @@ void Board::Draw( int hPicture, Vector2 shake ) const
 
 void Board::Move()
 {
-
+	constexpr float GRAVITY = 1.8f;
+	velo.y += GRAVITY;
 
 	pos += velo;
+
+	constexpr float DESTINATION_Y = 416.0f;
+	if ( DESTINATION_Y < pos.y )
+	{
+		pos.y  = DESTINATION_Y;
+		velo.y = 0;
+	}
 }

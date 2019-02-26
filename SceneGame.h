@@ -82,7 +82,7 @@ private:
 
 	bool isOpenFade;	// FadeBegin ~ FadeEnd までTRUE
 
-	bool isClearMoment;		// これがオンならスクショを取り，オフにしてクリアへ遷移させる
+	bool isClearMoment;	// これがオンならスクショを取り，オフにしてクリアへ遷移させる
 	bool isTakeScreenShot;
 
 	bool isShowClearMenu;
