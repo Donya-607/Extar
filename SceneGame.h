@@ -11,6 +11,8 @@
 #include "NumMoves.h"
 #include "Cursor.h"
 
+#include "Board.h"
+
 //--------------------
 //
 //		Game.h
@@ -47,8 +49,14 @@ private:
 	std::unique_ptr<StarMng>  pStarMng;
 	std::unique_ptr<NumMoves> pNumMoves;
 
-	bool isClear;		// これがオンならスクショを取り，オフにしてクリアへ遷移させる
+	std::unique_ptr<Board>	  pBoard;
+
+	bool isOpenFade;	// FadeBegin ~ FadeEnd までTRUE
+
+	bool isClearMoment;		// これがオンならスクショを取り，オフにしてクリアへ遷移させる
 	bool isTakeScreenShot;
+
+	bool isShowClearMenu;
 
 	bool isPause;
 	bool isDrawCollision;
@@ -60,7 +68,10 @@ public:
 		state( State::Select ), nextState( State::Null ),
 		pCursor( nullptr ),
 		pCamera( nullptr ), pStarMng( nullptr ), pNumMoves( nullptr ),
-		isClear( false ), isTakeScreenShot( false ),
+		pBoard( nullptr ),
+		isOpenFade( false ),
+		isClearMoment( false ), isTakeScreenShot( false ),
+		isShowClearMenu( false ),
 		isPause( false ), isDrawCollision( false )
 		{}
 	~Game() {}

@@ -133,6 +133,7 @@ void Game::Init()
 	StarImage::Load();
 	StageImage::Load();
 	CursorImage::Load();
+	BoardImage::Load();
 
 	hFont = CreateFontToHandle
 	(
@@ -184,6 +185,9 @@ void Game::GameInit()
 void Game::ClearInit()
 {
 	choice = 0;
+
+	pBoard.reset( new Board() );
+	pBoard->Init( { 0, 0 } );
 }
 
 void Game::Uninit()
@@ -204,6 +208,7 @@ void Game::Uninit()
 	StarImage::Release();
 	StageImage::Release();
 	CursorImage::Release();
+	BoardImage::Release();
 
 	DeleteFontToHandle( hFont );
 
@@ -226,6 +231,7 @@ void Game::ClearUninit()
 
 	if ( pStarMng  ) { pStarMng->Uninit();  }
 	if ( pNumMoves ) { pNumMoves->Uninit(); }
+	if ( pBoard	   ) { pBoard->Uninit();	}
 }
 
 void Game::Update()
@@ -350,7 +356,7 @@ void Game::GameUpdate()
 				PlaySE( M_E_NEXT );
 
 				nextState = State::Clear;
-				isClear = true;
+				isClearMoment = true;
 
 				FadeEnd();	// フラグの初期化したいため
 			}
@@ -382,7 +388,7 @@ void Game::GameUpdate()
 		PlaySE( M_E_NEXT );
 
 		nextState = State::Clear;
-		isClear = true;
+		isClearMoment = true;
 
 		FadeEnd();	// フラグの初期化したいため
 	}
@@ -425,6 +431,11 @@ void Game::ClearUpdate()
 		pStarMng->ClearUpdate();
 	}
 
+	if ( pBoard )
+	{
+		pBoard->Update();
+	}
+
 #if DEBUG_MODE
 
 	if ( TRG( KEY_INPUT_E ) && pCursor->IsDecision() && nextState == State::Null/* 連打防止 */ )
@@ -449,6 +460,8 @@ void Game::FadeBegin()
 	pos.y -= scast<float>( SCREEN_HEIGHT ) * 1.0f/* 位置の調整 */;
 
 	Fade::GetInstance()->Init( MOVE_INTERVAL, pos );
+
+	isOpenFade = false;
 }
 
 void Game::FadeCheck()
@@ -502,11 +515,13 @@ void Game::FadeDone()
 
 	numMoves = 0;
 	isPause = false;
+	isOpenFade = false;
 }
 
 void Game::FadeEnd()
 {
 	Fade::GetInstance()->Uninit();
+	isOpenFade = true;
 }
 
 bool Game::Exposure()
@@ -565,17 +580,12 @@ bool Game::Exposure()
 
 bool Game::IsInputPauseButton()
 {
-	if ( state != State::Game )
-	{
-		return false;
-	}
-	// else
-	if ( !IsTriggerPauseButton() )
-	{
-		return false;
-	}
-	// else
-	if ( nextState != State::Null )
+	if	(
+			!IsTriggerPauseButton()	||
+			state != State::Game	|| 
+			!isOpenFade				||
+			nextState != State::Null
+		)
 	{
 		return false;
 	}
@@ -684,13 +694,14 @@ void Game::TakeScreenShot()
 
 	hScreenShot = LoadGraph( "./Data/Images/ScreenShot/ScreenShot.png" );
 
-	isClear = false;
+	isClearMoment = false;
 	isTakeScreenShot = true;
 }
 
 void Game::Draw()
 {
 	constexpr int PAUSE_BRIGHTNESS = 64;
+	constexpr int CLEAR_BRIGHTNESS = 64;
 
 	Vector2 shake = GetShakeAmount();
 
@@ -700,7 +711,6 @@ void Game::Draw()
 	{
 	case State::Select:
 		SelectDraw();
-		if ( isPause ) { SetDrawBright( PAUSE_BRIGHTNESS, PAUSE_BRIGHTNESS, PAUSE_BRIGHTNESS ); }
 		SelectDrawUI();		break;
 	case State::Game:
 		GameDraw();
@@ -708,7 +718,7 @@ void Game::Draw()
 		GameDrawUI();		break;
 	case State::Clear:
 		ClearDraw();
-		if ( isPause ) { SetDrawBright( PAUSE_BRIGHTNESS, PAUSE_BRIGHTNESS, PAUSE_BRIGHTNESS ); }
+		if ( isShowClearMenu ) { SetDrawBright( CLEAR_BRIGHTNESS, CLEAR_BRIGHTNESS, CLEAR_BRIGHTNESS ); }
 		ClearDrawUI();		break;
 	default:
 		assert( !"Error:SceneGame state error." );
@@ -798,7 +808,7 @@ void Game::GameDraw()
 		pStarMng->Draw( shake );
 	}
 
-	if ( isClear )
+	if ( isClearMoment )
 	{
 		TakeScreenShot();
 		return;
@@ -848,6 +858,12 @@ void Game::ClearDraw()
 		pStarMng->Draw( shake );
 	}
 
+	if ( pBoard )
+	{
+		pBoard->Draw( hScreenShot, shake );
+	}
+
+	/*
 	if ( hScreenShot != 0 )
 	{
 		int x = 0;
@@ -862,6 +878,7 @@ void Game::ClearDraw()
 			TRUE
 		);
 	}
+	*/
 }
 
 void Game::PauseDraw()
@@ -949,9 +966,6 @@ void Game::GameDrawUI()
 
 void Game::ClearDrawUI()
 {
-
-#if DEBUG_MODE
-
 	DrawExtendFormatStringToHandle
 	(
 		300, 300,
@@ -996,19 +1010,7 @@ void Game::ClearDrawUI()
 			colours[nowRank],
 			hFont
 		);
-		/*
-		DrawExtendString
-		(
-			360, 400,
-			6.0, 6.0,
-			result.c_str(),
-			colours[nowRank]
-		);
-		*/
 	}
-
-#endif // DEBUG_MODE
-
 }
 
 void Game::CollisionCheck()
