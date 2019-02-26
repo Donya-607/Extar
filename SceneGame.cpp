@@ -13,6 +13,8 @@
 
 #include "ScreenShake.h"
 
+#include "Number.h"
+
 #include "Camera.h"
 #include "Grid.h"
 
@@ -79,6 +81,7 @@ void Game::Init()
 	FileIO::ReadAllStars();
 	FileIO::ReadAllNumMoves();
 
+	Number::Load();
 	SelectImage::Load();
 	GameImage::Load();
 	CameraImage::Load();
@@ -147,6 +150,7 @@ void Game::Uninit()
 	FileIO::ReleaseStarsData();
 	FileIO::ReleaseNumMovesData();
 
+	Number::Release();
 	SelectImage::Release();
 	GameImage::Release();
 	CameraImage::Release();

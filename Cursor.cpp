@@ -10,6 +10,7 @@
 #include "FileIO.h"
 
 #include "Star.h"
+#include "Number.h"
 
 namespace CursorImage
 {
@@ -165,7 +166,7 @@ namespace StageSelect
 	const Vector2 SIZE{ 512.0f, 378.0f };
 	const Vector2 MARGIN{ 64.0f, 32.0f };
 
-	const Vector2 BACK_CENTER_POS{ 176.0f, 72.0f };
+	const Vector2 BACK_CENTER_POS{ 224.0f, 72.0f };
 	const Vector2 BACK_SIZE{ 96.0f, 96.0f };
 
 	static const int maxRow  = 3;
@@ -208,7 +209,7 @@ namespace StageSelect
 	}
 
 	static bool isGlowBack = false;
-	void SetbackGlow( bool isGlow )
+	void SetBackGlow( bool isGlow )
 	{
 		isGlowBack = isGlow;
 	}
@@ -223,8 +224,7 @@ namespace StageSelect
 	{
 		int pageNum = ( ( nowStageNumber - 1 ) / StageSelect::GetMaxDisplayNumber() ); // 0始まり
 		int end = ( pageNum * StageSelect::GetMaxDisplayNumber() ) + StageSelect::GetMaxDisplayNumber() + 1;
-		for
-			(
+		for (
 			int stageNumber = 1 + ( pageNum * StageSelect::GetMaxDisplayNumber() );
 				stageNumber < end;
 				stageNumber++
@@ -237,24 +237,71 @@ namespace StageSelect
 				dropPos = scast<int>( StageSelect::GetSize().y + StageSelect::GetMargin().y );
 			}
 
+			int posX = scast<int>( StageSelect::GetPosLeftTop().x ) + slidePos;
+			int posY = scast<int>( StageSelect::GetPosLeftTop().y ) + dropPos;
+
+			// Thumbnail
 			DrawExtendGraph
 			(
-				scast<int>( StageSelect::GetPosLeftTop().x ) + slidePos,
-				scast<int>( StageSelect::GetPosLeftTop().y ) + dropPos,
-				scast<int>( StageSelect::GetPosLeftTop().x + StageSelect::GetSize().x ) + slidePos,
-				scast<int>( StageSelect::GetPosLeftTop().y + StageSelect::GetSize().y ) + dropPos,
+				posX,
+				posY,
+				posX + scast<int>( StageSelect::GetSize().x ),
+				posY + scast<int>( StageSelect::GetSize().y ),
 				StageImage::GetHandle( stageNumber ),
 				TRUE
 			);
+			// Cursor
 			DrawExtendGraph
 			(
-				scast<int>( StageSelect::GetPosLeftTop().x ) + slidePos,
-				scast<int>( StageSelect::GetPosLeftTop().y ) + dropPos,
-				scast<int>( StageSelect::GetPosLeftTop().x + StageSelect::GetSize().x ) + slidePos,
-				scast<int>( StageSelect::GetPosLeftTop().y + StageSelect::GetSize().y ) + dropPos,
+				posX,
+				posY,
+				posX + scast<int>( StageSelect::GetSize().x ),
+				posY + scast<int>( StageSelect::GetSize().y ),
 				CursorImage::GetHandle( false ),
 				TRUE
 			);
+			// StageNumber
+			{
+				const int HALF_SIZE_X = scast<int>( StageSelect::GetSize().x * 0.5f );
+				const int HALF_SIZE_Y = scast<int>( StageSelect::GetSize().y * 0.5f );
+				const int MAGNI_X = 2;
+				const int MAGNI_Y = 2;
+
+				int num = stageNumber;
+				// HACK:ステージ数は２ケタにおさまる想定である
+				for ( int digit = 0; digit < 2; digit++ )
+				{
+					bool isGlow = ( nowStageNumber == stageNumber ) ? true : false;
+
+					if ( stageNumber < 10 )
+					{
+						DrawExtendGraph
+						(
+							posX + HALF_SIZE_X - Number::SIZE_X,
+							posY + ( HALF_SIZE_Y >> 1 ),
+							posX + HALF_SIZE_X - Number::SIZE_X + ( Number::SIZE_X * MAGNI_X ),
+							posY + ( HALF_SIZE_Y >> 1 ) + ( Number::SIZE_Y * MAGNI_Y ),
+							Number::GetHandle( num, isGlow ),
+							TRUE
+						);
+
+						break;
+					}
+					// else
+					
+					DrawExtendGraph
+					(
+						posX + HALF_SIZE_X - ( Number::SIZE_X >> 1 ) - ( Number::SIZE_X * digit ),
+						posY + ( HALF_SIZE_Y >> 1 ),
+						posX + HALF_SIZE_X - ( Number::SIZE_X >> 1 ) - ( Number::SIZE_X * digit ) + ( Number::SIZE_X * MAGNI_X ),
+						posY + ( HALF_SIZE_Y >> 1 ) + ( Number::SIZE_Y * MAGNI_Y ),
+						Number::GetHandle( num % 10, isGlow ),
+						TRUE
+					);
+
+					num /= 10;
+				}
+			}
 		}
 
 		// Back
@@ -368,7 +415,7 @@ void Cursor::Update()
 		Interpolate();
 	}
 
-	StageSelect::SetbackGlow( isChooseBack );
+	StageSelect::SetBackGlow( isChooseBack );
 	GlowUpdate();
 
 	if ( IS_TRG_EXPOSURE )

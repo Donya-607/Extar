@@ -44,7 +44,7 @@ namespace StageSelect
 	int  GetMaxColumn();
 	int  GetMaxDisplayNumber();
 
-	void SetbackGlow( bool isGlow );
+	void SetBackGlow( bool isGlow );
 
 	void SetLRGlow( bool isL, bool isGlow );
 
