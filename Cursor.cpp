@@ -165,7 +165,7 @@ namespace StageSelect
 	const Vector2 SIZE{ 512.0f, 378.0f };
 	const Vector2 MARGIN{ 64.0f, 32.0f };
 
-	const Vector2 BACK_CENTER_POS{ 64.0f, 48.0f };
+	const Vector2 BACK_CENTER_POS{ 176.0f, 72.0f };
 	const Vector2 BACK_SIZE{ 96.0f, 96.0f };
 
 	static const int maxRow  = 3;
@@ -537,7 +537,7 @@ void Cursor::Interpolate()
 
 	if ( isChooseBack )
 	{
-		pos = StageSelect::GetBackPosCenter() - StageSelect::GetBackSize(/* isGlow = */true );
+		pos = StageSelect::GetBackPosCenter() - ( StageSelect::GetBackSize(/* isGlow = */true ) * 0.5f );
 		return;
 	}
 	// else
