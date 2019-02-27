@@ -114,6 +114,7 @@ namespace GameImage
 	static int hGameBG;
 	static int hFrameBG;
 	static int hFrameUI;
+	static int hMovesUI;
 
 
 	static int hshutter;
@@ -131,6 +132,7 @@ namespace GameImage
 		hGameBG		= LoadGraph( "./Data/Images/BG/Game.png"  );
 		hFrameBG	= LoadGraph( "./Data/Images/BG/Frame.png" );
 		hFrameUI	= LoadGraph( "./Data/Images/UI/FrameUI.png" );
+		hMovesUI	= LoadGraph( "./Data/Images/UI/NumberOfMoves.png" );
 
 
 		hshutter	= LoadGraph( "./Data/Images/Camera/Shutter.png" );
@@ -142,9 +144,11 @@ namespace GameImage
 		DeleteGraph( hGameBG	);
 		DeleteGraph( hFrameBG	);
 		DeleteGraph( hFrameUI	);
+		DeleteGraph( hMovesUI );
 		hGameBG		= 0;
 		hFrameBG	= 0;
 		hFrameUI	= 0;
+		hMovesUI	= 0;
 
 
 		DeleteGraph( hshutter	);
@@ -2258,13 +2262,60 @@ void Game::GameDrawUI()
 {
 	// éËêî
 	{
-		DrawExtendFormatString
+		DrawGraph
 		(
-			10, 10,
-			2.0, 2.0,
-			GetColor( 200, 200, 200 ),
-			"ç°ÇÃéËêîÅF%d", numMoves
+			FRAME_POS_X - 160,
+			FRAME_POS_Y,
+			GameImage::hMovesUI,
+			TRUE
 		);
+
+		// êîéö
+		{
+			const int MOVES_POS_X = 112;
+			const int MOVES_POS_Y = 144;
+
+			const int MOVES_MAGNI_X = 1;
+			const int MOVES_MAGNI_Y = 1;
+
+			int movNum = numMoves;
+			for ( int digit = 0; digit < 2; digit++ )
+			{
+				if ( numMoves < 10 )
+				{
+					if ( digit != 0 )
+					{
+						continue;
+					}
+					// else
+
+					DrawExtendGraph
+					(
+						MOVES_POS_X - ( Number::SIZE_X >> 1 ),
+						MOVES_POS_Y,
+						MOVES_POS_X - ( Number::SIZE_X >> 1 ) + ( Number::SIZE_X * MOVES_MAGNI_X ),
+						MOVES_POS_Y + ( Number::SIZE_Y * MOVES_MAGNI_Y ),
+						Number::GetHandle( movNum % 10, true ),
+						TRUE
+					);
+
+					continue;
+				}
+				// else
+
+				DrawExtendGraph
+				(
+					MOVES_POS_X - ( Number::SIZE_X >> 1 ) - ( ( ( Number::SIZE_X >> 1 ) + 8/* éöä‘ */ ) * digit ),
+					MOVES_POS_Y,
+					MOVES_POS_X - ( Number::SIZE_X >> 1 ) - ( ( ( Number::SIZE_X >> 1 ) + 8/* éöä‘ */ ) * digit ) + ( Number::SIZE_X * MOVES_MAGNI_X ),
+					MOVES_POS_Y + ( Number::SIZE_Y * MOVES_MAGNI_Y ),
+					Number::GetHandle( movNum % 10, true ),
+					TRUE
+				);
+
+				movNum /= 10;
+			}
+		}
 	}
 
 	// êØÉåÉxÉãÇÃï\é¶
