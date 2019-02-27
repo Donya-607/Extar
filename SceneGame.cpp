@@ -95,7 +95,10 @@ namespace ClearImage
 	static int hClearBG;
 	static int hRecordStatement;
 	static int hRecordStar[2];	// 0:Dark, 1:Glow
-	
+
+	constexpr int SIZE_GOTO_NEXT_X = 352;
+	constexpr int SIZE_GOTO_NEXT_Y = 96;
+	static int hGotoNext;
 
 	constexpr int NUM_STATEMENT_ROW = 5;
 	constexpr int SIZE_STATEMENT_X = 736;
@@ -126,6 +129,8 @@ namespace ClearImage
 			hRecordStar
 		);
 
+		hGotoNext = LoadGraph( "./Data/Images/Result/GotoNext.png" );
+
 		LoadDivGraph
 		(
 			"./Data/Images/Result/Statement.png",
@@ -154,6 +159,9 @@ namespace ClearImage
 		DeleteGraph( hRecordStar[1] );
 		hRecordStar[0] = 0;
 		hRecordStar[1] = 0;
+
+		DeleteGraph( hGotoNext );
+		hGotoNext = 0;
 
 		for ( int i = 0; i < NUM_STATEMENT_ROW; i++ )
 		{
@@ -224,6 +232,68 @@ namespace PauseImage
 		assert( 0 <= index && index <= NUM_ROW );
 
 		return hPauseStatements[index];
+	}
+}
+
+namespace HumanImage
+{
+	constexpr int NUM_ROW	 = 6;
+	constexpr int NUM_COLUMN = 3;
+	constexpr int NUM_ALL = NUM_ROW * NUM_COLUMN;
+
+	constexpr int SIZE_X = 320;// 256
+	constexpr int SIZE_Y = 360;// 352
+
+	static int hBody[NUM_ALL];
+	static int hArm[NUM_ALL];
+
+	void Load()
+	{
+		// すでに値が入っていたら，読み込んだものとみなして飛ばす
+		if ( 0 != hBody[0] )
+		{
+			return;
+		}
+		// else
+
+		LoadDivGraph
+		(
+			"./Data/Images/Human/Body.png",
+			NUM_ALL,
+			NUM_ROW, NUM_COLUMN,
+			SIZE_X, SIZE_Y,
+			hBody
+		);
+
+		LoadDivGraph
+		(
+			"./Data/Images/Human/Arm.png",
+			NUM_ALL,
+			NUM_ROW, NUM_COLUMN,
+			SIZE_X, SIZE_Y,
+			hArm
+		);
+	}
+	void Release()
+	{
+		for ( int i = 0; i < NUM_ALL; i++ )
+		{
+			DeleteGraph( hBody[i] );
+			hBody[i] = 0;
+		}
+	}
+
+	int  GetBodyHandle( int index )
+	{
+		assert( 0 <= index && index < NUM_ALL );
+
+		return hBody[index];
+	}
+	int  GetArmHandle( int index )
+	{
+		assert( 0 <= index && index < NUM_ALL );
+
+		return hArm[index];
 	}
 }
 
@@ -313,10 +383,13 @@ void Game::Init()
 	FileIO::ReadAllNumMoves();
 
 	Number::Load();
+
 	SelectImage::Load();
 	GameImage::Load();
 	ClearImage::Load();
 	PauseImage::Load();
+	HumanImage::Load();
+
 	CameraImage::Load();
 	StarImage::Load();
 	StageImage::Load();
@@ -371,6 +444,8 @@ void Game::GameInit()
 
 	numMoves = 0;
 	choice = 0;
+
+	armPos = { 0, scast<float>( SCREEN_HEIGHT - HumanImage::SIZE_Y ) };
 }
 void Game::ClearInit()
 {
@@ -397,10 +472,13 @@ void Game::Uninit()
 	FileIO::ReleaseNumMovesData();
 
 	Number::Release();
+
 	SelectImage::Release();
 	GameImage::Release();
 	ClearImage::Release();
 	PauseImage::Release();
+	HumanImage::Release();
+
 	CameraImage::Release();
 	StarImage::Release();
 	StageImage::Release();
@@ -433,6 +511,9 @@ void Game::ClearUninit()
 	if ( pBoard	   ) { pBoard->Uninit();	}
 
 	recordStars.clear();
+
+	// 隠す
+	armPos = { scast<float>( SCREEN_WIDTH ), scast<float>( SCREEN_HEIGHT ) };
 }
 
 void Game::Update()
@@ -494,6 +575,42 @@ void Game::Update()
 		return;
 	}
 
+
+	// シャッター演出
+	{
+		if ( shutter_flag == true )
+		{
+			switch ( shutter_state )
+			{
+			case 0:
+				str_up_pos.y += str_speed.y;
+				str_down_pos.y -= str_speed.y;
+				if ( str_up_pos.y >= 768 >> 1 )
+				{
+					shutter_state++;
+				}
+				break;
+
+			case 1:
+				str_up_pos.y -= str_speed.y;
+				str_down_pos.y += str_speed.y;
+				if ( str_up_pos.y < 64 - 768 )
+				{
+					shutter_flag = false;
+					shutter_state = 0;
+					str_up_pos.y = str_up_pos.y - 768.0f;
+					str_down_pos.y = str_down_pos.y + 768.0f;
+
+					nextState = State::Clear;
+					FadeDone();
+				}
+				break;
+
+			}
+		}
+	}
+
+
 	CollisionCheck();
 
 #if DEBUG_MODE	// TODO:ここをデバッグビルドかどうか判定するやつに変えたい
@@ -536,7 +653,21 @@ void Game::GameUpdate()
 	if ( isTakeScreenShot )
 	{
 		isTakeScreenShot = false;
-		FadeBegin();
+
+		// FadeBegin();
+		shutter_flag = true;
+		isOpenFade = false;
+	}
+
+	// カメラの更新より先に判定し，描画後にスクショが始まるようにする
+	if ( nextState == State::Null && pStarMng->IsEqualLevels() )
+	{
+		PlaySE( M_E_NEXT );
+
+		nextState = State::Clear;
+		isClearMoment = true;
+
+		FadeEnd();	// フラグの初期化したいため
 	}
 
 	if ( pCamera )
@@ -548,18 +679,6 @@ void Game::GameUpdate()
 			if ( Exposure() )
 			{
 				numMoves++;
-			}
-
-			// 仮でこの場でクリア確認を行っているが，もし変化演出後とかに変えるのであれば，
-			// カメラまたは星に IsDoneExposureEffect() のようなのを作るとよさそう
-			if ( pStarMng->IsEqualLevels() )
-			{
-				PlaySE( M_E_NEXT );
-
-				nextState = State::Clear;
-				isClearMoment = true;
-
-				FadeEnd();	// フラグの初期化したいため
 			}
 		}
 	}
@@ -581,43 +700,6 @@ void Game::GameUpdate()
 	{
 		pNumMoves->Update();
 	}
-
-	// 他ＰＧによる作業
-	{
-		
-	#if DEBUG_MODE
-
-		if ( TRG( KEY_INPUT_O ) )shutter_flag = true;
-
-	#endif // DEBUG_MODE
-
-
-		if ( shutter_flag == true )
-		{
-			switch ( shutter_state )
-			{
-			case 0:
-				str_up_pos.y += str_speed.y;
-				str_down_pos.y -= str_speed.y;
-				if ( str_up_pos.y >= 768 >> 1 )shutter_state++;
-				break;
-
-			case 1:
-				str_up_pos.y -= str_speed.y;
-				str_down_pos.y += str_speed.y;
-				if ( str_up_pos.y < 64 - 768 )
-				{
-					shutter_flag = false;
-					shutter_state = 0;
-					str_up_pos.y = str_up_pos.y - 768.0f;
-					str_down_pos.y = str_down_pos.y + 768.0f;
-				}
-				break;
-
-			}
-		}
-	}
-
 
 #if DEBUG_MODE
 
@@ -733,7 +815,7 @@ void Game::ClearUpdate()
 
 		assert( lower	<= choice  && choice < MAX_MENU );
 
-		if ( IS_TRG_EXPOSURE )
+		if ( IS_TRG_EXPOSURE && nextState == State::Null )
 		{
 			PlaySE( M_E_NEXT );
 
@@ -787,12 +869,13 @@ void Game::ClearUpdate()
 		}
 	}
 
+	// 「次へ」の移動
 	if ( !isShowClearMenu && ClearRelated::FADE_WAIT + ClearRelated::GOTO_NEXT_WAIT < clearTimer )
 	{
 		constexpr int SPD = -5;
 		gotoNextPosX += SPD;	// 等速
 
-		const int DESTINATION = SCREEN_WIDTH - 96;
+		const int DESTINATION = SCREEN_WIDTH - ClearImage::SIZE_GOTO_NEXT_X;
 		if ( gotoNextPosX < DESTINATION )
 		{
 			gotoNextPosX = DESTINATION;
@@ -918,7 +1001,7 @@ bool Game::Exposure()
 {
 	assert( pCamera );
 
-	if ( !pStarMng )
+	if ( !pStarMng  || !isOpenFade )
 	{
 		return false;
 	}
@@ -1187,6 +1270,7 @@ void Game::GameDraw()
 		{
 			constexpr int MAX_SIZE_Y = 768;
 
+			/*
 			// 上から下
 			{
 				int size = scast<int>( str_up_pos.y + MAX_SIZE_Y ) - FRAME_POS_Y;
@@ -1221,7 +1305,25 @@ void Game::GameDraw()
 					);
 				}
 			}
+			*/
 
+			//シャッター(上から下)
+			DrawGraph
+			(
+				scast<int>( str_up_pos.x ),
+				scast<int>( str_up_pos.y - 768.0f ),
+				GameImage::hshutter,
+				TRUE
+			);
+
+			//シャッター(下から上)
+			DrawGraph
+			(
+				scast<int>( str_down_pos.x ),
+				scast<int>( str_down_pos.y + 768.0f ),
+				GameImage::hshutter,
+				TRUE
+			);
 		}
 
 		SetDrawBlendMode( DX_BLENDMODE_ADD, 255 );
@@ -1243,6 +1345,7 @@ void Game::GameDraw()
 		);
 	}
 
+
 	Grid::Draw( shake );
 
 	if ( pStarMng )
@@ -1253,11 +1356,32 @@ void Game::GameDraw()
 	if ( isClearMoment )
 	{
 		TakeScreenShot();
-		return;
 	}
-	// else
+	
+	// 人
+	{
+		int animIndex = 0;
 
-	if ( pCamera )
+		// 体
+		DrawGraph
+		(
+			0,
+			SCREEN_HEIGHT - HumanImage::SIZE_Y,
+			HumanImage::GetBodyHandle( animIndex ),
+			TRUE
+		);
+
+		// 腕
+		DrawGraph
+		(
+			scast<int>( armPos.x ),
+			scast<int>( armPos.y ),
+			HumanImage::GetArmHandle( animIndex ),
+			TRUE
+		);
+	}
+
+	if ( nextState == State::Null && pCamera )
 	{
 		pCamera->Draw( shake );
 	}
@@ -1297,9 +1421,33 @@ void Game::ClearDraw()
 		);
 	}
 
-	if ( pStarMng && !isShowClearMenu )
+	if ( !isShowClearMenu && pStarMng )
 	{
 		pStarMng->Draw( shake );
+	}
+
+	// 人
+	if ( !isShowClearMenu )
+	{
+		int animIndex = 0;
+
+		// 体
+		DrawGraph
+		(
+			0,
+			SCREEN_HEIGHT - HumanImage::SIZE_Y,
+			HumanImage::GetBodyHandle( animIndex ),
+			TRUE
+		);
+
+		// 腕
+		DrawGraph
+		(
+			scast<int>( armPos.x ),
+			scast<int>( armPos.y ),
+			HumanImage::GetArmHandle( animIndex ),
+			TRUE
+		);
 	}
 
 	if ( isShowClearMenu )
@@ -1337,7 +1485,7 @@ void Game::ClearDraw()
 		const int STAGE_POS_Y = 144;
 
 		const int MOVES_POS_X = 288;
-		const int MOVES_POS_Y = 476;
+		const int MOVES_POS_Y = 492;
 
 		const int STAGE_MAGNI_X = 2;
 		const int STAGE_MAGNI_Y = 2;

@@ -73,6 +73,8 @@ private:
 	State state;
 	State nextState;
 
+	Vector2 armPos;		// LeftTop
+
 	std::unique_ptr<Cursor>   pCursor;
 
 	std::unique_ptr<Camera>   pCamera;
@@ -82,7 +84,7 @@ private:
 	std::unique_ptr<Board>	  pBoard;
 	std::vector<RecordStar>	  recordStars;
 
-	bool isOpenFade;	// FadeBegin ~ FadeEnd までTRUE
+	bool isOpenFade;	// FadeBegin ~ FadeEnd までFALSE
 
 	bool isClearMoment;	// これがオンならスクショを取り，オフにしてクリアへ遷移させる
 	bool isTakeScreenShot;
@@ -105,6 +107,7 @@ public:
 		hScreenShot( 0 ), hFont( 0 ),
 		gotoNextPosX( SCREEN_WIDTH ),
 		state( State::Select ), nextState( State::Null ),
+		armPos( { scast<float>( SCREEN_WIDTH ), scast<float>( SCREEN_HEIGHT ) } ),
 		pCursor( nullptr ),
 		pCamera( nullptr ), pStarMng( nullptr ), pNumMoves( nullptr ),
 		pBoard( nullptr ), recordStars(),
