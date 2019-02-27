@@ -457,6 +457,25 @@ void Game::GameInit()
 	armPos = { 0, scast<float>( ( SCREEN_HEIGHT - HumanImage::SIZE_Y ) + HumanBehavior::HAND_LET_DOWN_PLUS_Y ) };
 
 	isDoneMoveArm = false;
+
+	// 他のＰＧの作業
+	{
+		str_up_pos		= { 0, 0 };
+		str_down_pos	= { 192.0f, 64.0f };
+		str_speed		= { 0.0f, 50.0f };
+		shutter_flag	= false;
+		shutter_state	= 0;
+
+		DrawStart_X		= 190;
+		DrawStart_Y		= 60;
+		Src_X			= 14;
+		Src_Y			= 150;
+		Hgh				= 0;
+		Wid				= 1538.0f;
+
+		Src_Down_Y		= -790.0f;
+		Hgh_Down		= 780.0f;
+	}
 }
 void Game::ClearInit()
 {
@@ -594,6 +613,32 @@ void Game::Update()
 			switch ( shutter_state )
 			{
 			case 0:
+				Hgh += str_speed.y;
+				Src_Down_Y += str_speed.y;
+				if ( Hgh >= ( 768 * 0.5 ) + 50 )shutter_state++;
+				break;
+
+			case 1:
+				Hgh -= str_speed.y;
+				Src_Down_Y -= str_speed.y;
+				if ( Hgh < 64 - 768 )
+				{
+					shutter_flag = false;
+					shutter_state = 0;
+					Hgh = 0;
+					Src_Down_Y = -790.0f;
+
+					nextState = State::Clear;
+					FadeDone();
+				}
+				break;
+
+			}
+
+			/*
+			switch ( shutter_state )
+			{
+			case 0:
 				str_up_pos.y += str_speed.y;
 				str_down_pos.y -= str_speed.y;
 				if ( str_up_pos.y >= 768 >> 1 )
@@ -618,6 +663,7 @@ void Game::Update()
 				break;
 
 			}
+			*/
 		}
 	}
 
@@ -834,16 +880,17 @@ void Game::ClearUpdate()
 		if ( IS_TRG_DOWN ) { isDown = true; }
 
 		int lower = ( stageNumber == FileIO::GetMaxStageNumber() ) ? 1 : 0;
-		if ( ( lower	< choice		) && isUp	&& !isDown	) { choice -= 1; PlaySE( M_E_NEXT ); }
-		if ( ( choice	< MAX_MENU - 1	) && isDown	&& !isUp	) { choice += 1; PlaySE( M_E_NEXT ); }
-		/*
-		( lower		< choice		) && これらを消すと，上下がつながるようになる
-		( choice	< MAX_MENU - 1	) && 
-		*/
-		if ( choice		<= lower	) { choice = MAX_MENU - 1;	}
-		if ( MAX_MENU	<= choice	) { choice = lower;			}
+		if ( ( 0		< choice ) && isUp && !isDown ) { choice -= 1; PlaySE( M_E_NEXT ); }
+		if ( ( choice	< MAX_MENU - 1 ) && isDown && !isUp ) { choice += 1; PlaySE( M_E_NEXT ); }
 
-		assert( lower	<= choice  && choice < MAX_MENU );
+		/*	// 上下を繋げる
+		{
+		if ( choice		< lower		) { choice = MAX_MENU - 1;	}
+		if ( MAX_MENU	< choice	) { choice = lower;			}
+		}
+		*/
+
+		assert( 0 <= choice  && choice < MAX_MENU );
 
 		if ( IS_TRG_EXPOSURE && nextState == State::Null )
 		{
@@ -1110,6 +1157,8 @@ bool Game::IsInputPauseButton()
 }
 void Game::PauseUpdate()
 {
+	// choice は 0 始まりである
+
 	constexpr int MAX_MENU = 4;
 
 	bool isUp = false, isDown = false;
@@ -1120,12 +1169,13 @@ void Game::PauseUpdate()
 	int lower = ( stageNumber == FileIO::GetMaxStageNumber() ) ? 1 : 0;
 	if ( ( 0		< choice		)	&& isUp		&& !isDown	) { choice -= 1; PlaySE( M_E_NEXT ); }
 	if ( ( choice	< MAX_MENU - 1	)	&& isDown	&& !isUp	) { choice += 1; PlaySE( M_E_NEXT ); }
-	/*
-	( lower		< choice		) && これらを消すと，上下がつながるようになる
-	( choice	< MAX_MENU - 1	) &&
+	
+	/*	// 上下を繋げる
+	{
+		if ( choice		< lower		) { choice = MAX_MENU - 1;	}
+		if ( MAX_MENU	< choice	) { choice = lower;			}
+	}
 	*/
-	if ( choice		<= lower	) { choice = MAX_MENU - 1;	}
-	if ( MAX_MENU	<= choice	) { choice = lower;			}
 
 	assert( 0 <= choice  && choice < MAX_MENU );
 
@@ -1351,59 +1401,30 @@ void Game::GameDraw()
 	// 他ＰＧによる作業
 	if ( shutter_flag )
 	{
-		constexpr int MAX_SIZE_Y = 768;
-
-		/*
-		// 上から下
-		{
-		int size = scast<int>( str_up_pos.y + MAX_SIZE_Y ) - FRAME_POS_Y;
-
-		if ( 0 < size )
-		{
-		DrawRectGraph
-		(
-		FRAME_POS_X, FRAME_POS_Y,
-		0, 0,
-		FRAME_WIDTH,
-		size,
-		GameImage::hshutter,
-		TRUE
-		);
-		}
-		}
-		// 下から上
-		{
-		int size = FRAME_POS_Y - scast<int>( str_down_pos.y );
-
-		if ( 0 < size )
-		{
-		DrawRectGraph
-		(
-		FRAME_POS_X, FRAME_POS_Y - size,
-		0, 0,
-		FRAME_WIDTH,
-		size,
-		GameImage::hshutter,
-		TRUE
-		);
-		}
-		}
-		*/
-
 		//シャッター(上から下)
-		DrawGraph
+		DrawRectGraph
 		(
-			scast<int>( str_up_pos.x ),
-			scast<int>( str_up_pos.y - 768.0f ),
+			DrawStart_X,
+			DrawStart_Y,
+			Src_X,
+			Src_Y,
+			scast<int>( Wid ),
+			scast<int>( Hgh ),
+
 			GameImage::hshutter,
 			TRUE
 		);
 
 		//シャッター(下から上)
-		DrawGraph
+		DrawRectGraph
 		(
-			scast<int>( str_down_pos.x ),
-			scast<int>( str_down_pos.y + 768.0f ),
+			DrawStart_X,
+			DrawStart_Y,
+			Src_X,
+			scast<int>( Src_Down_Y ),
+			scast<int>( Wid ),
+			scast<int>( Hgh_Down ),
+
 			GameImage::hshutter,
 			TRUE
 		);
@@ -1546,10 +1567,10 @@ void Game::ClearDraw()
 	// Stage, Moves Number
 	{
 		const int STAGE_POS_X = 368;
-		const int STAGE_POS_Y = 144;
+		const int STAGE_POS_Y = 128;
 
 		const int MOVES_POS_X = 288;
-		const int MOVES_POS_Y = 492;
+		const int MOVES_POS_Y = 508;
 
 		const int STAGE_MAGNI_X = 2;
 		const int STAGE_MAGNI_Y = 2;
@@ -1558,30 +1579,17 @@ void Game::ClearDraw()
 		const int MOVES_MAGNI_Y = 1;
 
 		int stgNum = stageNumber;
-		int movNum = numMoves;
 		// HACK:ステージ数は２ケタにおさまる想定である
 		for ( int digit = 0; digit < 2; digit++ )
 		{
 			if ( stageNumber < 10 )
 			{
-				// MovesNumber, こちらはステージ数とは関係ないため，下にあるcontinueは通したくない
-				DrawExtendGraph
-				(
-					MOVES_POS_X - Number::SIZE_X,
-					MOVES_POS_Y,
-					MOVES_POS_X - Number::SIZE_X + ( Number::SIZE_X * MOVES_MAGNI_X ),
-					MOVES_POS_Y + ( Number::SIZE_Y * MOVES_MAGNI_Y ),
-					Number::GetHandle( movNum % 10, true ),
-					TRUE
-				);
-
 				if ( digit != 0 )
 				{
 					continue;
 				}
 				// else
 
-				// StageNumber
 				DrawExtendGraph
 				(
 					STAGE_POS_X - Number::SIZE_X,
@@ -1596,29 +1604,54 @@ void Game::ClearDraw()
 			}
 			// else
 
-			// StageNumber
 			DrawExtendGraph
 			(
-				STAGE_POS_X - ( Number::SIZE_X >> 1 ) - ( Number::SIZE_X * digit ),
+				STAGE_POS_X - ( Number::SIZE_X >> 1 ) - ( ( Number::SIZE_X + 8/* 字間 */ ) * digit ),
 				STAGE_POS_Y,
-				STAGE_POS_X - ( Number::SIZE_X >> 1 ) - ( Number::SIZE_X * digit ) + ( Number::SIZE_X * STAGE_MAGNI_X ),
+				STAGE_POS_X - ( Number::SIZE_X >> 1 ) - ( ( Number::SIZE_X + 8/* 字間 */ ) * digit ) + ( Number::SIZE_X * STAGE_MAGNI_X ),
 				STAGE_POS_Y + ( Number::SIZE_Y * STAGE_MAGNI_Y ),
 				Number::GetHandle( stgNum % 10, true ),
 				TRUE
 			);
 
-			// MovesNumber
+			stgNum /= 10;
+		}
+		// NumberOfMoves
+		int movNum = numMoves;
+		for ( int digit = 0; digit < 2; digit++ )
+		{
+			if ( numMoves < 10 )
+			{
+				if ( digit != 0 )
+				{
+					continue;
+				}
+				// else
+
+				DrawExtendGraph
+				(
+					MOVES_POS_X - Number::SIZE_X,
+					MOVES_POS_Y,
+					MOVES_POS_X - Number::SIZE_X + ( Number::SIZE_X * MOVES_MAGNI_X ),
+					MOVES_POS_Y + ( Number::SIZE_Y * MOVES_MAGNI_Y ),
+					Number::GetHandle( movNum % 10, true ),
+					TRUE
+				);
+
+				continue;
+			}
+			// else
+
 			DrawExtendGraph
 			(
-				MOVES_POS_X - Number::SIZE_X,
+				MOVES_POS_X - ( Number::SIZE_X >> 1 ) - ( ( ( Number::SIZE_X >> 1 ) + 8/* 字間 */ ) * digit ),
 				MOVES_POS_Y,
-				MOVES_POS_X - Number::SIZE_X + ( Number::SIZE_X * MOVES_MAGNI_X ),
+				MOVES_POS_X - ( Number::SIZE_X >> 1 ) - ( ( ( Number::SIZE_X >> 1 ) + 8/* 字間 */ ) * digit ) + ( Number::SIZE_X * MOVES_MAGNI_X ),
 				MOVES_POS_Y + ( Number::SIZE_Y * MOVES_MAGNI_Y ),
 				Number::GetHandle( movNum % 10, true ),
 				TRUE
 			);
 
-			stgNum /= 10;
 			movNum /= 10;
 		}
 	}
@@ -1710,7 +1743,7 @@ void Game::ClearDraw()
 	(
 		608,
 		288,
-		ClearImage::GetStatementHandle( choice, isFinalStage ),
+		ClearImage::GetStatementHandle( choice + 1, isFinalStage ),
 		TRUE
 	);
 }

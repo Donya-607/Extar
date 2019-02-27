@@ -100,6 +100,16 @@ private:	// ëºÇoÇfÇ…ÇÊÇÈçÏã∆
 	Vector2 str_speed;
 	bool shutter_flag;
 	int shutter_state;
+
+	int DrawStart_X;
+	int DrawStart_Y;
+	int Src_X;
+	int Src_Y;
+	float Wid;
+	float Hgh;
+
+	float Src_Down_Y;
+	float Hgh_Down;
 public:
 	Game( SceneMng *pMng ) : Scene( pMng ),
 		stageNumber( 1 ), numMoves( 0 ),
@@ -118,11 +128,21 @@ public:
 		isShowClearMenu( false ),
 		isPause( false ), isDrawCollision( false ),
 
-		str_up_pos( { 192.0f,64.0f } ),
-		str_down_pos( { 192.0f,64.0f } ),
-		str_speed( { 0.0f,70.0f } ),
+		str_up_pos( { 0, 0 } ),
+		str_down_pos( { 192.0f, 64.0f } ),
+		str_speed( { 0.0f, 50.0f } ),
 		shutter_flag( false ),
-		shutter_state( 0 )
+		shutter_state( 0 ),
+
+		DrawStart_X( 190 ),
+		DrawStart_Y( 60 ),
+		Src_X( 14 ),
+		Src_Y( 150 ),
+		Hgh( 0 ),
+		Wid( 1538.0f ),
+
+		Src_Down_Y( -790.0f ),
+		Hgh_Down( 780.0f )
 
 		{}
 	~Game() { std::vector<RecordStar>().swap( recordStars ); }
