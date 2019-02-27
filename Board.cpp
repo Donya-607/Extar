@@ -33,7 +33,7 @@ namespace BoardImage
 
 void Picture::Init()
 {
-
+	pos = basePos;
 }
 
 void Picture::Uninit()
@@ -68,8 +68,8 @@ void Board::Init( Vector2 centerPos )
 	velo = INIT_VELO;
 
 	pPic.reset( new Picture() );
-	pPic->Init();
 	pPic->SetPos( pos );
+	pPic->Init();
 }
 
 void Board::Uninit()
