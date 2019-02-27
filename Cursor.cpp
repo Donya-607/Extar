@@ -28,7 +28,7 @@ namespace CursorImage
 		}
 		// else
 		
-		hCursor = LoadGraph( "./Data/Images/Camera/CameraFrame.png" );
+		hCursor = LoadGraph( "./Data/Images/Camera/Cursor.png" );
 		hNotChoice = LoadGraph( "./Data/Images/Camera/NotChoice.png" );
 	}
 	void Release()

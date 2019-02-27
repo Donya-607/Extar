@@ -14,28 +14,43 @@
 
 namespace CameraImage
 {
-	static int hCamera = 0;
+	constexpr int SIZE_X = 192;
+	constexpr int SIZE_Y = 128;
+
+	static int hCamera[2];	// 0:Dark, 1:Glow
 
 	void Load()
 	{
 		// Ç∑Ç≈Ç…ílÇ™ì¸Ç¡ÇƒÇ¢ÇΩÇÁÅCì«Ç›çûÇÒÇæÇ‡ÇÃÇ∆Ç›Ç»ÇµÇƒîÚÇŒÇ∑
-		if ( 0 != hCamera )
+		if ( 0 != hCamera[0] )
 		{
 			return;
 		}
 		// else
 
-		hCamera = LoadGraph( "./Data/Images/Camera/CameraFrame.png" );
+		LoadDivGraph
+		(
+			"./Data/Images/Camera/CameraFrame.png",
+			2,
+			2, 1,
+			SIZE_X, SIZE_Y,
+			hCamera
+		);
 	}
 	void Release()
 	{
-		DeleteGraph( hCamera );
-		hCamera = 0;
+		for ( int i = 0; i < 2; i++ )
+		{
+			DeleteGraph( hCamera[i] );
+			hCamera[i] = 0;
+		}
 	}
 
-	int  GetHandle()
+	int  GetHandle( int index )
 	{
-		return hCamera;
+		assert( 0 <= index && index < 2 );
+
+		return hCamera[index];
 	}
 }
 
@@ -68,6 +83,14 @@ void Camera::Update()
 
 	Exposure();
 
+	if ( isGlow )
+	{
+		if ( !( glowTimer-- ) )
+		{
+			isGlow = false;
+		}
+	}
+
 #if USE_IMGUI
 
 	ChangeParametersByImGui();
@@ -83,7 +106,7 @@ void Camera::Draw( Vector2 shake ) const
 		FRAME_POS_Y + scast<int>( pos.y - shake.y ),
 		FRAME_POS_X + scast<int>( pos.x + size.x - shake.x ),
 		FRAME_POS_Y + scast<int>( pos.y + size.y - shake.y ),
-		CameraImage::GetHandle(),
+		CameraImage::GetHandle( ( isGlow ) ? 1 : 0 ),
 		TRUE
 	);
 }
@@ -141,6 +164,14 @@ bool Camera::ClampMatrix()
 	}
 	// else
 	return false;
+}
+
+void Camera::SetGlow()
+{
+	isGlow = true;
+
+	constexpr int GLOW_TIME = 8;
+	glowTimer = GLOW_TIME;
 }
 
 void Camera::Shake()

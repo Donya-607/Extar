@@ -20,7 +20,7 @@ namespace CameraImage
 	void Load();
 	void Release();
 
-	int  GetHandle();
+	int  GetHandle( int index );
 }
 
 class Camera
@@ -34,6 +34,8 @@ private:
 
 	int		moveAmount;	// 一度に動くマスの数, 1始まり
 
+	int		glowTimer;
+
 	Vector2 pos;		// LeftTop Position
 	Vector2 velo;		// Velocity
 	Vector2 size;		// 全体サイズ
@@ -41,14 +43,17 @@ private:
 	std::vector<int> rowStorage;
 	std::vector<int> clumStorage;
 
+	bool	isGlow;
 	bool	isExposure;	// 露光した瞬間のみTRUE
 
 	bool	isShake;
 public:
 	Camera() : row( 0 ), column( 0 ), width( 1 ), height( 1 ),
 		moveAmount( 1 ),
+		glowTimer( 0 ),
 		pos(), velo(), size(),
 		rowStorage(), clumStorage(),
+		isGlow( false ),
 		isExposure( false ),
 		isShake( false )
 	{}
@@ -74,6 +79,7 @@ private:
 
 	void Exposure();
 public:
+	void SetGlow();
 	void SetShake();
 
 	Box  FetchColWorldPos() const;

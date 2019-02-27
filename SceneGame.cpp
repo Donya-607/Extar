@@ -1505,6 +1505,8 @@ bool Game::Exposure()
 	}
 	// else
 
+	pCamera->SetGlow();
+
 	// TODO:Exposureの音を鳴らすタイミングは，成功が確定してからかどうか。
 	PlaySE( M_EXPOSURE );
 
