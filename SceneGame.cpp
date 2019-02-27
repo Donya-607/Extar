@@ -84,7 +84,7 @@ namespace TextBehavior
 		180,
 		180,
 
-		180
+		90
 	};
 }
 
@@ -813,6 +813,15 @@ void Game::GameUpdate()
 	{
 		if ( nextState == State::Null )
 		{
+			// テキストボックスを隠す
+			{
+				mouthIndex = 0;
+				textLength = 0;
+				textExtendInterval = 0;
+
+				isOpenBalloon = false;
+			}
+
 			// クリアした瞬間，特に音は鳴らさない
 			// PlaySE( M_E_NEXT );
 
@@ -824,9 +833,10 @@ void Game::GameUpdate()
 
 		armPos.y -= HumanBehavior::HAND_RISE_SPD_Y;
 
-		if ( armPos.y < SCREEN_HEIGHT - HumanImage::SIZE_Y )
+		if ( armPos.y < ( SCREEN_HEIGHT - HumanImage::SIZE_Y ) )
 		{
-			armPos.y = scast<float>( SCREEN_HEIGHT - HumanImage::SIZE_Y );
+			// armPos.y = scast<float>( SCREEN_HEIGHT - HumanImage::SIZE_Y );
+			armPos.y += HumanBehavior::HAND_RISE_SPD_Y;
 
 			isClearMoment	= true;
 			isDoneMoveArm	= true;
@@ -1093,14 +1103,17 @@ void Game::BalloonUpdate()
 	{
 		constexpr int TUTORIAL_TEXT_START_FRAME		= 80;
 		constexpr int TUTORIAL_BALLOON_START_FRAME	= TUTORIAL_TEXT_START_FRAME - 20;
-		if ( textTimer == TUTORIAL_TEXT_START_FRAME )
+		if ( nextState == State::Null )	// クリア後は新しくは出さない
 		{
-			textLength = 1;
-		}
-		if ( textTimer == TUTORIAL_BALLOON_START_FRAME )
+			if ( textTimer == TUTORIAL_TEXT_START_FRAME )
+			{
+				textLength = 1;
+			}
+			if ( textTimer == TUTORIAL_BALLOON_START_FRAME )
 		{
 			constexpr int INIT_LENGTH = 64;
 			balloonLength = INIT_LENGTH;
+		}
 		}
 
 		// フキダシの更新
@@ -1194,18 +1207,27 @@ void Game::BalloonUpdate()
 	constexpr int SAY_INTERVAL	= 60 * 20/* 秒数 */;
 	int remTimer = textTimer % SAY_INTERVAL;
 	{
-		constexpr int TEXT_START_FRAME		= 30;
+		constexpr int TEXT_START_FRAME		= 80;
 		constexpr int BALLOON_START_FRAME	= TEXT_START_FRAME - 20;
-		if ( remTimer == TEXT_START_FRAME )
+		if ( nextState == State::Null )	// クリア後は新しくは出さない
 		{
-			textLength = 1;
-		}
-		if ( remTimer == BALLOON_START_FRAME )
-		{
-			isOpenBalloon = true;
+			if ( remTimer == TEXT_START_FRAME )
+			{
+				textLength = 1;
+			}
+			if ( remTimer == BALLOON_START_FRAME )
+			{
+				// 発言番号算出
+				{
+					int size = scast<int>( TextBehavior::RAND_SAY.size() );
+					textNumber = rand() % size;
+				}
 
-			constexpr int INIT_LENGTH = 64;
-			balloonLength = INIT_LENGTH;
+				isOpenBalloon = true;
+
+				constexpr int INIT_LENGTH = 64;
+				balloonLength = INIT_LENGTH;
+			}
 		}
 
 		// フキダシの更新
@@ -1253,13 +1275,6 @@ void Game::BalloonUpdate()
 					}
 				}
 			}
-		}
-
-		// 発言番号算出
-		if ( remTimer == 1 )
-		{
-			int size = scast<int>( TextBehavior::RAND_SAY.size() );
-			textNumber = rand() % size;
 		}
 
 		// 表示時間経過確認
