@@ -86,6 +86,21 @@ namespace TextBehavior
 
 		90
 	};
+
+	const std::vector<std::string> CLEAR_SAY =
+	{
+		"良いね！",
+		"おめでとう！",
+		"ナイス！",
+		"やったね！"
+	};
+	const std::vector<int> CLEAR_SAY_SHOW_FRAME =
+	{
+		60,
+		60,
+		60,
+		60
+	};
 }
 
 namespace SelectImage
@@ -826,7 +841,7 @@ void Game::GameUpdate()
 	{
 		if ( nextState == State::Null )
 		{
-			// テキストボックスを隠す
+			/* テキストボックスを隠す
 			{
 				mouthIndex = 0;
 				textLength = 0;
@@ -834,9 +849,23 @@ void Game::GameUpdate()
 
 				isOpenBalloon = false;
 			}
+			*/
 
-			// クリアした瞬間，特に音は鳴らさない
-			// PlaySE( M_E_NEXT );
+			// クリア台詞を出す
+			{
+				if ( !balloonLength )
+				{
+					constexpr int INIT_LENGTH = 64;
+					balloonLength = INIT_LENGTH;
+				}
+
+				textTimer = 0;
+				textLength = 1;
+				textExtendInterval = 0;
+				textNumber = rand() % scast<int>( TextBehavior::CLEAR_SAY.size() );
+
+				isOpenBalloon = true;
+			}
 
 			nextState = State::Clear;
 
@@ -1114,6 +1143,105 @@ void Game::BalloonUpdate()
 {
 	textTimer++;
 
+	// フキダシの更新
+	if ( 0 != balloonLength )
+	{
+		constexpr int LOWER = 12;
+		constexpr float DIV = 0.3f;
+
+		if ( isOpenBalloon )	// ひらく
+		{
+			if ( balloonLength < HumanImage::SIZE_BALLOON_X )
+			{
+				float remaining = scast<float>( HumanImage::SIZE_BALLOON_X - balloonLength );
+
+				if ( remaining <= LOWER )
+				{
+					balloonLength = HumanImage::SIZE_BALLOON_X;
+				}
+				else
+				{
+					balloonLength += scast<int>( remaining * DIV );
+
+					if ( HumanImage::SIZE_BALLOON_X < balloonLength )
+					{
+						balloonLength = HumanImage::SIZE_BALLOON_X;
+					}
+				}
+			}
+		}
+		else	// とじる
+		{
+			float remaining = scast<float>( balloonLength );
+
+			if ( remaining <= LOWER )
+			{
+				balloonLength = 0;
+			}
+			else
+			{
+				balloonLength -= scast<int>( remaining * DIV );
+
+				if ( balloonLength < 0 )
+				{
+					balloonLength = 0;
+				}
+			}
+		}
+	}
+
+	// クリア台詞
+	if ( nextState == State::Clear || state == State::Clear )
+	{
+		// 表示時間経過確認
+		if ( 0 != textLength )
+		{
+			int showFrame = TextBehavior::CLEAR_SAY_SHOW_FRAME[textNumber];
+
+			if ( showFrame <= textTimer )
+			{
+				textLength = 0;
+				textExtendInterval = 0;
+
+				isOpenBalloon = false;
+			}
+		}
+
+		// 文字数増加確認
+		if ( 0 != textLength && ( textLength * 2 ) <= scast<int>( TextBehavior::CLEAR_SAY[textNumber].size() ) )
+		{
+			constexpr int INTERVAL = 3;
+			textExtendInterval++;
+			if ( INTERVAL <= textExtendInterval )
+			{
+				textExtendInterval = 0;
+				textLength++;
+
+				// 口変化
+				{
+					if ( scast<int>( TextBehavior::CLEAR_SAY[textNumber].size() ) <= ( textLength * 2 ) )
+					{
+						mouthIndex = 0;
+					}
+					else
+					{
+						int oldIndex = mouthIndex;
+						while ( oldIndex == mouthIndex )
+						{
+							mouthIndex = rand() % HumanImage::NUM_MOUTH_ROW;
+						}
+					}
+				}
+
+				PlaySE( M_VOICE );
+			}
+		}
+
+		return;
+	}
+	// else
+
+	// チュートリアル
 	if ( stageNumber == 1 )
 	{
 		constexpr int TUTORIAL_TEXT_START_FRAME		= 80;
@@ -1128,53 +1256,6 @@ void Game::BalloonUpdate()
 			{
 				constexpr int INIT_LENGTH = 64;
 				balloonLength = INIT_LENGTH;
-			}
-		}
-
-		// フキダシの更新
-		if ( 0 != balloonLength )
-		{
-			constexpr int LOWER = 12;
-			constexpr float DIV = 0.3f;
-
-			if ( isOpenBalloon )	// ひらく
-			{
-				if ( balloonLength < HumanImage::SIZE_BALLOON_X )
-				{
-					float remaining = scast<float>( HumanImage::SIZE_BALLOON_X - balloonLength );
-
-					if ( remaining <= LOWER )
-					{
-						balloonLength = HumanImage::SIZE_BALLOON_X;
-					}
-					else
-					{
-						balloonLength += scast<int>( remaining * DIV );
-
-						if ( HumanImage::SIZE_BALLOON_X < balloonLength )
-						{
-							balloonLength = HumanImage::SIZE_BALLOON_X;
-						}
-					}
-				}
-			}
-			else	// とじる
-			{
-				float remaining = scast<float>( balloonLength );
-
-				if ( remaining <= LOWER )
-				{
-					balloonLength = 0;
-				}
-				else
-				{
-					balloonLength -= scast<int>( remaining * DIV );
-
-					if ( balloonLength < 0 )
-					{
-						balloonLength = 0;
-					}
-				}
 			}
 		}
 
@@ -1266,53 +1347,6 @@ void Game::BalloonUpdate()
 
 				constexpr int INIT_LENGTH = 64;
 				balloonLength = INIT_LENGTH;
-			}
-		}
-
-		// フキダシの更新
-		if ( 0 != balloonLength )
-		{
-			constexpr int LOWER = 12;
-			constexpr float DIV = 0.3f;
-
-			if ( isOpenBalloon )	// ひらく
-			{
-				if ( balloonLength < HumanImage::SIZE_BALLOON_X )
-				{
-					float remaining = scast<float>( HumanImage::SIZE_BALLOON_X - balloonLength );
-
-					if ( remaining <= LOWER )
-					{
-						balloonLength = HumanImage::SIZE_BALLOON_X;
-					}
-					else
-					{
-						balloonLength += scast<int>( remaining * DIV );
-
-						if ( HumanImage::SIZE_BALLOON_X < balloonLength )
-						{
-							balloonLength = HumanImage::SIZE_BALLOON_X;
-						}
-					}
-				}
-			}
-			else	// とじる
-			{
-				float remaining = scast<float>( balloonLength );
-
-				if ( remaining <= LOWER )
-				{
-					balloonLength = 0;
-				}
-				else
-				{
-					balloonLength -= scast<int>( remaining * DIV );
-
-					if ( balloonLength < 0 )
-					{
-						balloonLength = 0;
-					}
-				}
 			}
 		}
 
@@ -1869,7 +1903,29 @@ void Game::GameDraw()
 	// セリフ
 	if ( 0 != textLength )
 	{
-		if ( stageNumber == 1 )	// チュートリアル
+		if ( nextState == State::Clear )	// クリア
+		{
+			int index = textNumber % scast<int>( TextBehavior::CLEAR_SAY.size() );
+			int length = textLength * 2/* 日本語で２バイト文字なので，倍にして対応 */;
+			if ( scast<int>( TextBehavior::CLEAR_SAY[index].size() ) <= textLength )
+			{
+				length = scast<int>( TextBehavior::CLEAR_SAY[index].size() );
+			}
+
+			constexpr int DIST_X = 80;
+			constexpr int DIST_Y = 52;
+
+			DrawExtendStringToHandle
+			(
+				HumanBehavior::BALLOON_POS_X + DIST_X,
+				HumanBehavior::BALLOON_POS_Y + DIST_Y,
+				2.0, 2.0,
+				( TextBehavior::CLEAR_SAY[index].substr( 0, length ) ).c_str(),
+				GetColor( 42, 97, 110 ),
+				hFont
+			);
+		}
+		else if ( stageNumber == 1 )	// チュートリアル
 		{
 			int index  = textNumber % scast<int>( TextBehavior::TUTORIAL.size() );
 			int length = textLength * 2/* 日本語で２バイト文字なので，倍にして対応 */;
@@ -2002,50 +2058,25 @@ void Game::ClearDraw()
 	// セリフ
 	if ( 0 != textLength )
 	{
-		if ( stageNumber == 1 )	// チュートリアル
+		int index = textNumber % scast<int>( TextBehavior::CLEAR_SAY.size() );
+		int length = textLength * 2/* 日本語で２バイト文字なので，倍にして対応 */;
+		if ( scast<int>( TextBehavior::CLEAR_SAY[index].size() ) <= textLength )
 		{
-			int index = textNumber % scast<int>( TextBehavior::TUTORIAL.size() );
-			int length = textLength * 2/* 日本語で２バイト文字なので，倍にして対応 */;
-			if ( scast<int>( TextBehavior::TUTORIAL[index].size() ) <= textLength )
-			{
-				length = scast<int>( TextBehavior::TUTORIAL[index].size() );
-			}
-
-			constexpr int DIST_X = 80;
-			constexpr int DIST_Y = 48;
-
-			DrawExtendStringToHandle
-			(
-				HumanBehavior::BALLOON_POS_X + DIST_X,
-				HumanBehavior::BALLOON_POS_Y + DIST_Y,
-				2.0, 2.0,
-				( TextBehavior::TUTORIAL[index].substr( 0, length ) ).c_str(),
-				GetColor( 42, 97, 110 ),
-				hFont
-			);
+			length = scast<int>( TextBehavior::CLEAR_SAY[index].size() );
 		}
-		else	// ランダム発言
-		{
-			int index = textNumber % scast<int>( TextBehavior::RAND_SAY.size() );
-			int length = textLength * 2/* 日本語で２バイト文字なので，倍にして対応 */;
-			if ( scast<int>( TextBehavior::RAND_SAY[index].size() ) <= textLength )
-			{
-				length = scast<int>( TextBehavior::RAND_SAY[index].size() );
-			}
 
-			constexpr int DIST_X = 80;
-			constexpr int DIST_Y = 52;
+		constexpr int DIST_X = 80;
+		constexpr int DIST_Y = 52;
 
-			DrawExtendStringToHandle
-			(
-				HumanBehavior::BALLOON_POS_X + DIST_X,
-				HumanBehavior::BALLOON_POS_Y + DIST_Y,
-				2.0, 2.0,
-				( TextBehavior::RAND_SAY[index].substr( 0, length ) ).c_str(),
-				GetColor( 42, 97, 110 ),
-				hFont
-			);
-		}
+		DrawExtendStringToHandle
+		(
+			HumanBehavior::BALLOON_POS_X + DIST_X,
+			HumanBehavior::BALLOON_POS_Y + DIST_Y,
+			2.0, 2.0,
+			( TextBehavior::CLEAR_SAY[index].substr( 0, length ) ).c_str(),
+			GetColor( 42, 97, 110 ),
+			hFont
+		);
 	}
 
 	if ( isShowClearMenu )

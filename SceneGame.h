@@ -72,7 +72,7 @@ private:
 	int  textTimer;		// テキスト関連で使用
 	int  textLength;	// 0 のときは更新しない
 	int  textExtendInterval;
-	int  textNumber;	// 0始まり, チュートリアル用
+	int  textNumber;	// 0始まり
 
 	int  gotoNextPosX;	// LeftTop, リザルト画面で使用
 
