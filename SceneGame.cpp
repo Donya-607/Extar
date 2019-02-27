@@ -60,7 +60,7 @@ namespace TextBehavior
 		"んー悩むねー",
 		"難しいなぁ・・・",
 
-		"その調子その調子！",
+		"その調子　その調子！",
 		"がんばれー！",
 		"んー、どうするんだろう・・・",
 
@@ -314,8 +314,10 @@ namespace HumanImage
 	constexpr int SIZE_X = 256;
 	constexpr int SIZE_Y = 352;
 
-	static int hBody[NUM_ALL];
-	static int hArm[NUM_ALL];
+	// static int hBody[NUM_ALL];
+	// static int hArm[NUM_ALL];
+	static int hBody;
+	static int hArm;
 
 	constexpr int NUM_MOUTH_ROW = 3;
 	constexpr int SIZE_MOUTH_X  = 256;
@@ -330,12 +332,14 @@ namespace HumanImage
 	void Load()
 	{
 		// すでに値が入っていたら，読み込んだものとみなして飛ばす
-		if ( 0 != hBody[0] )
+		// if ( 0 != hBody[0] )
+		if ( 0 != hBody )
 		{
 			return;
 		}
 		// else
 
+		/*
 		LoadDivGraph
 		(
 			"./Data/Images/Human/Body.png",
@@ -353,6 +357,9 @@ namespace HumanImage
 			SIZE_X, SIZE_Y,
 			hArm
 		);
+		*/
+		hBody = LoadGraph( "./Data/Images/Human/Body.png" );
+		hArm  = LoadGraph( "./Data/Images/Human/Arm.png" );
 
 		LoadDivGraph
 		(
@@ -367,10 +374,12 @@ namespace HumanImage
 	}
 	void Release()
 	{
-		for ( int i = 0; i < NUM_ALL; i++ )
+		// for ( int i = 0; i < NUM_ALL; i++ )
 		{
-			DeleteGraph( hBody[i] );
-			hBody[i] = 0;
+			DeleteGraph( hBody );
+			DeleteGraph( hArm );
+			hBody = 0;
+			hArm = 0;
 		}
 		for ( int i = 0; i < NUM_MOUTH_ROW; i++ )
 		{
@@ -384,15 +393,17 @@ namespace HumanImage
 
 	int  GetBodyHandle( int index )
 	{
-		assert( 0 <= index && index < NUM_ALL );
+		// assert( 0 <= index && index < NUM_ALL );
 
-		return hBody[index];
+		// return hBody[index];
+		return hBody;
 	}
 	int  GetArmHandle( int index )
 	{
-		assert( 0 <= index && index < NUM_ALL );
+		// assert( 0 <= index && index < NUM_ALL );
 
-		return hArm[index];
+		// return hArm[index];
+		return hArm;
 	}
 	int  GetMouthHandle( int index )
 	{
