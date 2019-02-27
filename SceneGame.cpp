@@ -879,7 +879,7 @@ void Game::GameUpdate()
 
 		if ( IS_TRG_UNDO && isOpenFade && nextState == State::Null )
 		{
-			if ( pStarMng->Undo() )
+			if ( pStarMng->Undo(), pCamera->Undo()/* HAC:ちゃんと両方での成功を条件に取るべきである */ )
 			{
 				numMoves--;
 				PlaySE( M_UNDO );
@@ -1510,6 +1510,7 @@ bool Game::Exposure()
 
 	// アンドゥ用
 	pStarMng->SaveLog();
+	pCamera->SaveLog();
 
 	// 適用
 	for ( int i = 0; i < scast<int>( targets.size() ); i++ )

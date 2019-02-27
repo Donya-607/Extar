@@ -1,6 +1,8 @@
 #ifndef INCLUDED_CAMERA_H_
 #define INCLUDED_CAMERA_H_
 
+#include <vector>
+
 #include "Common.h"
 
 #if USE_IMGUI
@@ -36,6 +38,9 @@ private:
 	Vector2 velo;		// Velocity
 	Vector2 size;		// 全体サイズ
 
+	std::vector<int> rowStorage;
+	std::vector<int> clumStorage;
+
 	bool	isExposure;	// 露光した瞬間のみTRUE
 
 	bool	isShake;
@@ -43,6 +48,7 @@ public:
 	Camera() : row( 0 ), column( 0 ), width( 1 ), height( 1 ),
 		moveAmount( 1 ),
 		pos(), velo(), size(),
+		rowStorage(), clumStorage(),
 		isExposure( false ),
 		isShake( false )
 	{}
@@ -84,7 +90,30 @@ public:
 		height		= Height;
 		moveAmount	= MoveAmount;
 	}
-
+public:
+	void SaveLog();
+	bool Undo();
+private:
+	bool CanSaveLog() const
+	{
+		// セーブできない状況があると思っていたが，そうでもなさそう？
+		
+		return true;
+	}
+	bool CanUndo() const
+	{
+		if	(
+			scast<int>( rowStorage.size() ) &&
+			scast<int>( clumStorage.size() )
+			)
+		{
+			return true;
+		}
+		// else
+		return false;
+	}
+private:
+	void MoveBySelfMatrix();
 #if USE_IMGUI
 private:
 	void ChangeParametersByImGui();

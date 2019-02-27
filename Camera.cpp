@@ -211,6 +211,43 @@ Box  Camera::FetchColWorldPos() const
 	return tmp;
 }
 
+void Camera::SaveLog()
+{
+	if ( !CanSaveLog() )
+	{
+		return;
+	}
+	// else
+
+	rowStorage.push_back( row );
+	clumStorage.push_back( column );
+}
+
+bool Camera::Undo()
+{
+	if ( !CanUndo() )
+	{
+		return false;
+	}
+	// else
+
+	row = rowStorage.back();
+	column = clumStorage.back();
+
+	rowStorage.pop_back();
+	clumStorage.pop_back();
+
+	MoveBySelfMatrix();
+
+	return true;
+}
+
+void Camera::MoveBySelfMatrix()
+{
+	pos.x = ( row		* Grid::GetSize().x );
+	pos.y = ( column	* Grid::GetSize().y );
+}
+
 #if USE_IMGUI
 
 void Camera::ChangeParametersByImGui()
