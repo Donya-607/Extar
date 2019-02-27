@@ -687,7 +687,7 @@ void Game::GameUpdate()
 
 		if ( armPos.y < SCREEN_HEIGHT - HumanImage::SIZE_Y )
 		{
-			armPos.y = scast<int>( SCREEN_HEIGHT - HumanImage::SIZE_Y );
+			armPos.y = scast<float>( SCREEN_HEIGHT - HumanImage::SIZE_Y );
 
 			isClearMoment	= true;
 			isDoneMoveArm	= true;
@@ -834,8 +834,14 @@ void Game::ClearUpdate()
 		if ( IS_TRG_DOWN ) { isDown = true; }
 
 		int lower = ( stageNumber == FileIO::GetMaxStageNumber() ) ? 1 : 0;
-		if ( ( lower	< choice )		 && isUp	&& !isDown	) { choice -= 1; PlaySE( M_E_NEXT ); }
-		if ( ( choice	< MAX_MENU - 1 ) && isDown	&& !isUp	) { choice += 1; PlaySE( M_E_NEXT ); }
+		if ( ( lower	< choice		) && isUp	&& !isDown	) { choice -= 1; PlaySE( M_E_NEXT ); }
+		if ( ( choice	< MAX_MENU - 1	) && isDown	&& !isUp	) { choice += 1; PlaySE( M_E_NEXT ); }
+		/*
+		( lower		< choice		) && これらを消すと，上下がつながるようになる
+		( choice	< MAX_MENU - 1	) && 
+		*/
+		if ( choice		<= lower	) { choice = MAX_MENU - 1;	}
+		if ( MAX_MENU	<= choice	) { choice = lower;			}
 
 		assert( lower	<= choice  && choice < MAX_MENU );
 
@@ -1111,8 +1117,15 @@ void Game::PauseUpdate()
 	if ( IS_TRG_UP	 ) { isUp	= true; }
 	if ( IS_TRG_DOWN ) { isDown	= true; }
 
+	int lower = ( stageNumber == FileIO::GetMaxStageNumber() ) ? 1 : 0;
 	if ( ( 0		< choice		)	&& isUp		&& !isDown	) { choice -= 1; PlaySE( M_E_NEXT ); }
 	if ( ( choice	< MAX_MENU - 1	)	&& isDown	&& !isUp	) { choice += 1; PlaySE( M_E_NEXT ); }
+	/*
+	( lower		< choice		) && これらを消すと，上下がつながるようになる
+	( choice	< MAX_MENU - 1	) &&
+	*/
+	if ( choice		<= lower	) { choice = MAX_MENU - 1;	}
+	if ( MAX_MENU	<= choice	) { choice = lower;			}
 
 	assert( 0 <= choice  && choice < MAX_MENU );
 
@@ -1202,6 +1215,26 @@ void Game::TakeScreenShot()
 	isTakeScreenShot = true;
 }
 
+#if DEBUG_MODE
+
+void Game::DebugTakeStageScreenShot()
+{
+	std::string filename =
+		"./Data/Images/Thumbnails/Stage"
+		+ std::to_string( stageNumber ) + ".png";
+
+	SaveDrawScreenToPNG
+	(
+		FRAME_POS_X,
+		FRAME_POS_Y,
+		FRAME_POS_X + FRAME_WIDTH,
+		FRAME_POS_Y + FRAME_HEIGHT,
+		filename.c_str()
+	);
+}
+
+#endif // DEBUG_MODE
+
 void Game::Draw()
 {
 	constexpr int PAUSE_BRIGHTNESS = 64;
@@ -1289,67 +1322,6 @@ void Game::GameDraw()
 			TRUE
 		);
 
-		// 他ＰＧによる作業
-		if ( shutter_flag )
-		{
-			constexpr int MAX_SIZE_Y = 768;
-
-			/*
-			// 上から下
-			{
-				int size = scast<int>( str_up_pos.y + MAX_SIZE_Y ) - FRAME_POS_Y;
-
-				if ( 0 < size )
-				{
-					DrawRectGraph
-					(
-						FRAME_POS_X, FRAME_POS_Y,
-						0, 0,
-						FRAME_WIDTH,
-						size,
-						GameImage::hshutter,
-						TRUE
-					);
-				}
-			}
-			// 下から上
-			{
-				int size = FRAME_POS_Y - scast<int>( str_down_pos.y );
-
-				if ( 0 < size )
-				{
-					DrawRectGraph
-					(
-						FRAME_POS_X, FRAME_POS_Y - size,
-						0, 0,
-						FRAME_WIDTH,
-						size,
-						GameImage::hshutter,
-						TRUE
-					);
-				}
-			}
-			*/
-
-			//シャッター(上から下)
-			DrawGraph
-			(
-				scast<int>( str_up_pos.x ),
-				scast<int>( str_up_pos.y - 768.0f ),
-				GameImage::hshutter,
-				TRUE
-			);
-
-			//シャッター(下から上)
-			DrawGraph
-			(
-				scast<int>( str_down_pos.x ),
-				scast<int>( str_down_pos.y + 768.0f ),
-				GameImage::hshutter,
-				TRUE
-			);
-		}
-
 		SetDrawBlendMode( DX_BLENDMODE_ADD, 255 );
 		// 枠
 		DrawGraph
@@ -1369,7 +1341,6 @@ void Game::GameDraw()
 		);
 	}
 
-
 	Grid::Draw( shake );
 
 	if ( pStarMng )
@@ -1377,9 +1348,84 @@ void Game::GameDraw()
 		pStarMng->Draw( shake );
 	}
 
+	// 他ＰＧによる作業
+	if ( shutter_flag )
+	{
+		constexpr int MAX_SIZE_Y = 768;
+
+		/*
+		// 上から下
+		{
+		int size = scast<int>( str_up_pos.y + MAX_SIZE_Y ) - FRAME_POS_Y;
+
+		if ( 0 < size )
+		{
+		DrawRectGraph
+		(
+		FRAME_POS_X, FRAME_POS_Y,
+		0, 0,
+		FRAME_WIDTH,
+		size,
+		GameImage::hshutter,
+		TRUE
+		);
+		}
+		}
+		// 下から上
+		{
+		int size = FRAME_POS_Y - scast<int>( str_down_pos.y );
+
+		if ( 0 < size )
+		{
+		DrawRectGraph
+		(
+		FRAME_POS_X, FRAME_POS_Y - size,
+		0, 0,
+		FRAME_WIDTH,
+		size,
+		GameImage::hshutter,
+		TRUE
+		);
+		}
+		}
+		*/
+
+		//シャッター(上から下)
+		DrawGraph
+		(
+			scast<int>( str_up_pos.x ),
+			scast<int>( str_up_pos.y - 768.0f ),
+			GameImage::hshutter,
+			TRUE
+		);
+
+		//シャッター(下から上)
+		DrawGraph
+		(
+			scast<int>( str_down_pos.x ),
+			scast<int>( str_down_pos.y + 768.0f ),
+			GameImage::hshutter,
+			TRUE
+		);
+	}
+
+#if DEBUG_MODE
+
+	if ( TRG( KEY_INPUT_F9 ) && !isClearMoment )
+	{
+		DebugTakeStageScreenShot();
+	}
+
+#endif // DEBUG_MODE
+
 	if ( isClearMoment )
 	{
 		TakeScreenShot();
+	}
+
+	if ( nextState == State::Null && pCamera )
+	{
+		pCamera->Draw( shake );
 	}
 	
 	// 人
@@ -1404,12 +1450,6 @@ void Game::GameDraw()
 			TRUE
 		);
 	}
-
-	if ( nextState == State::Null && pCamera )
-	{
-		pCamera->Draw( shake );
-	}
-
 }
 
 void Game::ClearDraw()
@@ -1670,7 +1710,7 @@ void Game::ClearDraw()
 	(
 		608,
 		288,
-		ClearImage::GetStatementHandle( choice + 1, isFinalStage ),
+		ClearImage::GetStatementHandle( choice, isFinalStage ),
 		TRUE
 	);
 }

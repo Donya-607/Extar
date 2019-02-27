@@ -69,6 +69,7 @@ void Board::Init( Vector2 centerPos )
 
 	pPic.reset( new Picture() );
 	pPic->Init();
+	pPic->SetPos( pos );
 }
 
 void Board::Uninit()

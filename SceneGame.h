@@ -156,6 +156,13 @@ public:
 
 	void TakeScreenShot();
 
+#if DEBUG_MODE
+
+	void DebugTakeStageScreenShot();
+
+#endif // DEBUG_MODE
+
+
 	void Draw();
 	void SelectDraw();
 	void GameDraw();
