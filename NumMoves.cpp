@@ -22,7 +22,7 @@ void NumMoves::Update()
 int  NumMoves::CalcRank( int numMoves )
 {
 	int i = 0;
-	for ( ; i <= scast<int>( moves.size() ); i++ )
+	for ( ; i < scast<int>( moves.size() ); i++ )
 	{
 		// Šî€uˆÈ‰ºv‚È‚ç‚n‚j
 		if ( numMoves <= moves.at( i ) )

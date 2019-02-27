@@ -10,7 +10,7 @@
 enum BGM
 {
 	M_Game = 0,
-	M_Title,
+	M_Title_Select,
 
 	BGM_END
 };
@@ -35,6 +35,6 @@ void MusicUninit();
 
 void PlayBGM( BGM type );
 void PlaySE(  SE  type );
-void StopBGM();
+void StopBGM( BGM type = BGM_END );
 
 #endif //INCLUDED_MUSIC_H_

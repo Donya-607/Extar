@@ -237,12 +237,12 @@ namespace PauseImage
 
 namespace HumanImage
 {
-	constexpr int NUM_ROW	 = 6;
-	constexpr int NUM_COLUMN = 3;
+	constexpr int NUM_ROW	 = 2;
+	constexpr int NUM_COLUMN = 2;
 	constexpr int NUM_ALL = NUM_ROW * NUM_COLUMN;
 
-	constexpr int SIZE_X = 320;// 256
-	constexpr int SIZE_Y = 360;// 352
+	constexpr int SIZE_X = 256;
+	constexpr int SIZE_Y = 352;
 
 	static int hBody[NUM_ALL];
 	static int hArm[NUM_ALL];
@@ -295,6 +295,13 @@ namespace HumanImage
 
 		return hArm[index];
 	}
+}
+namespace HumanBehavior
+{
+	constexpr float	HAND_LET_DOWN_PLUS_Y = 128.0f;
+
+	constexpr int	RISE_REQUIRED_TIME	 = 40;
+	constexpr float	HAND_RISE_SPD_Y = scast<float>( RISE_REQUIRED_TIME ) / 6;
 }
 
 void RecordStar::Init( Vector2 centerPos, bool isGlowStar )
@@ -376,8 +383,6 @@ void RecordStar::Draw( Vector2 shake ) const
 
 void Game::Init()
 {
-	PlayBGM( M_Game );
-
 	FileIO::ReadAllCamera();
 	FileIO::ReadAllStars();
 	FileIO::ReadAllNumMoves();
@@ -422,6 +427,8 @@ void Game::Init()
 }
 void Game::SelectInit()
 {
+	PlayBGM( M_Title_Select );
+
 	numMoves = 0;
 
 	pCursor.reset( new Cursor() );
@@ -429,6 +436,8 @@ void Game::SelectInit()
 }
 void Game::GameInit()
 {
+	PlayBGM( M_Game );
+
 	const float GRID_SIZE = scast<float>( StarImage::SIZE );
 	Vector2 gridSize{ GRID_SIZE, GRID_SIZE };
 	Grid::SetSize( gridSize );
@@ -445,7 +454,9 @@ void Game::GameInit()
 	numMoves = 0;
 	choice = 0;
 
-	armPos = { 0, scast<float>( SCREEN_HEIGHT - HumanImage::SIZE_Y ) };
+	armPos = { 0, scast<float>( ( SCREEN_HEIGHT - HumanImage::SIZE_Y ) + HumanBehavior::HAND_LET_DOWN_PLUS_Y ) };
+
+	isDoneMoveArm = false;
 }
 void Game::ClearInit()
 {
@@ -660,14 +671,27 @@ void Game::GameUpdate()
 	}
 
 	// カメラの更新より先に判定し，描画後にスクショが始まるようにする
-	if ( nextState == State::Null && pStarMng->IsEqualLevels() )
+	if ( !isDoneMoveArm && pStarMng->IsEqualLevels() )
 	{
-		PlaySE( M_E_NEXT );
+		if ( nextState == State::Null )
+		{
+			PlaySE( M_E_NEXT );
 
-		nextState = State::Clear;
-		isClearMoment = true;
+			nextState = State::Clear;
 
-		FadeEnd();	// フラグの初期化したいため
+			isOpenFade = false;	// 操作不能にするため
+			isDoneMoveArm = false;
+		}	
+
+		armPos.y -= HumanBehavior::HAND_RISE_SPD_Y;
+
+		if ( armPos.y < SCREEN_HEIGHT - HumanImage::SIZE_Y )
+		{
+			armPos.y = scast<int>( SCREEN_HEIGHT - HumanImage::SIZE_Y );
+
+			isClearMoment	= true;
+			isDoneMoveArm	= true;
+		}
 	}
 
 	if ( pCamera )
@@ -687,7 +711,7 @@ void Game::GameUpdate()
 	{
 		pStarMng->Update();
 
-		if ( IS_TRG_UNDO )
+		if ( IS_TRG_UNDO && isOpenFade )
 		{
 			if ( pStarMng->Undo() )
 			{
@@ -872,7 +896,7 @@ void Game::ClearUpdate()
 	// 「次へ」の移動
 	if ( !isShowClearMenu && ClearRelated::FADE_WAIT + ClearRelated::GOTO_NEXT_WAIT < clearTimer )
 	{
-		constexpr int SPD = -5;
+		constexpr int SPD = -8;
 		gotoNextPosX += SPD;	// 等速
 
 		const int DESTINATION = SCREEN_WIDTH - ClearImage::SIZE_GOTO_NEXT_X;
@@ -1500,6 +1524,17 @@ void Game::ClearDraw()
 		{
 			if ( stageNumber < 10 )
 			{
+				// MovesNumber, こちらはステージ数とは関係ないため，下にあるcontinueは通したくない
+				DrawExtendGraph
+				(
+					MOVES_POS_X - Number::SIZE_X,
+					MOVES_POS_Y,
+					MOVES_POS_X - Number::SIZE_X + ( Number::SIZE_X * MOVES_MAGNI_X ),
+					MOVES_POS_Y + ( Number::SIZE_Y * MOVES_MAGNI_Y ),
+					Number::GetHandle( movNum % 10, true ),
+					TRUE
+				);
+
 				if ( digit != 0 )
 				{
 					continue;
@@ -1514,17 +1549,6 @@ void Game::ClearDraw()
 					STAGE_POS_X - Number::SIZE_X + ( Number::SIZE_X * STAGE_MAGNI_X ),
 					STAGE_POS_Y + ( Number::SIZE_Y * STAGE_MAGNI_Y ),
 					Number::GetHandle( stgNum, true ),
-					TRUE
-				);
-
-				// MovesNumber
-				DrawExtendGraph
-				(
-					MOVES_POS_X - Number::SIZE_X,
-					MOVES_POS_Y,
-					MOVES_POS_X - Number::SIZE_X + ( Number::SIZE_X * MOVES_MAGNI_X ),
-					MOVES_POS_Y + ( Number::SIZE_Y * MOVES_MAGNI_Y ),
-					Number::GetHandle( movNum, true ),
 					TRUE
 				);
 
@@ -1611,14 +1635,12 @@ void Game::ClearDraw()
 	{
 		constexpr int POS_Y = 960;
 
-		DrawExtendStringToHandle
+		DrawGraph
 		(
 			gotoNextPosX,
 			POS_Y,
-			3.0, 3.0,
-			"次へ",
-			GetColor( 124, 246, 255 ),
-			hFont
+			ClearImage::hGotoNext,
+			TRUE
 		);
 	}
 

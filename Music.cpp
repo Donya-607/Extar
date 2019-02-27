@@ -10,7 +10,7 @@ void MusicInit()
 	// ----------------------------- Load -----------------------------------
 
 	BGMhandles[M_Game]			= LoadSoundMem( "./Data/Sounds/BGM/n82.mp3" );
-	BGMhandles[M_Title]			= LoadSoundMem( "./Data/Sounds/BGM/n69.mp3" );
+	BGMhandles[M_Title_Select]	= LoadSoundMem( "./Data/Sounds/BGM/Title_Select.mp3" );
 	//BGMhandles[]				= LoadSoundMem( "./Data/Sounds/BGM/.wav" );
 
 	SEhandles[M_EXPOSURE]		= LoadSoundMem( "./Data/Sounds/SE/Camera/Exposure.wav" );
@@ -36,7 +36,7 @@ void MusicUninit()
 void PlayBGM( BGM type )
 {
 	// すでに鳴っているものがあったら，止める
-	StopBGM();
+	StopBGM( type );
 
 	// エラーチェック（正しい引数の場合のみ，鳴らす）
 	for ( int i = 0; i < BGM_END; i++ )
@@ -65,12 +65,19 @@ void PlaySE( SE type )
 	assert( !"引数エラー：PlaySE" );
 }
 
-void StopBGM()
+void StopBGM( BGM type )
 {
 	for ( int i = 0; i < BGM_END; i++ )
 	{
 		if ( CheckSoundMem( BGMhandles[i] ) )
 		{
+			// 同じものだったら，そのまま鳴らし続けるように
+			if ( i == type )
+			{
+				continue;
+			}
+			// else
+
 			StopSoundMem( BGMhandles[i] );
 		}
 	}

@@ -338,17 +338,17 @@ namespace FileIO
 
 #if USE_IMGUI
 
-	static bool isShowWIndows = true;
+	static bool isShowWindows = false;
 	void UpdateShowWIndowState()
 	{
 		if ( TRG( KEY_INPUT_V ) )
 		{
-			isShowWIndows = !isShowWIndows;
+			isShowWindows = !isShowWindows;
 		}
 	}
 	bool IsShowImGuiWindow()
 	{
-		return isShowWIndows;
+		return isShowWindows;
 	}
 
 	static int  nowStageNumber	 = 1;	// 1Žn‚Ü‚è

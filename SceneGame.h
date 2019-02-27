@@ -88,6 +88,7 @@ private:
 
 	bool isClearMoment;	// これがオンならスクショを取り，オフにしてクリアへ遷移させる
 	bool isTakeScreenShot;
+	bool isDoneMoveArm;
 
 	bool isShowClearMenu;
 
@@ -113,6 +114,7 @@ public:
 		pBoard( nullptr ), recordStars(),
 		isOpenFade( false ),
 		isClearMoment( false ), isTakeScreenShot( false ),
+		isDoneMoveArm( false ),
 		isShowClearMenu( false ),
 		isPause( false ), isDrawCollision( false ),
 

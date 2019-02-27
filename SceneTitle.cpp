@@ -102,7 +102,7 @@ void Title::Init()
 
 	ShakeInit();
 
-	PlayBGM( M_Title );
+	PlayBGM( M_Title_Select );
 }
 
 void Title::MainInit()
