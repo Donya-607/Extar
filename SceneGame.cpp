@@ -489,10 +489,7 @@ void RecordStar::Update()
 
 void RecordStar::Draw( Vector2 shake ) const
 {
-	int x = 0 , y = 0;
-	GetMousePoint( &x, &y );
-
-	int r = DrawRotaGraph
+	DrawRotaGraph
 	(
 		scast<int>( pos.x ),
 		scast<int>( pos.y ),
@@ -501,7 +498,6 @@ void RecordStar::Draw( Vector2 shake ) const
 		ClearImage::hRecordStar[( isGlow ) ? 1 : 0],
 		TRUE
 	);
-	r++;
 }
 
 void Game::Init()
@@ -2187,6 +2183,31 @@ void Game::ClearDraw()
 				hFont,
 				"手数 %d 以内",
 				data.at( 2 - i )
+			);
+		}
+	}
+
+	// 背景としての，暗い星
+	{
+		// HACK:星の数が３つじゃないなら，ここも変える必要がある
+
+		int i = scast<int>( recordStars.size() );
+		for ( ; i < 3; i++ )
+		{
+			// ClearUpdate()内のものと同一
+
+			Vector2 base{ 602.0f, 864.0f };
+			float interval = scast<float>( ( 160 + ClearImage::SIZE_STAR_X ) * i );
+			base.x += interval;
+
+			DrawRotaGraph
+			(
+				scast<int>( base.x ),
+				scast<int>( base.y ),
+				1.0,
+				ToRadian( 0 ),
+				ClearImage::hRecordStar[0],
+				TRUE
 			);
 		}
 	}
