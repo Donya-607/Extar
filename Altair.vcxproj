@@ -213,6 +213,9 @@
     <ClInclude Include="Star.h" />
     <ClInclude Include="Vector2.h" />
   </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Data\Images\Icon\Icon.rc" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
