@@ -610,6 +610,8 @@ void Game::GameInit()
 }
 void Game::ClearInit()
 {
+	PlayBGM( M_Result );
+
 	choice = ( stageNumber == FileIO::GetMaxStageNumber() ) ? 1 : 0;
 	clearTimer = 0;
 	gotoNextPosX = SCREEN_WIDTH;
@@ -1134,27 +1136,48 @@ void Game::BalloonUpdate()
 		// フキダシの更新
 		if ( 0 != balloonLength )
 		{
-			if ( balloonLength < HumanImage::SIZE_BALLOON_X )
+			constexpr int LOWER = 12;
+			constexpr float DIV = 0.3f;
+
+			if ( isOpenBalloon )	// ひらく
 			{
-				float remaining = scast<float>( HumanImage::SIZE_BALLOON_X - balloonLength );
-
-				constexpr int LOWER = 12;
-				if ( remaining <= LOWER )
+				if ( balloonLength < HumanImage::SIZE_BALLOON_X )
 				{
-					balloonLength = HumanImage::SIZE_BALLOON_X;
-				}
-				else
-				{
-					constexpr float DIV = 0.3f;
-					balloonLength += scast<int>( remaining * DIV );
+					float remaining = scast<float>( HumanImage::SIZE_BALLOON_X - balloonLength );
 
-					if ( HumanImage::SIZE_BALLOON_X < balloonLength )
+					if ( remaining <= LOWER )
 					{
 						balloonLength = HumanImage::SIZE_BALLOON_X;
 					}
+					else
+					{
+						balloonLength += scast<int>( remaining * DIV );
+
+						if ( HumanImage::SIZE_BALLOON_X < balloonLength )
+						{
+							balloonLength = HumanImage::SIZE_BALLOON_X;
+						}
+					}
 				}
 			}
+			else	// とじる
+			{
+				float remaining = scast<float>( balloonLength );
 
+				if ( remaining <= LOWER )
+				{
+					balloonLength = 0;
+				}
+				else
+				{
+					balloonLength -= scast<int>( remaining * DIV );
+
+					if ( balloonLength < 0 )
+					{
+						balloonLength = 0;
+					}
+				}
+			}
 		}
 
 		// 表示時間経過確認

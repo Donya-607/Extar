@@ -10,6 +10,7 @@ void MusicInit()
 	// ----------------------------- Load -----------------------------------
 
 	BGMhandles[M_Game]			= LoadSoundMem( "./Data/Sounds/BGM/Game.wav" );
+	BGMhandles[M_Result]		= LoadSoundMem( "./Data/Sounds/BGM/Result.wav" );
 	BGMhandles[M_Title_Select]	= LoadSoundMem( "./Data/Sounds/BGM/Title_Select.wav" );
 	//BGMhandles[]				= LoadSoundMem( "./Data/Sounds/BGM/.wav" );
 

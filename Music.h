@@ -10,6 +10,7 @@
 enum BGM
 {
 	M_Game = 0,
+	M_Result,
 	M_Title_Select,
 
 	BGM_END
