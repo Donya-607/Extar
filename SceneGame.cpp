@@ -1478,7 +1478,9 @@ bool Game::Exposure()
 			// ‚P‚ª“ü‚Á‚Ä‚¢‚éê‡CŽg‚¦‚È‚¢
 			if ( pStarMng->FetchLevel( i ) <= 1 )
 			{
+				pCamera->SetShake();
 				PlaySE( M_FAILURE );
+
 				return false;
 			}
 			// else
@@ -1488,7 +1490,9 @@ bool Game::Exposure()
 			}
 			else
 			{
+				pCamera->SetShake();
 				PlaySE( M_FAILURE );
+
 				return false;
 			}
 		}

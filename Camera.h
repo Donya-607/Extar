@@ -37,11 +37,14 @@ private:
 	Vector2 size;		// 全体サイズ
 
 	bool	isExposure;	// 露光した瞬間のみTRUE
+
+	bool	isShake;
 public:
 	Camera() : row( 0 ), column( 0 ), width( 1 ), height( 1 ),
 		moveAmount( 1 ),
 		pos(), velo(), size(),
-		isExposure( false )
+		isExposure( false ),
+		isShake( false )
 	{}
 	~Camera() {}
 
@@ -61,8 +64,12 @@ private:
 	void ClampPos();
 	bool ClampMatrix();	// 補正したらTRUE
 
+	void Shake();
+
 	void Exposure();
 public:
+	void SetShake();
+
 	Box  FetchColWorldPos() const;
 
 	void AcquireData( int *Width, int *Height, int *MoveAmount ) const

@@ -64,6 +64,8 @@ void Camera::Update()
 {
 	Move();
 
+	Shake();
+
 	Exposure();
 
 #if USE_IMGUI
@@ -113,8 +115,11 @@ void Camera::Move()
 }
 void Camera::ClampPos()
 {
-	pos.x = std::min( pos.x, scast<float>( FRAME_WIDTH  ) - ( Grid::GetSize().x * width  ) );
-	pos.x = std::max( pos.x, 0.0f );
+	if ( !isShake )
+	{
+		pos.x = std::min( pos.x, scast<float>( FRAME_WIDTH  ) - ( Grid::GetSize().x * width  ) );
+		pos.x = std::max( pos.x, 0.0f );
+	}
 
 	pos.y = std::min( pos.y, scast<float>( FRAME_HEIGHT ) - ( Grid::GetSize().y * height ) );
 	pos.y = std::max( pos.y, 0.0f );
@@ -138,6 +143,33 @@ bool Camera::ClampMatrix()
 	return false;
 }
 
+void Camera::Shake()
+{
+	if ( !isShake )
+	{
+		return;
+	}
+	// else
+
+	pos -= velo;	// ‚à‚Ç‚·
+
+	constexpr float LOWER = 4.0f;
+	if ( fabsf( velo.x ) < LOWER )
+	{
+		velo.x = 0;
+		isShake = false;
+
+		return;
+	}
+	// else
+
+	constexpr float DECREASE = 0.7f;
+	velo.x *= DECREASE;
+	velo.x *= -1;
+
+	pos += velo;	// ‚¸‚ç‚·
+}
+
 void Camera::Exposure()
 {
 	if ( !IS_TRG_EXPOSURE )
@@ -151,7 +183,18 @@ void Camera::Exposure()
 	isExposure = true;
 }
 
-Box Camera::FetchColWorldPos() const
+void Camera::SetShake()
+{
+	isShake = true;
+	pos -= velo;	// ‚à‚Ç‚µ‚Ä‚¨‚­
+
+	const Vector2 INIT_SHAKE{ 48.0f, 0 };
+	velo = INIT_SHAKE;
+
+	pos += velo;
+}
+
+Box  Camera::FetchColWorldPos() const
 {
 	Vector2 halfSize{ size.x * 0.5f, size.y * 0.5f };
 	Vector2 base{ scast<float>( FRAME_POS_X ), scast<float>( FRAME_POS_Y ) };
