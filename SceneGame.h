@@ -61,12 +61,17 @@ private:
 	int  stageNumber;	// 1始まり
 	int  numMoves;		// 今の手数，0始まり，アンドゥで減る
 
-	int	 choice;		// 0始まり, ポーズとリザルトを兼ねている
+	int  choice;		// 0始まり, ポーズとリザルトを兼ねている
 
 	int  clearTimer;
 	int  hScreenShot;
 
-	int	 hFont;			// JFドットK12
+	int  hFont;			// JFドットK12
+	int  balloonLength;	// 0 のときは更新しない
+	int  textTimer;		// テキスト関連で使用
+	int  textLength;	// 0 のときは更新しない
+	int  textExtendInterval;
+	int  textNumber;	// 0始まり, チュートリアル用
 
 	int  gotoNextPosX;	// LeftTop, リザルト画面で使用
 
@@ -85,6 +90,8 @@ private:
 	std::vector<RecordStar>	  recordStars;
 
 	bool isOpenFade;	// FadeBegin ~ FadeEnd までFALSE
+
+	bool isOpenBalloon;	// テキストボックスの更新挙動 TRUE:開く, FALSE:閉じる
 
 	bool isClearMoment;	// これがオンならスクショを取り，オフにしてクリアへ遷移させる
 	bool isTakeScreenShot;
@@ -116,6 +123,9 @@ public:
 		choice( 0 ),
 		clearTimer( 0 ),
 		hScreenShot( 0 ), hFont( 0 ),
+		balloonLength( 0 ),
+		textTimer( 0 ),
+		textLength( 0 ), textExtendInterval( 0 ), textNumber( 0 ),
 		gotoNextPosX( SCREEN_WIDTH ),
 		state( State::Select ), nextState( State::Null ),
 		armPos( { scast<float>( SCREEN_WIDTH ), scast<float>( SCREEN_HEIGHT ) } ),
@@ -123,6 +133,7 @@ public:
 		pCamera( nullptr ), pStarMng( nullptr ), pNumMoves( nullptr ),
 		pBoard( nullptr ), recordStars(),
 		isOpenFade( false ),
+		isOpenBalloon( true ),
 		isClearMoment( false ), isTakeScreenShot( false ),
 		isDoneMoveArm( false ),
 		isShowClearMenu( false ),
@@ -161,6 +172,8 @@ public:
 	void SelectUpdate();
 	void GameUpdate();
 	void ClearUpdate();
+
+	void BalloonUpdate();
 
 	void FadeBegin();
 	void FadeCheck();

@@ -16,14 +16,17 @@ enum BGM
 };
 enum SE
 {
-	M_EXPOSURE = 0,
+	M_DECISION = 0,
+	M_EXPOSURE,
 	M_FAILURE,
-
-	M_SELECT,
-
+	M_GOTO_TITLE,
+	M_PAUSE,
 	M_RECORD_STAR,
+	M_SELECT,
+	M_VOICE,
 
-	// 仮，ポーズ時に鳴らしている
+	// DEBUG:仮，ポーズ時に鳴らしている
+
 	M_E_NEXT,
 	M_E_BACK,
 

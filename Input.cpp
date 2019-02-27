@@ -12,7 +12,7 @@ bool IsTriggerPauseButton()
 
 #else
 
-	if ( TRG_J_X( XB_START ) || TRG_J_X( XB_SELECT ) )
+	if ( TRG_J_X( XB_START ) )
 	{
 		return true;
 	}

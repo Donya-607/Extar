@@ -171,18 +171,13 @@ void Title::Update()
 void Title::MainUpdate()
 {
 
-#if DEBUG_MODE
-
 	if ( IS_TRG_EXPOSURE && state != State::GotoGame )
 	{
 		nextState = State::GotoGame;
 		FadeBegin();
 
-		PlaySE( M_E_NEXT );
+		PlaySE( M_DECISION );
 	}
-
-#endif // DEBUG_MODE
-
 
 
 #if USE_IMGUI

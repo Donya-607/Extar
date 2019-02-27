@@ -22,6 +22,70 @@
 
 #include "Fade.h"
 
+namespace TextBehavior
+{
+	const std::vector<std::string> TUTORIAL =
+	{
+		"やっほー、初心者さん？　やり方教えるね♪",
+		"水色の枠がカメラの範囲だよ！",
+		"範囲内に星をおさめると、ＸかＡで露光が使えるよ",
+
+		"露光は、範囲内にある星を明るくできるよ★",
+		"すべての星の明るさをそろえよう★",
+		"セレクトボタンでもう一度教えるよ！"
+	};
+	const std::vector<int> TUTORIAL_SHOW_FRAME =
+	{
+		240,
+		180,
+		180,
+
+		180,
+		180,
+		-1
+	};
+	const std::vector<std::string> EMPHASIS_STR =	// RGB( 87, 101, 255 )
+	{
+		"水色の枠",
+		"露光",
+		"すべて",
+		"セレクトボタン"
+	};
+
+	const std::vector<std::string> RAND_SAY =
+	{
+		"ファイトぉ！",
+		"ん～悩むね～",
+		"難しいなぁ・・・",
+
+		"その調子その調子！",
+		"がんばれ～！",
+		"んー、どうするんだろう・・・",
+
+		"迷うなぁ",
+		"いい感じかも♪",
+		"星がきれいだねー",
+
+		"キラッ★"
+	};
+	const std::vector<int> RAND_SAY_SHOW_FRAME =
+	{
+		180,
+		180,
+		180,
+
+		180,
+		180,
+		180,
+
+		180,
+		180,
+		180,
+
+		180
+	};
+}
+
 namespace SelectImage
 {
 	static int hSelectBG;
@@ -247,6 +311,11 @@ namespace HumanImage
 	static int hBody[NUM_ALL];
 	static int hArm[NUM_ALL];
 
+	constexpr int SIZE_BALLOON_X = 928;
+	constexpr int SIZE_BALLOON_Y = 160;
+
+	static int hBalloon;	// フキダシ
+
 	void Load()
 	{
 		// すでに値が入っていたら，読み込んだものとみなして飛ばす
@@ -273,6 +342,8 @@ namespace HumanImage
 			SIZE_X, SIZE_Y,
 			hArm
 		);
+
+		hBalloon = LoadGraph( "./Data/Images/Human/Balloon.png" );
 	}
 	void Release()
 	{
@@ -281,6 +352,9 @@ namespace HumanImage
 			DeleteGraph( hBody[i] );
 			hBody[i] = 0;
 		}
+
+		DeleteGraph( hBalloon );
+		hBalloon = 0;
 	}
 
 	int  GetBodyHandle( int index )
@@ -295,9 +369,16 @@ namespace HumanImage
 
 		return hArm[index];
 	}
+	int  GetBalloonHandle()
+	{
+		return hBalloon;
+	}
 }
 namespace HumanBehavior
 {
+	constexpr int BALLOON_POS_X = 256;
+	constexpr int BALLOON_POS_Y = 896;
+
 	constexpr float	HAND_LET_DOWN_PLUS_Y = 128.0f;
 
 	constexpr int	RISE_REQUIRED_TIME	 = 40;
@@ -454,8 +535,15 @@ void Game::GameInit()
 	numMoves = 0;
 	choice = 0;
 
+	balloonLength = 0;
+	textTimer = 0;
+	textLength = 0;
+	textExtendInterval = 0;
+	textNumber = 0;
+
 	armPos = { 0, scast<float>( ( SCREEN_HEIGHT - HumanImage::SIZE_Y ) + HumanBehavior::HAND_LET_DOWN_PLUS_Y ) };
 
+	isOpenBalloon = true;
 	isDoneMoveArm = false;
 
 	// 他のＰＧの作業
@@ -581,7 +669,7 @@ void Game::Update()
 	if ( IsInputPauseButton() )
 	{
 		isPause = !isPause;
-		PlaySE( M_E_NEXT );
+		PlaySE( M_PAUSE );
 	}
 	if ( isPause )
 	{
@@ -693,12 +781,16 @@ void Game::SelectUpdate()
 
 		if ( nextState == State::Null && pCursor->IsDecision() )
 		{
-			PlaySE( M_E_NEXT );
-
-			nextState =
-				( pCursor->IsChoiceBack() )
-				? State::GotoTitle
-				: State::Game;
+			if ( pCursor->IsChoiceBack() )
+			{
+				nextState = State::GotoTitle;
+				PlaySE( M_GOTO_TITLE );
+			}
+			else
+			{
+				nextState = State::Game;
+				PlaySE( M_DECISION );
+			}
 
 			FadeBegin();
 		}
@@ -721,7 +813,8 @@ void Game::GameUpdate()
 	{
 		if ( nextState == State::Null )
 		{
-			PlaySE( M_E_NEXT );
+			// クリアした瞬間，特に音は鳴らさない
+			// PlaySE( M_E_NEXT );
 
 			nextState = State::Clear;
 
@@ -744,7 +837,7 @@ void Game::GameUpdate()
 	{
 		pCamera->Update();
 
-		if ( pCamera->IsExposure() )
+		if ( pCamera->IsExposure() && nextState == State::Null )
 		{
 			if ( Exposure() )
 			{
@@ -757,7 +850,7 @@ void Game::GameUpdate()
 	{
 		pStarMng->Update();
 
-		if ( IS_TRG_UNDO && isOpenFade )
+		if ( IS_TRG_UNDO && isOpenFade && nextState == State::Null )
 		{
 			if ( pStarMng->Undo() )
 			{
@@ -770,6 +863,8 @@ void Game::GameUpdate()
 	{
 		pNumMoves->Update();
 	}
+
+	BalloonUpdate();
 
 #if DEBUG_MODE
 
@@ -880,8 +975,8 @@ void Game::ClearUpdate()
 		if ( IS_TRG_DOWN ) { isDown = true; }
 
 		int lower = ( stageNumber == FileIO::GetMaxStageNumber() ) ? 1 : 0;
-		if ( ( 0		< choice ) && isUp && !isDown ) { choice -= 1; PlaySE( M_E_NEXT ); }
-		if ( ( choice	< MAX_MENU - 1 ) && isDown && !isUp ) { choice += 1; PlaySE( M_E_NEXT ); }
+		if ( ( 0		< choice		) && isUp && !isDown ) { choice -= 1; PlaySE( M_SELECT ); }
+		if ( ( choice	< MAX_MENU - 1	) && isDown && !isUp ) { choice += 1; PlaySE( M_SELECT ); }
 
 		/*	// 上下を繋げる
 		{
@@ -894,7 +989,7 @@ void Game::ClearUpdate()
 
 		if ( IS_TRG_EXPOSURE && nextState == State::Null )
 		{
-			PlaySE( M_E_NEXT );
+			PlaySE( M_DECISION );
 
 			switch ( choice )
 			{
@@ -960,7 +1055,7 @@ void Game::ClearUpdate()
 
 		if ( IS_TRG_EXPOSURE )
 		{
-			PlaySE( M_E_NEXT );
+			PlaySE( M_DECISION );
 
 			isShowClearMenu = true;
 			gotoNextPosX = SCREEN_WIDTH;
@@ -980,6 +1075,199 @@ void Game::ClearUpdate()
 #endif // DEBUG_MODE
 
 	ShakeUpdate();
+}
+
+void Game::BalloonUpdate()
+{
+	textTimer++;
+
+	if ( stageNumber == 1 )
+	{
+		constexpr int TUTORIAL_TEXT_START_FRAME		= 80;
+		constexpr int TUTORIAL_BALLOON_START_FRAME	= TUTORIAL_TEXT_START_FRAME - 20;
+		if ( textTimer == TUTORIAL_TEXT_START_FRAME )
+		{
+			textLength = 1;
+		}
+		if ( textTimer == TUTORIAL_BALLOON_START_FRAME )
+		{
+			constexpr int INIT_LENGTH = 64;
+			balloonLength = INIT_LENGTH;
+		}
+
+		// フキダシの更新
+		if ( 0 != balloonLength )
+		{
+			if ( balloonLength < HumanImage::SIZE_BALLOON_X )
+			{
+				float remaining = scast<float>( HumanImage::SIZE_BALLOON_X - balloonLength );
+
+				constexpr int LOWER = 12;
+				if ( remaining <= LOWER )
+				{
+					balloonLength = HumanImage::SIZE_BALLOON_X;
+				}
+				else
+				{
+					constexpr float DIV = 0.3f;
+					balloonLength += scast<int>( remaining * DIV );
+
+					if ( HumanImage::SIZE_BALLOON_X < balloonLength )
+					{
+						balloonLength = HumanImage::SIZE_BALLOON_X;
+					}
+				}
+			}
+
+		}
+
+		// 表示時間経過確認
+		if ( textNumber < scast<int>( TextBehavior::TUTORIAL.size() ) - 1 )
+		{
+			int sumFrame = 0;
+			for ( int i = 0; i <= textNumber; i++ )
+			{
+				sumFrame += TextBehavior::TUTORIAL_SHOW_FRAME[i];
+			}
+
+			if ( sumFrame <= textTimer - TUTORIAL_TEXT_START_FRAME )
+			{
+				textLength = 1;
+				textExtendInterval = 0;
+
+				textNumber++;
+			}
+		}
+		// else	// else文にすると，すべて表示した後でないとリセットできないようになる
+		if ( IS_TRG_SELECT )
+		{
+			textTimer = TUTORIAL_TEXT_START_FRAME;
+
+			textLength = 1;
+			textExtendInterval = 0;
+
+			textNumber = 0;
+		}
+
+		// 文字数増加確認
+		if ( 0 != textLength && ( textLength * 2 ) <= scast<int>( TextBehavior::TUTORIAL[textNumber].size() ) )
+		{
+			constexpr int INTERVAL = 2;
+			textExtendInterval++;
+			if ( INTERVAL <= textExtendInterval )
+			{
+				textExtendInterval = 0;
+				textLength++;
+
+				PlaySE( M_VOICE );
+			}
+		}
+
+		return;
+	}
+	// else
+
+	constexpr int SAY_INTERVAL	= 60 * 5;
+	int remTimer = textTimer % SAY_INTERVAL;
+	{
+		constexpr int TEXT_START_FRAME		= 30;
+		constexpr int BALLOON_START_FRAME	= TEXT_START_FRAME - 20;
+		if ( remTimer == TEXT_START_FRAME )
+		{
+			textLength = 1;
+		}
+		if ( remTimer == BALLOON_START_FRAME )
+		{
+			isOpenBalloon = true;
+
+			constexpr int INIT_LENGTH = 64;
+			balloonLength = INIT_LENGTH;
+		}
+
+		// フキダシの更新
+		if ( 0 != balloonLength )
+		{
+			constexpr int LOWER = 12;
+			constexpr float DIV = 0.3f;
+
+			if ( isOpenBalloon )	// ひらく
+			{
+				if ( balloonLength < HumanImage::SIZE_BALLOON_X )
+				{
+					float remaining = scast<float>( HumanImage::SIZE_BALLOON_X - balloonLength );
+
+					if ( remaining <= LOWER )
+					{
+						balloonLength = HumanImage::SIZE_BALLOON_X;
+					}
+					else
+					{
+						balloonLength += scast<int>( remaining * DIV );
+
+						if ( HumanImage::SIZE_BALLOON_X < balloonLength )
+						{
+							balloonLength = HumanImage::SIZE_BALLOON_X;
+						}
+					}
+				}
+			}
+			else	// とじる
+			{
+				float remaining = scast<float>( balloonLength );
+
+				if ( remaining <= LOWER )
+				{
+					balloonLength = 0;
+				}
+				else
+				{
+					balloonLength -= scast<int>( remaining * DIV );
+
+					if ( balloonLength < 0 )
+					{
+						balloonLength = 0;
+					}
+				}
+			}
+		}
+
+		// 発言番号算出
+		if ( !remTimer )
+		{
+			int size = scast<int>( TextBehavior::RAND_SAY.size() );
+			textNumber = rand() % size;
+		}
+
+		// 表示時間経過確認
+		if ( 0 != textLength )
+		{
+			int showFrame = TextBehavior::RAND_SAY_SHOW_FRAME[textNumber];
+
+			if ( showFrame <= remTimer - TEXT_START_FRAME )
+			{
+				textLength = 0;
+				textExtendInterval = 0;
+
+				textNumber++;
+
+				isOpenBalloon = false;
+			}
+		}
+
+		// 文字数増加確認
+		if ( 0 != textLength && ( textLength * 2 ) <= scast<int>( TextBehavior::RAND_SAY[textNumber].size() ) )
+		{
+			constexpr int INTERVAL = 2;
+			textExtendInterval++;
+			if ( INTERVAL <= textExtendInterval )
+			{
+				textExtendInterval = 0;
+				textLength++;
+
+				PlaySE( M_VOICE );
+			}
+		}
+	}
 }
 
 void Game::FadeBegin()
@@ -1167,8 +1455,8 @@ void Game::PauseUpdate()
 	if ( IS_TRG_DOWN ) { isDown	= true; }
 
 	int lower = ( stageNumber == FileIO::GetMaxStageNumber() ) ? 1 : 0;
-	if ( ( 0		< choice		)	&& isUp		&& !isDown	) { choice -= 1; PlaySE( M_E_NEXT ); }
-	if ( ( choice	< MAX_MENU - 1	)	&& isDown	&& !isUp	) { choice += 1; PlaySE( M_E_NEXT ); }
+	if ( ( 0		< choice		)	&& isUp		&& !isDown	) { choice -= 1; PlaySE( M_SELECT ); }
+	if ( ( choice	< MAX_MENU - 1	)	&& isDown	&& !isUp	) { choice += 1; PlaySE( M_SELECT ); }
 	
 	/*	// 上下を繋げる
 	{
@@ -1179,9 +1467,9 @@ void Game::PauseUpdate()
 
 	assert( 0 <= choice  && choice < MAX_MENU );
 
-	if ( IS_TRG_EXPOSURE )
+	if ( IS_TRG_EXPOSURE && nextState == State::Null )
 	{
-		PlaySE( M_E_NEXT );
+		PlaySE( M_DECISION );
 
 		switch ( choice )
 		{
@@ -1191,23 +1479,6 @@ void Game::PauseUpdate()
 				{
 					isPause = false;
 					return;
-				}
-				// else
-				if ( state == State::Clear )
-				{
-					nextState = State::Game;
-					if ( stageNumber <= FileIO::GetMaxStageNumber() )
-					{
-						stageNumber++;
-					}
-					else
-					{
-						assert( !"Error : Next_Stage is Not Exists." );
-						exit( EXIT_FAILURE );
-						return;
-					}
-
-					FadeBegin();
 				}
 			}
 			break;
@@ -1471,6 +1742,68 @@ void Game::GameDraw()
 			TRUE
 		);
 	}
+
+	// フキダシ
+	if ( 0 != balloonLength )
+	{
+		DrawExtendGraph
+		(
+			HumanBehavior::BALLOON_POS_X,
+			HumanBehavior::BALLOON_POS_Y,
+			HumanBehavior::BALLOON_POS_X + balloonLength,
+			HumanBehavior::BALLOON_POS_Y + HumanImage::SIZE_BALLOON_Y,
+			HumanImage::GetBalloonHandle(),
+			TRUE
+		);
+	}
+	// セリフ
+	if ( 0 != textLength )
+	{
+		if ( stageNumber == 1 )	// チュートリアル
+		{
+			int index  = textNumber % scast<int>( TextBehavior::TUTORIAL.size() );
+			int length = textLength * 2/* 日本語で２バイト文字なので，倍にして対応 */;
+			if ( scast<int>( TextBehavior::TUTORIAL[index].size() ) <= textLength )
+			{
+				length = scast<int>( TextBehavior::TUTORIAL[index].size() );
+			}
+
+			constexpr int DIST_X = 80;
+			constexpr int DIST_Y = 52;
+
+			DrawExtendStringToHandle
+			(
+				HumanBehavior::BALLOON_POS_X + DIST_X,
+				HumanBehavior::BALLOON_POS_Y + DIST_Y,
+				2.0, 2.0,
+				( TextBehavior::TUTORIAL[index].substr( 0, length ) ).c_str(),
+				GetColor( 42, 97, 110 ),
+				hFont
+			);
+		}
+		else	// ランダム発言
+		{
+			int index  = textNumber % scast<int>( TextBehavior::RAND_SAY.size() );
+			int length = textLength * 2/* 日本語で２バイト文字なので，倍にして対応 */;
+			if ( scast<int>( TextBehavior::RAND_SAY[index].size() ) <= textLength )
+			{
+				length = scast<int>( TextBehavior::RAND_SAY[index].size() );
+			}
+
+			constexpr int DIST_X = 80;
+			constexpr int DIST_Y = 52;
+
+			DrawExtendStringToHandle
+			(
+				HumanBehavior::BALLOON_POS_X + DIST_X,
+				HumanBehavior::BALLOON_POS_Y + DIST_Y,
+				2.0, 2.0,
+				( TextBehavior::RAND_SAY[index].substr( 0, length ) ).c_str(),
+				GetColor( 42, 97, 110 ),
+				hFont
+			);
+		}
+	}
 }
 
 void Game::ClearDraw()
@@ -1533,6 +1866,67 @@ void Game::ClearDraw()
 			HumanImage::GetArmHandle( animIndex ),
 			TRUE
 		);
+	}
+	// フキダシ
+	if ( 0 != balloonLength )
+	{
+		DrawExtendGraph
+		(
+			HumanBehavior::BALLOON_POS_X,
+			HumanBehavior::BALLOON_POS_Y,
+			HumanBehavior::BALLOON_POS_X + balloonLength,
+			HumanBehavior::BALLOON_POS_Y + HumanImage::SIZE_BALLOON_Y,
+			HumanImage::GetBalloonHandle(),
+			TRUE
+		);
+	}
+	// セリフ
+	if ( 0 != textLength )
+	{
+		if ( stageNumber == 1 )	// チュートリアル
+		{
+			int index = textNumber % scast<int>( TextBehavior::TUTORIAL.size() );
+			int length = textLength * 2/* 日本語で２バイト文字なので，倍にして対応 */;
+			if ( scast<int>( TextBehavior::TUTORIAL[index].size() ) <= textLength )
+			{
+				length = scast<int>( TextBehavior::TUTORIAL[index].size() );
+			}
+
+			constexpr int DIST_X = 80;
+			constexpr int DIST_Y = 52;
+
+			DrawExtendStringToHandle
+			(
+				HumanBehavior::BALLOON_POS_X + DIST_X,
+				HumanBehavior::BALLOON_POS_Y + DIST_Y,
+				2.0, 2.0,
+				( TextBehavior::TUTORIAL[index].substr( 0, length ) ).c_str(),
+				GetColor( 42, 97, 110 ),
+				hFont
+			);
+		}
+		else	// ランダム発言
+		{
+			int index = textNumber % scast<int>( TextBehavior::RAND_SAY.size() );
+			int length = textLength * 2/* 日本語で２バイト文字なので，倍にして対応 */;
+			if ( scast<int>( TextBehavior::RAND_SAY[index].size() ) <= textLength )
+			{
+				length = scast<int>( TextBehavior::RAND_SAY[index].size() );
+			}
+
+			constexpr int DIST_X = 80;
+			constexpr int DIST_Y = 52;
+
+			DrawExtendStringToHandle
+			(
+				HumanBehavior::BALLOON_POS_X + DIST_X,
+				HumanBehavior::BALLOON_POS_Y + DIST_Y,
+				2.0, 2.0,
+				( TextBehavior::RAND_SAY[index].substr( 0, length ) ).c_str(),
+				GetColor( 42, 97, 110 ),
+				hFont
+			);
+		}
 	}
 
 	if ( isShowClearMenu )
@@ -1844,44 +2238,7 @@ void Game::GameDrawUI()
 
 void Game::ClearDrawUI()
 {
-	/*
-	DrawExtendFormatStringToHandle
-	(
-		300, 300,
-		6.0, 6.0,
-		GetColor( 32, 32, 32 ),
-		hFont,
-		"Stage Clear!"
-	);
-
-	if ( pNumMoves )
-	{
-		int nowRank = pNumMoves->CalcRank( numMoves );
-
-		std::array<unsigned int, 4> colours =
-		{
-			GetColor( 200, 200, 32 ),
-			GetColor( 200, 64, 32 ),
-			GetColor( 64, 200, 32 ),
-			GetColor( 32, 64, 200 )
-		};
-		std::array<char, 4> ranks =
-		{
-			'S', 'A', 'B', 'C'
-		};
-		std::string result = "Rank : ";
-		result.push_back( ranks[nowRank] );
-
-		DrawExtendStringToHandle
-		(
-			360, 400,
-			6.0, 6.0,
-			result.c_str(),
-			colours[nowRank],
-			hFont
-		);
-	}
-	*/
+	
 }
 
 void Game::CollisionCheck()

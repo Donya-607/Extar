@@ -431,7 +431,6 @@ void Cursor::Update()
 	if ( IS_TRG_EXPOSURE )
 	{
 		isDecision = true;
-		PlaySE( M_E_NEXT );
 	}
 }
 
