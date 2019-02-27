@@ -30,7 +30,7 @@ namespace TextBehavior
 		"水色の枠がカメラの範囲だよ！",
 		"範囲内に星をおさめると、ＸかＡで露光が使えるよ",
 
-		"露光は、範囲内にある星を明るくできるよ★",
+		"露光は、範囲内にある星を明るくできるよ",
 		"すべての星の明るさをそろえよう★",
 		"セレクトボタンでもう一度教えるよ！"
 	};
@@ -55,11 +55,11 @@ namespace TextBehavior
 	const std::vector<std::string> RAND_SAY =
 	{
 		"ファイトぉ！",
-		"ん～悩むね～",
+		"んー悩むねー",
 		"難しいなぁ・・・",
 
 		"その調子その調子！",
-		"がんばれ～！",
+		"がんばれー！",
 		"んー、どうするんだろう・・・",
 
 		"迷うなぁ",
@@ -1232,7 +1232,7 @@ void Game::BalloonUpdate()
 		}
 
 		// 発言番号算出
-		if ( !remTimer )
+		if ( remTimer == 1 )
 		{
 			int size = scast<int>( TextBehavior::RAND_SAY.size() );
 			textNumber = rand() % size;
