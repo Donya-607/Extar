@@ -24,6 +24,8 @@
 
 namespace TextBehavior
 {
+	// 文の数とフレームの数は揃えてください
+
 	const std::vector<std::string> TUTORIAL =
 	{
 		"やっほー、初心者さん？　やり方教えるね♪",
@@ -311,6 +313,11 @@ namespace HumanImage
 	static int hBody[NUM_ALL];
 	static int hArm[NUM_ALL];
 
+	constexpr int NUM_MOUTH_ROW = 3;
+	constexpr int SIZE_MOUTH_X  = 256;
+	constexpr int SIZE_MOUTH_Y  = 352;
+	static int hMouth[NUM_MOUTH_ROW];
+
 	constexpr int SIZE_BALLOON_X = 928;
 	constexpr int SIZE_BALLOON_Y = 160;
 
@@ -343,6 +350,15 @@ namespace HumanImage
 			hArm
 		);
 
+		LoadDivGraph
+		(
+			"./Data/Images/Human/Mouth.png",
+			NUM_MOUTH_ROW,
+			NUM_MOUTH_ROW, 1,
+			SIZE_MOUTH_X, SIZE_MOUTH_Y,
+			hMouth
+		);
+
 		hBalloon = LoadGraph( "./Data/Images/Human/Balloon.png" );
 	}
 	void Release()
@@ -351,6 +367,11 @@ namespace HumanImage
 		{
 			DeleteGraph( hBody[i] );
 			hBody[i] = 0;
+		}
+		for ( int i = 0; i < NUM_MOUTH_ROW; i++ )
+		{
+			DeleteGraph( hMouth[i] );
+			hMouth[i] = 0;
 		}
 
 		DeleteGraph( hBalloon );
@@ -368,6 +389,12 @@ namespace HumanImage
 		assert( 0 <= index && index < NUM_ALL );
 
 		return hArm[index];
+	}
+	int  GetMouthHandle( int index )
+	{
+		assert( 0 <= index && index < NUM_MOUTH_ROW );
+
+		return hMouth[index];
 	}
 	int  GetBalloonHandle()
 	{
@@ -535,6 +562,7 @@ void Game::GameInit()
 	numMoves = 0;
 	choice = 0;
 
+	mouthIndex = 0;
 	balloonLength = 0;
 	textTimer = 0;
 	textLength = 0;
@@ -722,36 +750,6 @@ void Game::Update()
 				break;
 
 			}
-
-			/*
-			switch ( shutter_state )
-			{
-			case 0:
-				str_up_pos.y += str_speed.y;
-				str_down_pos.y -= str_speed.y;
-				if ( str_up_pos.y >= 768 >> 1 )
-				{
-					shutter_state++;
-				}
-				break;
-
-			case 1:
-				str_up_pos.y -= str_speed.y;
-				str_down_pos.y += str_speed.y;
-				if ( str_up_pos.y < 64 - 768 )
-				{
-					shutter_flag = false;
-					shutter_state = 0;
-					str_up_pos.y = str_up_pos.y - 768.0f;
-					str_down_pos.y = str_down_pos.y + 768.0f;
-
-					nextState = State::Clear;
-					FadeDone();
-				}
-				break;
-
-			}
-			*/
 		}
 	}
 
@@ -806,6 +804,8 @@ void Game::GameUpdate()
 		// FadeBegin();
 		shutter_flag = true;
 		isOpenFade = false;
+
+		PlaySE( M_SHUTTER );
 	}
 
 	// カメラの更新より先に判定し，描画後にスクショが始まるようにする
@@ -855,6 +855,7 @@ void Game::GameUpdate()
 			if ( pStarMng->Undo() )
 			{
 				numMoves--;
+				PlaySE( M_UNDO );
 			}
 		}
 	}
@@ -956,7 +957,14 @@ void Game::ClearUpdate()
 			recordStars.push_back( RecordStar() );
 			recordStars.back().Init( base, isGlow );
 
-			PlaySE( M_RECORD_STAR );
+			if ( isGlow )
+			{
+				PlaySE( M_RECORD_STAR );
+			}
+			else
+			{
+				PlaySE( M_UNRECORD_STAR );
+			}
 		}
 	}
 	for ( RecordStar &it : recordStars )
@@ -1138,26 +1146,42 @@ void Game::BalloonUpdate()
 				textNumber++;
 			}
 		}
-		// else	// else文にすると，すべて表示した後でないとリセットできないようになる
+		else // else文にすると，すべて表示した後でないとリセットできないようになる
 		if ( IS_TRG_SELECT )
 		{
-			textTimer = TUTORIAL_TEXT_START_FRAME;
+			textTimer = TUTORIAL_TEXT_START_FRAME + TextBehavior::TUTORIAL_SHOW_FRAME[0];
 
 			textLength = 1;
 			textExtendInterval = 0;
 
-			textNumber = 0;
+			textNumber = 1;
 		}
 
 		// 文字数増加確認
 		if ( 0 != textLength && ( textLength * 2 ) <= scast<int>( TextBehavior::TUTORIAL[textNumber].size() ) )
 		{
-			constexpr int INTERVAL = 2;
+			constexpr int INTERVAL = 3;
 			textExtendInterval++;
 			if ( INTERVAL <= textExtendInterval )
 			{
 				textExtendInterval = 0;
 				textLength++;
+
+				// 口変化
+				{
+					if ( scast<int>( TextBehavior::TUTORIAL[textNumber].size() ) <= ( textLength * 2 ) )
+					{
+						mouthIndex = 0;
+					}
+					else
+					{
+						int oldIndex = mouthIndex;
+						while ( oldIndex == mouthIndex )
+						{
+							mouthIndex = rand() % HumanImage::NUM_MOUTH_ROW;
+						}
+					}
+				}
 
 				PlaySE( M_VOICE );
 			}
@@ -1167,7 +1191,7 @@ void Game::BalloonUpdate()
 	}
 	// else
 
-	constexpr int SAY_INTERVAL	= 60 * 5;
+	constexpr int SAY_INTERVAL	= 60 * 20/* 秒数 */;
 	int remTimer = textTimer % SAY_INTERVAL;
 	{
 		constexpr int TEXT_START_FRAME		= 30;
@@ -1257,12 +1281,28 @@ void Game::BalloonUpdate()
 		// 文字数増加確認
 		if ( 0 != textLength && ( textLength * 2 ) <= scast<int>( TextBehavior::RAND_SAY[textNumber].size() ) )
 		{
-			constexpr int INTERVAL = 2;
+			constexpr int INTERVAL = 3;
 			textExtendInterval++;
 			if ( INTERVAL <= textExtendInterval )
 			{
 				textExtendInterval = 0;
 				textLength++;
+
+				// 口変化
+				{
+					if ( scast<int>( TextBehavior::RAND_SAY[textNumber].size() ) <= ( textLength * 2 ) )
+					{
+						mouthIndex = 0;
+					}
+					else
+					{
+						int oldIndex = mouthIndex;
+						while ( oldIndex == mouthIndex )
+						{
+							mouthIndex = rand() % HumanImage::NUM_MOUTH_ROW;
+						}
+					}
+				}
 
 				PlaySE( M_VOICE );
 			}
@@ -1733,6 +1773,15 @@ void Game::GameDraw()
 			TRUE
 		);
 
+		// 口
+		DrawGraph
+		(
+			0,
+			SCREEN_HEIGHT - HumanImage::SIZE_Y,
+			HumanImage::GetMouthHandle( mouthIndex ),
+			TRUE
+		);
+
 		// 腕
 		DrawGraph
 		(
@@ -1858,6 +1907,15 @@ void Game::ClearDraw()
 			TRUE
 		);
 
+		// 口
+		DrawGraph
+		(
+			0,
+			SCREEN_HEIGHT - HumanImage::SIZE_Y,
+			HumanImage::GetMouthHandle( mouthIndex ),
+			TRUE
+		);
+
 		// 腕
 		DrawGraph
 		(
@@ -1893,7 +1951,7 @@ void Game::ClearDraw()
 			}
 
 			constexpr int DIST_X = 80;
-			constexpr int DIST_Y = 52;
+			constexpr int DIST_Y = 48;
 
 			DrawExtendStringToHandle
 			(

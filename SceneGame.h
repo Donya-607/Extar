@@ -67,6 +67,7 @@ private:
 	int  hScreenShot;
 
 	int  hFont;			// JFドットK12
+	int  mouthIndex;	// 0始まり
 	int  balloonLength;	// 0 のときは更新しない
 	int  textTimer;		// テキスト関連で使用
 	int  textLength;	// 0 のときは更新しない
@@ -123,6 +124,7 @@ public:
 		choice( 0 ),
 		clearTimer( 0 ),
 		hScreenShot( 0 ), hFont( 0 ),
+		mouthIndex( 0 ),
 		balloonLength( 0 ),
 		textTimer( 0 ),
 		textLength( 0 ), textExtendInterval( 0 ), textNumber( 0 ),

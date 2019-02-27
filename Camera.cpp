@@ -102,8 +102,14 @@ void Camera::Move()
 	if ( isLeft		&& !isRight	)	{ pos.x -= Grid::GetSize().x * moveAmount; row		-= moveAmount; }
 	if ( isRight	&& !isLeft	)	{ pos.x += Grid::GetSize().x * moveAmount; row		+= moveAmount; }
 
-	ClampPos();
-	ClampMatrix();
+	if ( isUp || isDown | isLeft || isRight )
+	{
+		ClampPos();
+		if ( !ClampMatrix() )
+		{
+			PlaySE( M_CAMERA_MOVE );
+		}
+	}
 }
 void Camera::ClampPos()
 {
@@ -113,13 +119,23 @@ void Camera::ClampPos()
 	pos.y = std::min( pos.y, scast<float>( FRAME_HEIGHT ) - ( Grid::GetSize().y * height ) );
 	pos.y = std::max( pos.y, 0.0f );
 }
-void Camera::ClampMatrix()
+bool Camera::ClampMatrix()
 {
+	int oldRow		= row;
+	int oldColumn	= column;
+
 	row		= std::min( row,	Grid::GetRowMax()		- width  );
 	row		= std::max( row,	0 );
 
 	column	= std::min( column,	Grid::GetColumnMax()	- height );
 	column	= std::max( column,	0 );
+
+	if ( oldRow != row || oldColumn != column )
+	{
+		return true;
+	}
+	// else
+	return false;
 }
 
 void Camera::Exposure()

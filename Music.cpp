@@ -13,14 +13,19 @@ void MusicInit()
 	BGMhandles[M_Title_Select]	= LoadSoundMem( "./Data/Sounds/BGM/Title_Select.wav" );
 	//BGMhandles[]				= LoadSoundMem( "./Data/Sounds/BGM/.wav" );
 
+	SEhandles[M_CAMERA_MOVE]	= LoadSoundMem( "./Data/Sounds/SE/Camera/CameraFrameMove.wav" );
 	SEhandles[M_DECISION]		= LoadSoundMem( "./Data/Sounds/SE/Decision.wav" );
 	SEhandles[M_EXPOSURE]		= LoadSoundMem( "./Data/Sounds/SE/Camera/Exposure.wav" );
 	SEhandles[M_FAILURE]		= LoadSoundMem( "./Data/Sounds/SE/Camera/Failure.wav" );
 	SEhandles[M_GOTO_TITLE]		= LoadSoundMem( "./Data/Sounds/SE/Select/Back.wav" );
 	SEhandles[M_PAUSE]			= LoadSoundMem( "./Data/Sounds/SE/Pause/Pause.wav" );
 	SEhandles[M_SELECT]			= LoadSoundMem( "./Data/Sounds/SE/Select/Move.wav" );
+	SEhandles[M_SHUTTER]		= LoadSoundMem( "./Data/Sounds/SE/Camera/Shutter.wav" );
 	SEhandles[M_RECORD_STAR]	= LoadSoundMem( "./Data/Sounds/SE/Result/Reward.wav" );
+	SEhandles[M_UNDO]			= LoadSoundMem( "./Data/Sounds/SE/Game/Undo.wav" );
+	SEhandles[M_UNRECORD_STAR]	= LoadSoundMem( "./Data/Sounds/SE/Result/FailureReward.wav" );
 	SEhandles[M_VOICE]			= LoadSoundMem( "./Data/Sounds/SE/Human/Voice.wav" );
+
 
 	// DEBUG:仮，ポーズ時に鳴らしている
 
@@ -40,7 +45,7 @@ void MusicUninit()
 void PlayBGM( BGM type )
 {
 	// すでに鳴っているものがあったら，止める
-	StopBGM( type );
+	StopBGM();
 
 	// エラーチェック（正しい引数の場合のみ，鳴らす）
 	for ( int i = 0; i < BGM_END; i++ )
@@ -69,19 +74,12 @@ void PlaySE( SE type )
 	assert( !"引数エラー：PlaySE" );
 }
 
-void StopBGM( BGM type )
+void StopBGM()
 {
 	for ( int i = 0; i < BGM_END; i++ )
 	{
 		if ( CheckSoundMem( BGMhandles[i] ) )
 		{
-			// 同じものだったら，そのまま鳴らし続けるように
-			if ( i == type )
-			{
-				//continue;
-			}
-			// else
-
 			StopSoundMem( BGMhandles[i] );
 		}
 	}

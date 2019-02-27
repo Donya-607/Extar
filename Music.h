@@ -16,13 +16,17 @@ enum BGM
 };
 enum SE
 {
+	M_CAMERA_MOVE,
 	M_DECISION = 0,
 	M_EXPOSURE,
 	M_FAILURE,
 	M_GOTO_TITLE,
 	M_PAUSE,
 	M_RECORD_STAR,
+	M_UNDO,
+	M_UNRECORD_STAR,
 	M_SELECT,
+	M_SHUTTER,
 	M_VOICE,
 
 	// DEBUG:仮，ポーズ時に鳴らしている
@@ -38,6 +42,6 @@ void MusicUninit();
 
 void PlayBGM( BGM type );
 void PlaySE(  SE  type );
-void StopBGM( BGM type = BGM_END );
+void StopBGM();
 
 #endif //INCLUDED_MUSIC_H_

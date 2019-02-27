@@ -59,7 +59,7 @@ public:
 private:
 	void Move();
 	void ClampPos();
-	void ClampMatrix();
+	bool ClampMatrix();	// ï‚ê≥ÇµÇΩÇÁTRUE
 
 	void Exposure();
 public:
