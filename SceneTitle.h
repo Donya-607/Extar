@@ -27,6 +27,8 @@ private:
 private:
 	State	state;
 	State	nextState;
+
+	bool	isOpenFade;	// TRUE‚Ì‚Æ‚«‚ÍƒtƒF[ƒh‚ª°‚ê‚Ä‚¢‚ÄC“®‚¯‚é
 private:	// ‘¼‚o‚f‚É‚æ‚éì‹Æ
 	Vector2 star_pos;
 	Vector2 E_pos;
@@ -54,7 +56,8 @@ private:	// ‘¼‚o‚f‚É‚æ‚éì‹Æ
 	Vector2 push_pos;
 public:
 	Title( SceneMng *pMng ) : Scene( pMng ),
-	state( State::Main ), nextState( State::Null ),
+		state( State::Main ), nextState( State::Null ),
+		isOpenFade( false ),
 
 		star_pos(), E_pos(), Ku_pos(), Su_pos(), Ta_pos(), timer( 0 ),
 		Count( 0 ), Count2( 0 ), Count3( 0 ), Count4( 0 ),

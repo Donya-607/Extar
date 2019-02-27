@@ -75,14 +75,14 @@ public:
 		pos(), velo(),
 		isDoneMove( false ),
 		isChooseBack( false ),
-		isDecision( false)
+		isDecision( false )
 	{}
 	~Cursor() {}
 
 	void Init();
 	void Uninit();
 
-	void Update();
+	void Update( bool isAcceptInput );
 
 	void Draw( Vector2 shake ) const;
 public:

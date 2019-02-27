@@ -11,7 +11,8 @@
 
 #if DEBUG_MODE
 
-#include "SceneGame.h"
+// #include "SceneGame.h"
+#include "SceneTitle.h"
 
 #else
 
@@ -77,6 +78,13 @@ int WINAPI WinMain(	HINSTANCE	hCurInst/*インスタンスハンドル*/,	HINSTANCE	hPrevI
 	MusicInit();
 
 	FadeImage::Load();
+	Fade::GetInstance()->Init
+	(
+		NULL,
+		{ scast<float>( SCREEN_WIDTH ), scast<float>( SCREEN_HEIGHT ) }
+	);
+	// 初回だけ，フェード終了フラグをオンにしておきたい
+	Fade::GetInstance()->Update();
 
 	// シーンマネージャを生成
 	SceneMng *pManager = nullptr;
@@ -86,7 +94,8 @@ int WINAPI WinMain(	HINSTANCE	hCurInst/*インスタンスハンドル*/,	HINSTANCE	hPrevI
 
 #if DEBUG_MODE
 
-	pManager->mpScene = new Game( pManager );
+	// pManager->mpScene = new Game( pManager );
+	pManager->mpScene = new Title( pManager );
 
 #else
 

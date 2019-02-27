@@ -786,7 +786,7 @@ void Game::SelectUpdate()
 {
 	if ( pCursor )
 	{
-		pCursor->Update();
+		pCursor->Update( isOpenFade/* フェードイン中の操作制限のため */ );
 
 		stageNumber = pCursor->GetNowStageNumber();
 
@@ -856,7 +856,7 @@ void Game::GameUpdate()
 		}
 	}
 
-	if ( pCamera )
+	if ( pCamera && isOpenFade/* フェードイン中の操作制限のため */ )
 	{
 		pCamera->Update();
 
@@ -942,6 +942,12 @@ void Game::ClearUpdate()
 		pStarMng->ClearUpdate();
 	}
 
+	if ( clearTimer < ClearRelated::FADE_WAIT )
+	{
+		BalloonUpdate();
+	}
+
+
 	if ( pBoard )
 	{
 		if ( ClearRelated::FADE_WAIT < clearTimer )
@@ -1026,12 +1032,6 @@ void Game::ClearUpdate()
 			{
 			case 0:
 				{
-					if ( state == State::Game )
-					{
-						isPause = false;
-						return;
-					}
-					// else
 					if ( state == State::Clear )
 					{
 						nextState = State::Game;
@@ -1075,10 +1075,12 @@ void Game::ClearUpdate()
 	// 「次へ」の移動
 	if ( !isShowClearMenu && ClearRelated::FADE_WAIT + ClearRelated::GOTO_NEXT_WAIT < clearTimer )
 	{
-		constexpr int SPD = -8;
-		gotoNextPosX += SPD;	// 等速
+		const int   DESTINATION = SCREEN_WIDTH - ClearImage::SIZE_GOTO_NEXT_X;
+		const float RESISTANCE = 0.3f;
 
-		const int DESTINATION = SCREEN_WIDTH - ClearImage::SIZE_GOTO_NEXT_X;
+		float dist = fabsf( scast<float>( DESTINATION - gotoNextPosX ) );
+		gotoNextPosX -= scast<int>( dist * RESISTANCE );
+
 		if ( gotoNextPosX < DESTINATION )
 		{
 			gotoNextPosX = DESTINATION;
@@ -1116,17 +1118,17 @@ void Game::BalloonUpdate()
 	{
 		constexpr int TUTORIAL_TEXT_START_FRAME		= 80;
 		constexpr int TUTORIAL_BALLOON_START_FRAME	= TUTORIAL_TEXT_START_FRAME - 20;
-		if ( nextState == State::Null )	// クリア後は新しくは出さない
+		if ( state == State::Game )	// クリア後は新しくは出さない
 		{
 			if ( textTimer == TUTORIAL_TEXT_START_FRAME )
 			{
 				textLength = 1;
 			}
 			if ( textTimer == TUTORIAL_BALLOON_START_FRAME )
-		{
-			constexpr int INIT_LENGTH = 64;
-			balloonLength = INIT_LENGTH;
-		}
+			{
+				constexpr int INIT_LENGTH = 64;
+				balloonLength = INIT_LENGTH;
+			}
 		}
 
 		// フキダシの更新
@@ -1177,31 +1179,34 @@ void Game::BalloonUpdate()
 		}
 
 		// 表示時間経過確認
-		if ( textNumber < scast<int>( TextBehavior::TUTORIAL.size() ) - 1 )
+		if ( state == State::Game )
 		{
-			int sumFrame = 0;
-			for ( int i = 0; i <= textNumber; i++ )
+			if ( textNumber < scast<int>( TextBehavior::TUTORIAL.size() ) - 1 )
 			{
-				sumFrame += TextBehavior::TUTORIAL_SHOW_FRAME[i];
-			}
+				int sumFrame = 0;
+				for ( int i = 0; i <= textNumber; i++ )
+				{
+					sumFrame += TextBehavior::TUTORIAL_SHOW_FRAME[i];
+				}
 
-			if ( sumFrame <= textTimer - TUTORIAL_TEXT_START_FRAME )
+				if ( sumFrame <= textTimer - TUTORIAL_TEXT_START_FRAME )
+				{
+					textLength = 1;
+					textExtendInterval = 0;
+
+					textNumber++;
+				}
+			}
+			else // else文にすると，すべて表示した後でないとリセットできないようになる
+			if ( IS_TRG_SELECT )
 			{
+				textTimer = TUTORIAL_TEXT_START_FRAME + TextBehavior::TUTORIAL_SHOW_FRAME[0];
+
 				textLength = 1;
 				textExtendInterval = 0;
 
-				textNumber++;
+				textNumber = 1;
 			}
-		}
-		else // else文にすると，すべて表示した後でないとリセットできないようになる
-		if ( IS_TRG_SELECT )
-		{
-			textTimer = TUTORIAL_TEXT_START_FRAME + TextBehavior::TUTORIAL_SHOW_FRAME[0];
-
-			textLength = 1;
-			textExtendInterval = 0;
-
-			textNumber = 1;
 		}
 
 		// 文字数増加確認
@@ -1243,7 +1248,7 @@ void Game::BalloonUpdate()
 	{
 		constexpr int TEXT_START_FRAME		= 80;
 		constexpr int BALLOON_START_FRAME	= TEXT_START_FRAME - 20;
-		if ( nextState == State::Null )	// クリア後は新しくは出さない
+		if ( state == State::Game )	// クリア後は新しくは出さない
 		{
 			if ( remTimer == TEXT_START_FRAME )
 			{

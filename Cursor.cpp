@@ -411,8 +411,17 @@ void Cursor::Uninit()
 
 }
 
-void Cursor::Update()
+void Cursor::Update( bool isAcceptInput )
 {
+	if ( !isAcceptInput )
+	{
+		StageSelect::SetBackGlow( isChooseBack );
+		GlowUpdate();
+
+		return;
+	}
+	// else
+
 	if ( isDecision )
 	{
 		return;

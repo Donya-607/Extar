@@ -16,7 +16,13 @@ void NumMoves::Uninit()
 
 void NumMoves::Update()
 {
+
+#if USE_IMGUI
+
 	ChangeParametersByImGui();
+
+#endif // USE_IMGUI
+
 }
 
 int  NumMoves::CalcRank( int numMoves )

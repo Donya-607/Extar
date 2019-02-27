@@ -126,7 +126,7 @@ void Title::Update()
 {
 #if DEBUG_MODE
 
-	if ( TRG( KEY_INPUT_C ) || TRG_J_X( XB_LEFT ) )
+	if ( TRG( KEY_INPUT_C ) )
 	{
 		char debugstoper = 0;
 	}
@@ -157,7 +157,7 @@ void Title::Update()
 
 #if DEBUG_MODE
 
-	if ( TRG( KEY_INPUT_RETURN ) && state != State::GotoGame )
+	if ( TRG( KEY_INPUT_RETURN ) && isOpenFade && nextState != State::GotoGame )
 	{
 		nextState = State::GotoGame;
 		FadeBegin();
@@ -171,7 +171,7 @@ void Title::Update()
 void Title::MainUpdate()
 {
 
-	if ( IS_TRG_EXPOSURE && state != State::GotoGame )
+	if ( IS_TRG_EXPOSURE && isOpenFade && nextState != State::GotoGame )
 	{
 		nextState = State::GotoGame;
 		FadeBegin();
@@ -203,6 +203,8 @@ void Title::FadeBegin()
 	pos.y -= scast<float>( SCREEN_HEIGHT ) * 1.0f/* ˆÊ’u‚Ì’²® */;
 
 	Fade::GetInstance()->Init( MOVE_INTERVAL, pos );
+
+	isOpenFade = false;
 }
 
 void Title::FadeCheck()
@@ -245,11 +247,14 @@ void Title::FadeDone()
 		exit( EXIT_FAILURE );
 		return;
 	}
+
+	isOpenFade = false;
 }
 
 void Title::FadeEnd()
 {
 	Fade::GetInstance()->Uninit();
+	isOpenFade = true;
 }
 
 void Title::PrepareChangeSceneToGame()
