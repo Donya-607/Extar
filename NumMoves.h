@@ -29,6 +29,10 @@ public:
 	void Update();
 public:
 	int  CalcRank( int numMoves );
+	std::vector<int> GetData() const
+	{
+		return moves;
+	}
 
 #if USE_IMGUI
 

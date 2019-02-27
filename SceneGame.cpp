@@ -95,6 +95,15 @@ namespace ClearImage
 	static int hClearBG;
 	static int hRecordStatement;
 	static int hRecordStar[2];	// 0:Dark, 1:Glow
+	
+
+	constexpr int NUM_STATEMENT_ROW = 5;
+	constexpr int SIZE_STATEMENT_X = 736;
+	constexpr int SIZE_STATEMENT_Y = 576;
+
+	// 0:All, 1:ToGame, 2:Retry, 3:ToSelect, 4:ToTitle
+	static int hMenuStatements[NUM_STATEMENT_ROW];
+	static int hFinalStageMenuStatements[NUM_STATEMENT_ROW];
 
 	void Load()
 	{
@@ -116,6 +125,23 @@ namespace ClearImage
 			SIZE_STAR_X, SIZE_STAR_Y,
 			hRecordStar
 		);
+
+		LoadDivGraph
+		(
+			"./Data/Images/Result/Statement.png",
+			NUM_STATEMENT_ROW,
+			NUM_STATEMENT_ROW, 1,
+			SIZE_STATEMENT_X, SIZE_STATEMENT_Y,
+			hMenuStatements
+		);
+		LoadDivGraph
+		(
+			"./Data/Images/Result/FinalStageStatement.png",
+			NUM_STATEMENT_ROW,
+			NUM_STATEMENT_ROW, 1,
+			SIZE_STATEMENT_X, SIZE_STATEMENT_Y,
+			hFinalStageMenuStatements
+		);
 	}
 	void Release()
 	{
@@ -128,11 +154,32 @@ namespace ClearImage
 		DeleteGraph( hRecordStar[1] );
 		hRecordStar[0] = 0;
 		hRecordStar[1] = 0;
+
+		for ( int i = 0; i < NUM_STATEMENT_ROW; i++ )
+		{
+			DeleteGraph( hMenuStatements[i]				);
+			DeleteGraph( hFinalStageMenuStatements[i]	);
+			hMenuStatements[i]				= 0;
+			hFinalStageMenuStatements[i]	= 0;
+		}
+	}
+
+	int  GetStatementHandle( int index, bool isFinalStage )
+	{
+		assert( 0 <= index && index < NUM_STATEMENT_ROW );
+
+		if ( isFinalStage )
+		{
+			return hFinalStageMenuStatements[index];
+		}
+		// else
+		return hMenuStatements[index];
 	}
 }
 namespace ClearRelated
 {
-	constexpr int FADE_WAIT = 45;
+	constexpr int FADE_WAIT			= 80;
+	constexpr int GOTO_NEXT_WAIT	= 120;
 }
 
 namespace PauseImage
@@ -327,13 +374,16 @@ void Game::GameInit()
 }
 void Game::ClearInit()
 {
-	choice = 0;
+	choice = ( stageNumber == FileIO::GetMaxStageNumber() ) ? 1 : 0;
 	clearTimer = 0;
+	gotoNextPosX = SCREEN_WIDTH;
 
 	pBoard.reset( new Board() );
 	pBoard->Init( { 960.0f, scast<float>( -BoardImage::SIZE_Y ) } );
 
 	recordStars.clear();
+
+	isShowClearMenu = false;
 }
 
 void Game::Uninit()
@@ -667,6 +717,96 @@ void Game::ClearUpdate()
 		it.Update();
 	}
 
+	if ( isShowClearMenu )
+	{
+		// PauseUpdateのものと同一
+		constexpr int MAX_MENU = 4;
+
+		bool isUp = false, isDown = false;
+
+		if ( IS_TRG_UP ) { isUp = true; }
+		if ( IS_TRG_DOWN ) { isDown = true; }
+
+		int lower = ( stageNumber == FileIO::GetMaxStageNumber() ) ? 1 : 0;
+		if ( ( lower	< choice )		 && isUp	&& !isDown	) { choice -= 1; PlaySE( M_E_NEXT ); }
+		if ( ( choice	< MAX_MENU - 1 ) && isDown	&& !isUp	) { choice += 1; PlaySE( M_E_NEXT ); }
+
+		assert( lower	<= choice  && choice < MAX_MENU );
+
+		if ( IS_TRG_EXPOSURE )
+		{
+			PlaySE( M_E_NEXT );
+
+			switch ( choice )
+			{
+			case 0:
+				{
+					if ( state == State::Game )
+					{
+						isPause = false;
+						return;
+					}
+					// else
+					if ( state == State::Clear )
+					{
+						nextState = State::Game;
+						if ( stageNumber <= FileIO::GetMaxStageNumber() )
+						{
+							stageNumber++;
+						}
+						else
+						{
+							assert( !"Error : Next_Stage is Not Exists." );
+							exit( EXIT_FAILURE );
+							return;
+						}
+
+						FadeBegin();
+					}
+				}
+				break;
+			case 1:
+				{
+					nextState = State::Game;
+					FadeBegin();
+				}
+				break;
+			case 2:
+				{
+					nextState = State::Select;
+					FadeBegin();
+				}
+				break;
+			case 3:
+				{
+					nextState = State::GotoTitle;
+					FadeBegin();
+				}
+				break;
+			}
+		}
+	}
+
+	if ( !isShowClearMenu && ClearRelated::FADE_WAIT + ClearRelated::GOTO_NEXT_WAIT < clearTimer )
+	{
+		constexpr int SPD = -5;
+		gotoNextPosX += SPD;	// 等速
+
+		const int DESTINATION = SCREEN_WIDTH - 96;
+		if ( gotoNextPosX < DESTINATION )
+		{
+			gotoNextPosX = DESTINATION;
+		}
+
+		if ( IS_TRG_EXPOSURE )
+		{
+			PlaySE( M_E_NEXT );
+
+			isShowClearMenu = true;
+			gotoNextPosX = SCREEN_WIDTH;
+		}
+	}
+
 #if DEBUG_MODE
 
 	if ( TRG( KEY_INPUT_E ) && isOpenFade/* 連打防止 */ )
@@ -754,6 +894,26 @@ void Game::FadeEnd()
 	isOpenFade = true;
 }
 
+bool IsInsideStarFourCorners( Box camera, Box star )
+{
+	Vector2 corners[4] =
+	{
+		{ star.cx - star.w, star.cy - star.h },	// 左上
+		{ star.cx + star.w, star.cy - star.h },	// 右上
+		{ star.cx - star.w, star.cy + star.h },	// 左下
+		{ star.cx + star.w, star.cy + star.h }	// 右下
+	};
+
+	for ( int i = 0; i < 4; i++ )
+	{
+		if ( !Box::IsHitPoint( camera, corners[i].x, corners[i].y ) )
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
 bool Game::Exposure()
 {
 	assert( pCamera );
@@ -781,8 +941,15 @@ bool Game::Exposure()
 				return false;
 			}
 			// else
-
-			targets.push_back( i );
+			if ( IsInsideStarFourCorners( camera, star ) )
+			{
+				targets.push_back( i );
+			}
+			else
+			{
+				PlaySE( M_FAILURE );
+				return false;
+			}
 		}
 	}
 
@@ -963,6 +1130,9 @@ void Game::Draw()
 		PauseDraw();
 	}
 
+	SetDrawBright( 255, 255, 255 );
+	SetDrawBlendMode( DX_BLENDMODE_NOBLEND, 255 );
+
 #if	DEBUG_MODE
 
 	if ( isDrawCollision )
@@ -1099,6 +1269,7 @@ void Game::ClearDraw()
 	Vector2 shake = GetShakeAmount();
 
 	// 背景
+	if ( !isShowClearMenu )
 	{
 		DrawGraph
 		(
@@ -1126,12 +1297,16 @@ void Game::ClearDraw()
 		);
 	}
 
-	if ( pStarMng )
+	if ( pStarMng && !isShowClearMenu )
 	{
 		pStarMng->Draw( shake );
 	}
 
-	if ( clearTimer < 255 )
+	if ( isShowClearMenu )
+	{
+		SetDrawBright( 64, 64, 64 );
+	}
+	else if ( clearTimer < 255 )
 	{
 		int alpha = ( 255 / ClearRelated::FADE_WAIT )/* AMPL */ * clearTimer;
 
@@ -1156,7 +1331,7 @@ void Game::ClearDraw()
 		ClearImage::hRecordStatement,
 		TRUE
 	);
-	// StageNumber
+	// Stage, Moves Number
 	{
 		const int STAGE_POS_X = 368;
 		const int STAGE_POS_Y = 144;
@@ -1164,8 +1339,11 @@ void Game::ClearDraw()
 		const int MOVES_POS_X = 288;
 		const int MOVES_POS_Y = 476;
 
-		const int MAGNI_X = 2;
-		const int MAGNI_Y = 2;
+		const int STAGE_MAGNI_X = 2;
+		const int STAGE_MAGNI_Y = 2;
+
+		const int MOVES_MAGNI_X = 1;
+		const int MOVES_MAGNI_Y = 1;
 
 		int stgNum = stageNumber;
 		int movNum = numMoves;
@@ -1185,8 +1363,8 @@ void Game::ClearDraw()
 				(
 					STAGE_POS_X - Number::SIZE_X,
 					STAGE_POS_Y,
-					STAGE_POS_X - Number::SIZE_X + ( Number::SIZE_X * MAGNI_X ),
-					STAGE_POS_Y + ( Number::SIZE_Y * MAGNI_Y ),
+					STAGE_POS_X - Number::SIZE_X + ( Number::SIZE_X * STAGE_MAGNI_X ),
+					STAGE_POS_Y + ( Number::SIZE_Y * STAGE_MAGNI_Y ),
 					Number::GetHandle( stgNum, true ),
 					TRUE
 				);
@@ -1196,8 +1374,8 @@ void Game::ClearDraw()
 				(
 					MOVES_POS_X - Number::SIZE_X,
 					MOVES_POS_Y,
-					MOVES_POS_X - Number::SIZE_X + ( Number::SIZE_X * MAGNI_X ),
-					MOVES_POS_Y + ( Number::SIZE_Y * MAGNI_Y ),
+					MOVES_POS_X - Number::SIZE_X + ( Number::SIZE_X * MOVES_MAGNI_X ),
+					MOVES_POS_Y + ( Number::SIZE_Y * MOVES_MAGNI_Y ),
 					Number::GetHandle( movNum, true ),
 					TRUE
 				);
@@ -1211,8 +1389,8 @@ void Game::ClearDraw()
 			(
 				STAGE_POS_X - ( Number::SIZE_X >> 1 ) - ( Number::SIZE_X * digit ),
 				STAGE_POS_Y,
-				STAGE_POS_X - ( Number::SIZE_X >> 1 ) - ( Number::SIZE_X * digit ) + ( Number::SIZE_X * MAGNI_X ),
-				STAGE_POS_Y + ( Number::SIZE_Y * MAGNI_Y ),
+				STAGE_POS_X - ( Number::SIZE_X >> 1 ) - ( Number::SIZE_X * digit ) + ( Number::SIZE_X * STAGE_MAGNI_X ),
+				STAGE_POS_Y + ( Number::SIZE_Y * STAGE_MAGNI_Y ),
 				Number::GetHandle( stgNum % 10, true ),
 				TRUE
 			);
@@ -1222,8 +1400,8 @@ void Game::ClearDraw()
 			(
 				MOVES_POS_X - Number::SIZE_X,
 				MOVES_POS_Y,
-				MOVES_POS_X - Number::SIZE_X + ( Number::SIZE_X * MAGNI_X ),
-				MOVES_POS_Y + ( Number::SIZE_Y * MAGNI_Y ),
+				MOVES_POS_X - Number::SIZE_X + ( Number::SIZE_X * MOVES_MAGNI_X ),
+				MOVES_POS_Y + ( Number::SIZE_Y * MOVES_MAGNI_Y ),
 				Number::GetHandle( movNum % 10, true ),
 				TRUE
 			);
@@ -1232,8 +1410,38 @@ void Game::ClearDraw()
 			movNum /= 10;
 		}
 	}
+	// 手数何以内
+	if ( pNumMoves )
+	{
+		int x = 448;
+		int y = 640;
+		// GetMousePoint( &x, &y );
 
-	SetDrawBlendMode( DX_BLENDMODE_NOBLEND, 255 );
+		int textLength = 352;
+		std::vector<int> data = pNumMoves->GetData();
+		for ( int i = 0; i < 3; i++ )
+		{
+			DrawExtendFormatStringToHandle
+			(
+				x + ( textLength  * i ),
+				y,
+				3.0, 3.0,
+				GetColor( 124, 246, 255 ),
+				hFont,
+				"手数 %d 以内",
+				data.at( 2 - i )
+			);
+		}
+	}
+
+	if ( isShowClearMenu )
+	{
+		SetDrawBright( 128, 128, 128 );
+	}
+	else
+	{
+		SetDrawBlendMode( DX_BLENDMODE_NOBLEND, 255 );
+	}
 
 	if ( clearTimer < ClearRelated::FADE_WAIT )
 	{
@@ -1250,6 +1458,51 @@ void Game::ClearDraw()
 	{
 		it.Draw( shake );
 	}
+
+	// 「次へ」表示
+	{
+		constexpr int POS_Y = 960;
+
+		DrawExtendStringToHandle
+		(
+			gotoNextPosX,
+			POS_Y,
+			3.0, 3.0,
+			"次へ",
+			GetColor( 124, 246, 255 ),
+			hFont
+		);
+	}
+
+	SetDrawBright( 255, 255, 255 );
+
+	if ( !isShowClearMenu )
+	{
+		return;
+	}
+	// else
+
+	bool isFinalStage =
+		( stageNumber == FileIO::GetMaxStageNumber() )
+		? true
+		: false;
+
+	// 項目
+	DrawGraph
+	(
+		608,
+		288,
+		ClearImage::GetStatementHandle( 0, isFinalStage ),
+		TRUE
+	);
+	// 強調
+	DrawGraph
+	(
+		608,
+		288,
+		ClearImage::GetStatementHandle( choice + 1, isFinalStage ),
+		TRUE
+	);
 }
 
 void Game::PauseDraw()
@@ -1307,22 +1560,32 @@ void Game::GameDrawUI()
 	// 星レベルの表示
 	{
 		const Vector2 BASE{ scast<float>( FRAME_POS_X + FRAME_WIDTH ),scast<float>( FRAME_POS_Y ) };
-		const Vector2 TWEAK{ 48.0f, 0 };
+		const Vector2 TWEAK{ 64.0f, 0 };
 		const Vector2 HALF_SIZE{ Grid::GetSize().x * 0.5f , Grid::GetSize().y * 0.5f };
+
+		// 段階の矢印
+		DrawGraph
+		(
+			scast<int>( BASE.x ),
+			scast<int>( BASE.y ),
+			StarImage::GetGradeHandle(),
+			TRUE
+		);
 
 		for ( int i = 1; i <= Star::MAX_LEVEL; i++ )
 		{
 			double angle = ( i % 2 ) ? 0 : 45.0;
 
-			DrawExtendFormatString
+			SetDrawBlendMode( DX_BLENDMODE_NOBLEND, 255 );
+			DrawRotaGraph
 			(
-				scast<int>( BASE.x ),
-				scast<int>( BASE.y ) + ( ( i - 1 ) * StarImage::SIZE ),
-				1.0, 1.0,
-				GetColor( 200, 200, 200 ),
-				"レベル %d", i
+				scast<int>( BASE.x + TWEAK.x + HALF_SIZE.x ),									// 中心座標
+				scast<int>( BASE.y + TWEAK.y + HALF_SIZE.y ) + ( ( i - 1 ) * StarImage::SIZE ),	// 中心座標
+				1.0, ToRadian( angle ),
+				StarImage::GetHandle( i, 0 ),
+				TRUE
 			);
-
+			SetDrawBlendMode( DX_BLENDMODE_ADD, 255 );
 			DrawRotaGraph
 			(
 				scast<int>( BASE.x + TWEAK.x + HALF_SIZE.x ),									// 中心座標
@@ -1332,6 +1595,7 @@ void Game::GameDrawUI()
 				TRUE
 			);
 		}
+		SetDrawBlendMode( DX_BLENDMODE_NOBLEND, 255 );
 	}
 }
 

@@ -68,6 +68,8 @@ private:
 
 	int	 hFont;			// JFドットK12
 
+	int  gotoNextPosX;	// LeftTop, リザルト画面で使用
+
 	State state;
 	State nextState;
 
@@ -101,6 +103,7 @@ public:
 		choice( 0 ),
 		clearTimer( 0 ),
 		hScreenShot( 0 ), hFont( 0 ),
+		gotoNextPosX( SCREEN_WIDTH ),
 		state( State::Select ), nextState( State::Null ),
 		pCursor( nullptr ),
 		pCamera( nullptr ), pStarMng( nullptr ), pNumMoves( nullptr ),

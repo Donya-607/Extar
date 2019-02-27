@@ -166,7 +166,7 @@ namespace StageSelect
 	const Vector2 SIZE{ 512.0f, 378.0f };
 	const Vector2 MARGIN{ 64.0f, 32.0f };
 
-	const Vector2 BACK_CENTER_POS{ 224.0f, 72.0f };
+	const Vector2 BACK_CENTER_POS{ 200.0f, 72.0f };
 	const Vector2 BACK_SIZE{ 96.0f, 96.0f };
 
 	static const int maxRow  = 3;
@@ -347,6 +347,15 @@ namespace StageSelect
 					? CHOICE_STAR_LEVEL
 					: NOT_CHOICE_STAR_LEVEL;
 
+				SetDrawBlendMode( DX_BLENDMODE_NOBLEND, 255 );
+				DrawGraph
+				(
+					scast<int>( base.x + ( i * StarImage::SIZE ) ),
+					scast<int>( base.y ),
+					StarImage::GetHandle( level, 0 ),
+					TRUE
+				);
+				SetDrawBlendMode( DX_BLENDMODE_ADD, 255 );
 				DrawGraph
 				(
 					scast<int>( base.x + ( i * StarImage::SIZE ) ),
@@ -355,6 +364,7 @@ namespace StageSelect
 					TRUE
 				);
 			}
+			SetDrawBlendMode( DX_BLENDMODE_NOBLEND, 255 );
 		}
 
 		// LR•\Ž¦

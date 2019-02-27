@@ -26,6 +26,7 @@ namespace StarImage
 	void Release();
 
 	int  GetHandle( int level, int animIndex );
+	int  GetGradeHandle();
 }
 
 class Star

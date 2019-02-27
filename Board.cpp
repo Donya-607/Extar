@@ -112,7 +112,7 @@ void Board::Move()
 
 	pos += velo;
 
-	constexpr float DESTINATION_Y = 416.0f;
+	constexpr float DESTINATION_Y = 352.0f;
 	if ( DESTINATION_Y < pos.y )
 	{
 		pos.y  = DESTINATION_Y;
