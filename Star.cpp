@@ -229,7 +229,7 @@ void StarMng::Update()
 {
 	if ( scast<int>( stars.size() ) < 1 )
 	{
-		assert( !"Star is not exists." );
+		// assert( !"Star is not exists." );
 		return;
 	}
 	// else

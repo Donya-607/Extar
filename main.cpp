@@ -43,13 +43,14 @@ int WINAPI WinMain(	HINSTANCE	hCurInst/*インスタンスハンドル*/,	HINSTANCE	hPrevI
 	SetGraphMode( SCREEN_WIDTH, SCREEN_HEIGHT, 16 );// SizeX, SizeY, ColorBitNum
 	SetWindowIconID( 128 );							// タイトルバーのアイコンを変更
 	SetMainWindowText( "エクスタ" );					// タイトルバーのテキストを変更
-	ChangeWindowMode( TRUE );						// TRUE:ウィンドウモードで起動
+	ChangeWindowMode( TRUE );						// TRUE:ウィンドウモード, FALSE:フルスクリーンモード
 
 	if ( DxLib_Init() == -1 )
 	{
 		return -1;	// エラー処理, 終了させる
 	}
 
+	SetMouseDispFlag( FALSE );						// FALSE:マウスカーソルの非表示
 	SetDrawScreen( DX_SCREEN_BACK );				// DX_SCREEN_BACK:描画先を裏画面に設定
 
 	srand( scast<unsigned int>( time( NULL ) ) );

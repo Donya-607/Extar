@@ -54,6 +54,11 @@ private:	// ëºÇoÇfÇ…ÇÊÇÈçÏã∆
 	int alpha_val;
 
 	Vector2 push_pos;
+
+	int shooting_star_1_val;
+	int shooting_star_1_val_state;
+	int shooting_star_2_val;
+	int shooting_star_2_val_state;
 public:
 	Title( SceneMng *pMng ) : Scene( pMng ),
 		state( State::Main ), nextState( State::Null ),
@@ -65,7 +70,9 @@ public:
 		angle( 0 ), flash_scale(),
 		scale_up_speed( { 0.3f, 0.3f } ), angle_speed( 100 ),
 		val_speed( 50 ),alpha_val( 255 ),
-		push_pos( { 330.0f, 650.0f } )
+		push_pos( { 330.0f, 650.0f } ),
+		shooting_star_1_val( 50 ), shooting_star_2_val( 255 ),
+		shooting_star_1_val_state( 0 ), shooting_star_2_val_state( 1 )
 	{}
 
 	~Title() {}

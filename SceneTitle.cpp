@@ -24,6 +24,10 @@ namespace TitleImage
 
 	static int hTitleUI;
 	static int hTitlePushUI;
+
+	static int hHuman;
+	static int hshooting_star_1;
+	static int hshooting_star_2;
 	//¯
 	constexpr int SIZE = 96;
 	constexpr int STAR_NUM_X = 2;
@@ -79,6 +83,10 @@ namespace TitleImage
 			hChar
 		);
 
+		hHuman = LoadGraph( "./Data/Images/Title/TitleHuman.png" );
+		hshooting_star_1 = LoadGraph( "./Data/Images/Title/TitleStar1.png" );
+		hshooting_star_2 = LoadGraph( "./Data/Images/Title/TitleStar2.png" );
+
 
 	}
 	void Release()
@@ -91,6 +99,14 @@ namespace TitleImage
 		DeleteGraph( hTitlePushUI );
 		hTitleUI = 0;
 		hTitlePushUI = 0;
+
+		DeleteGraph( hHuman );
+		DeleteGraph( hshooting_star_1 );
+		DeleteGraph( hshooting_star_2 );
+
+		hHuman = 0;
+		hshooting_star_1 = 0;
+		hshooting_star_2 = 0;
 
 
 	}
@@ -157,7 +173,10 @@ void Title::Update()
 
 #if DEBUG_MODE
 
-	if ( TRG( KEY_INPUT_RETURN ) && isOpenFade && nextState != State::GotoGame )
+	if	(
+		( TRG( KEY_INPUT_Z ) || TRG( KEY_INPUT_RETURN ) || TRG_J_X( XB_A ) )
+		&& isOpenFade && nextState != State::GotoGame
+		)
 	{
 		nextState = State::GotoGame;
 		FadeBegin();
@@ -171,7 +190,10 @@ void Title::Update()
 void Title::MainUpdate()
 {
 
-	if ( IS_TRG_EXPOSURE && isOpenFade && nextState != State::GotoGame )
+	if	(
+		( TRG( KEY_INPUT_Z ) || TRG( KEY_INPUT_RETURN ) || TRG_J_X( XB_A ) )
+		&& isOpenFade && nextState != State::GotoGame
+		)
 	{
 		nextState = State::GotoGame;
 		FadeBegin();
@@ -310,6 +332,65 @@ void Title::Draw()
 	}
 	SetDrawBlendMode( DX_BLENDGRAPHTYPE_NORMAL, 0 );
 	timer++;	// ŽžŠÔ·‚ðì‚é‚½‚ß
+
+	//Human
+	{
+		DrawGraph
+		(
+			0,
+			0,
+			TitleImage::hHuman,
+			TRUE
+		);
+	}
+
+	//—¬‚ê¯‚Å‚Í‚È‚¢‚¯‚ÇA“_–Å‚·‚é¯
+	{
+		SetDrawBlendMode( DX_BLENDMODE_ALPHA, shooting_star_1_val );
+		{
+			if ( shooting_star_1_val >= 255 ) { shooting_star_1_val_state = 1; }
+			if ( shooting_star_1_val <= 50 ) { shooting_star_1_val_state = 0; }
+			if ( shooting_star_1_val_state == 1 )
+			{
+				shooting_star_1_val -= 5;
+			}
+			if ( shooting_star_1_val_state == 0 )
+			{
+				shooting_star_1_val += 5;
+			}
+			DrawGraph
+			(
+				0,
+				0,
+				TitleImage::hshooting_star_1,
+				TRUE
+			);
+		}
+
+		SetDrawBlendMode( DX_BLENDMODE_ALPHA, shooting_star_2_val );
+		{
+			if ( shooting_star_2_val >= 255 ) { shooting_star_2_val_state = 1; }
+			if ( shooting_star_2_val <= 50 ) { shooting_star_2_val_state = 0; }
+			if ( shooting_star_2_val_state == 1 )
+			{
+				shooting_star_2_val -= 5;
+			}
+			if ( shooting_star_2_val_state == 0 )
+			{
+				shooting_star_2_val += 5;
+			}
+			DrawGraph
+			(
+				0,
+				0,
+				TitleImage::hshooting_star_2,
+				TRUE
+			);
+		}
+	}
+
+	SetDrawBlendMode( DX_BLENDGRAPHTYPE_NORMAL, 0 );
+
 	//ƒG
 	{
 		DrawGraph
@@ -390,7 +471,7 @@ void Title::Draw()
 
 	DrawGraph
 	(
-		scast<int>( push_pos.x ),
+		scast<int>( push_pos.x - 180 ),
 		scast<int>( push_pos.y ),
 		TitleImage::hTitlePushUI,
 		TRUE

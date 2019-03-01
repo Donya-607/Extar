@@ -56,7 +56,7 @@ namespace TextBehavior
 
 	const std::vector<std::string> RAND_SAY =
 	{
-		"ファイトぉ！",
+		"ファイトォ！",
 		"んー悩むねー",
 		"難しいなぁ・・・",
 
@@ -64,7 +64,7 @@ namespace TextBehavior
 		"がんばれー！",
 		"んー、どうするんだろう・・・",
 
-		"迷うなぁ",
+		"迷うなぁ・・・",
 		"いい感じかも♪",
 		"星がきれいだねー",
 
@@ -1030,6 +1030,7 @@ void Game::ClearUpdate()
 		it.Update();
 	}
 
+	// 項目選択
 	if ( isShowClearMenu )
 	{
 		// PauseUpdateのものと同一
@@ -1041,7 +1042,7 @@ void Game::ClearUpdate()
 		if ( IS_TRG_DOWN ) { isDown = true; }
 
 		int lower = ( stageNumber == FileIO::GetMaxStageNumber() ) ? 1 : 0;
-		if ( ( 0		< choice		) && isUp && !isDown ) { choice -= 1; PlaySE( M_SELECT ); }
+		if ( ( lower	< choice		) && isUp && !isDown ) { choice -= 1; PlaySE( M_SELECT ); }
 		if ( ( choice	< MAX_MENU - 1	) && isDown && !isUp ) { choice += 1; PlaySE( M_SELECT ); }
 
 		/*	// 上下を繋げる
@@ -1051,7 +1052,7 @@ void Game::ClearUpdate()
 		}
 		*/
 
-		assert( 0 <= choice  && choice < MAX_MENU );
+		assert( lower <= choice  && choice < MAX_MENU );
 
 		if ( IS_TRG_EXPOSURE && nextState == State::Null )
 		{
@@ -1064,11 +1065,8 @@ void Game::ClearUpdate()
 					if ( state == State::Clear )
 					{
 						nextState = State::Game;
-						if ( stageNumber <= FileIO::GetMaxStageNumber() )
-						{
-							stageNumber++;
-						}
-						else
+
+						if ( FileIO::GetMaxStageNumber() <= stageNumber )
 						{
 							assert( !"Error : Next_Stage is Not Exists." );
 							exit( EXIT_FAILURE );
@@ -1441,6 +1439,15 @@ void Game::FadeDone()
 		assert( !"Error:SceneGame state error." );
 		exit( EXIT_FAILURE );
 		return;
+	}
+
+	// 「次のステージ」を選んだ場合
+	if ( isShowClearMenu && state == State::Clear && nextState == State::Game )
+	{
+		if ( choice == 0 &&  stageNumber < FileIO::GetMaxStageNumber() )
+		{
+			stageNumber++;
+		}
 	}
 
 	state = nextState;
