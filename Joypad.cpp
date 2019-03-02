@@ -7,9 +7,6 @@
 #include "Common.h"	// assert.hの読み込み, ToDegree定数, scast定数の使用
 #include "Joypad.h"
 
-const int	stickBorderLine		= 350;	// 0 ~ 1000, 「傾いている」と判断する境界値
-const int	triggerBorderLine	= 128;	// 0 ~ 255,  「トリガー入力している」と判断する境界値
-
 constexpr std::array<int, 4> INPUT_TYPES =
 {
 	DX_INPUT_PAD1, DX_INPUT_PAD2,
@@ -57,6 +54,9 @@ public:
 
 static std::vector<Joypad> pad;
 
+static int	stickBorderLine		= 350;	// 0 ~ 1000, 「傾いている」と判断する境界値
+static int	triggerBorderLine	= 128;	// 0 ~ 255,  「トリガー入力している」と判断する境界値
+
 /*
 // XInput
 static int	 keysX[ButtonXEnd];		// ボタンの入力状態
@@ -87,11 +87,7 @@ void JoypadInit()
 	}
 	// else
 
-	for (
-			int i = 0;
-			num && i < scast<int>( INPUT_TYPES.size() );
-			i++
-		)
+	for ( int i = 0; num && i < scast<int>( INPUT_TYPES.size() ); i++ )
 	{
 		if ( CheckJoypadXInput( INPUT_TYPES[i] ) )
 		{
@@ -114,22 +110,6 @@ void JoypadUninit()
 
 void JoypadUpdate()
 {
-	/* * * * * * * * * * * * * * * * *
-
-	いちおう
-	複数の接続に対応できるよう
-	inputX を配列としているが，
-	まだ対応するようには組んでいない。
-
-	もし対応するのなら，
-	keysX, sticksInputX, sticksFrameX
-	も配列（２次元）にし，
-	現在の処理をfor文で囲むとよいだろう。
-	また，その際
-	取得関数も忘れずに変更すること。
-
-	* * * * * * * * * * * * * * * * */
-
 	for ( int padIndex = 0; padIndex < scast<int>( pad.size() ); padIndex++ )
 	{
 		// XInput
@@ -360,137 +340,384 @@ void JoypadUpdate()
 		exit( EXIT_FAILURE );
 		return;
 	}
-
-	// TODO:DirectInputがとれたっぽいので，あとはラッパー関数と，古いものを削除するのと，などする
 }
 
 // XBox
-int GetJoypadButtonX		( JoypadButtonX button )
+int GetJoypadButtonX		( int padNum, JoypadButtonX button )
 {
+	assert( 0 <= padNum && padNum < scast<int>( pad.size() ) );
 	assert( 0 <= button && button < ButtonXEnd );
 
-	return pad.at( 0 ).pXInput->keys[button];
+	return pad.at( padNum ).pXInput->keys[button];
 }
-int GetJoypadStickInputX	( JoypadStickX stick, int borderLine )
-{
-	assert( 0 <= stick && stick < StickXEnd );
 
-	return ( pad.at( 0 ).pXInput->sticksInput[stick] <= -borderLine )
-		? -1
-		:	(
-				( borderLine <= pad.at( 0 ).pXInput->sticksInput[stick] )
-				? 1
-				: 0
-			);
-}
-int GetJoypadStickFrameX	( JoypadStickX stick )
+///<summary>
+/// 「Xboxコントローラの，スティックの倒しぐあい」を返す。<para></para>
+/// borderLine : 「傾いている」と判断する境界値<para></para>
+/// 戻り値 : <para></para>
+/// -1 : 上or左に倒している<para></para>
+///  0 : 倒していない<para></para>
+///  1 : 下or右に倒している
+///</summary>
+int GetJoypadStickInputX	( int padNum, JoypadStickX stick, int borderLine )
 {
-	assert( 0 <= stick && stick < StickXEnd );
+	assert( 0 <= padNum && padNum < scast<int>( pad.size() ) );
+	assert( 0 <= stick  && stick < StickXEnd );
 
-	return pad.at( 0 ).pXInput->sticksFrame[stick];
+	return ( pad.at( padNum ).pXInput->sticksInput[stick] <= -borderLine )
+			? -1
+			:	(
+					( borderLine <= pad.at( padNum ).pXInput->sticksInput[stick] )
+					? 1
+					: 0
+				);
 }
-int GetJoypadTriggerFrameX	( JoypadLRTriggerX trigger )
+
+///<summary>
+/// 「Xboxコントローラの，スティックを倒しているフレーム数」を返す。<para></para>
+/// 戻り値 : <para></para>
+/// ~-1 : 上or左に倒している<para></para>
+///  0  : 倒していない<para></para>
+///  1~ : 下or右に倒している
+///</summary>
+int GetJoypadStickFrameX	( int padNum, JoypadStickX stick )
 {
+	assert( 0 <= padNum && padNum < scast<int>( pad.size() ) );
+	assert( 0 <= stick  && stick < StickXEnd );
+
+	return pad.at( padNum ).pXInput->sticksFrame[stick];
+}
+
+///<summary>
+/// 「Xboxコントローラの，トリガーを入力しているフレーム数」を返す。<para></para>
+///</summary>
+int GetJoypadTriggerFrameX	( int padNum, JoypadLRTriggerX trigger )
+{
+	assert( 0 <= padNum  && padNum < scast<int>( pad.size() ) );
 	assert( 0 <= trigger && trigger < LRTriggerXEnd );
 
-	return pad.at( 0 ).pXInput->triggersFrame[trigger];
+	return pad.at( padNum ).pXInput->triggersFrame[trigger];
 }
-int GetJoypadStateX			( JoypadStateX state, int padNum )
+
+///<summary>
+/// Xboxコントローラの，ボタン以外の入力を返す。<para></para>
+///</summary>
+int GetJoypadStateX			( int padNum, JoypadStateX state )
 {
-	assert( 0 <= state && state < StateXEnd );
-	assert( 0 <= padNum && padNum < 4 );
+	assert( 0 <= padNum && padNum < scast<int>( pad.size() ) );
+	assert( 0 <= state  && state < StateXEnd );
 
 	switch ( state )
 	{
-	case XS_STICK_X_L: return pad.at( 0 ).pXInput->rowInput.ThumbLX;		//break;
-	case XS_STICK_Y_L: return pad.at( 0 ).pXInput->rowInput.ThumbLY;		//break;
-	case XS_STICK_X_R: return pad.at( 0 ).pXInput->rowInput.ThumbRX;		//break;
-	case XS_STICK_Y_R: return pad.at( 0 ).pXInput->rowInput.ThumbRY;		//break;
-	case XS_TRIGGER_L: return pad.at( 0 ).pXInput->rowInput.LeftTrigger;	//break;
-	case XS_TRIGGER_R: return pad.at( 0 ).pXInput->rowInput.RightTrigger;	//break;
+	case XS_STICK_X_L: return pad.at( padNum ).pXInput->rowInput.ThumbLX;		//break;
+	case XS_STICK_Y_L: return pad.at( padNum ).pXInput->rowInput.ThumbLY;		//break;
+	case XS_STICK_X_R: return pad.at( padNum ).pXInput->rowInput.ThumbRX;		//break;
+	case XS_STICK_Y_R: return pad.at( padNum ).pXInput->rowInput.ThumbRY;		//break;
+	case XS_TRIGGER_L: return pad.at( padNum ).pXInput->rowInput.LeftTrigger;	//break;
+	case XS_TRIGGER_R: return pad.at( padNum ).pXInput->rowInput.RightTrigger;	//break;
 	}
 
 	assert( !"エラー：GetJoypadStateX");
 	return NULL;
 }
-float GetJoypadStickAngleX	( JoypadLRStickX side )
-{
-	assert( 0 <= side || side < LRStickXEnd );
 
-	return pad.at( 0 ).pXInput->angle[side];
-}
-bool IsTiltJoypadStickX		( JoypadLRStickX side )
+/// <summary>
+/// 「スティックを傾けている角度」を返す。<para></para>
+/// 上を０度とし，時計まわりに増えていく
+/// </summary>
+float GetJoypadStickAngleX	( int padNum, JoypadLRStickX side )
 {
-	assert( side != LRStickXEnd );
+	assert( 0 <= padNum && padNum < scast<int>( pad.size() ) );
+	assert( 0 <= side   && side < LRStickXEnd );
+
+	return pad.at( padNum ).pXInput->angle[side];
+}
+
+/// <summary>
+/// 「スティックを倒しているかどうか」を返す。
+/// </summary>
+bool IsTiltJoypadStickX		( int padNum, JoypadLRStickX side )
+{
+	assert( 0 <= padNum && padNum < scast<int>( pad.size() ) );
+	assert( 0 <= side   && side < LRStickXEnd );
 
 	if ( side == X_RIGHT )
 	{
-		if ( GetJoypadStickFrameX( X_STICK_R_X ) ) { return true; }
-		if ( GetJoypadStickFrameX( X_STICK_R_Y ) ) { return true; }
+		if ( GetJoypadStickFrameX( padNum, X_STICK_R_X ) ) { return true; }
+		if ( GetJoypadStickFrameX( padNum, X_STICK_R_Y ) ) { return true; }
 		// else
 		return false;
 	}
 	// else
 
-	if ( GetJoypadStickFrameX( X_STICK_L_X ) ) { return true; }
-	if ( GetJoypadStickFrameX( X_STICK_L_Y ) ) { return true; }
+	if ( GetJoypadStickFrameX( padNum, X_STICK_L_X ) ) { return true; }
+	if ( GetJoypadStickFrameX( padNum, X_STICK_L_Y ) ) { return true; }
 	// else
 	return false;
 }
 
 // DirectInput
-int GetJoypadButtonD		( JoypadButtonD button )
+int GetJoypadButtonD		( int padNum, JoypadButtonD button )
 {
+	assert( 0 <= padNum && padNum < scast<int>( pad.size() ) );
 	assert( 0 <= button && button < ButtonDEnd );
 
-	return pad.at( 0 ).pDInput->keys[button];
+	return pad.at( padNum ).pDInput->keys[button];
 }
-int GetJoypadPOV_D			( JoypadPOV_D button )
+int GetJoypadPOV_D			( int padNum, JoypadPOV_D button )
 {
-	assert( 0 <= button || button <= JoypadPOVEnd );
+	assert( 0 <= padNum && padNum < scast<int>( pad.size() ) );
+	assert( 0 <= button && button <= JoypadPOVEnd );
 
-	return pad.at( 0 ).pDInput->keysPOV[button];
+	return pad.at( padNum ).pDInput->keysPOV[button];
 }
-int GetJoypadStickInputD	( JoypadStickD stick, int borderLine )
-{
-	assert( 0 <= stick && stick < StickDEnd );
 
-	return ( pad.at( 0 ).pDInput->sticksInput[stick] <= -borderLine )
+///<summary>
+/// 「スティックの倒しぐあい」を返す。<para></para>
+/// borderLine : 「傾いている」と判断する境界値<para></para>
+/// 戻り値 : <para></para>
+/// -1 : 上or左に倒している<para></para>
+///  0 : 倒していない<para></para>
+///  1 : 下or右に倒している
+///</summary>
+int GetJoypadStickInputD	( int padNum, JoypadStickD stick, int borderLine )
+{
+	assert( 0 <= padNum && padNum < scast<int>( pad.size() ) );
+	assert( 0 <= stick  && stick < StickDEnd );
+
+	return ( pad.at( padNum ).pDInput->sticksInput[stick] <= -borderLine )
 		? -1
 		:	(
-				( borderLine <= pad.at( 0 ).pDInput->sticksInput[stick] )
+				( borderLine <= pad.at( padNum ).pDInput->sticksInput[stick] )
 				? 1
 				: 0
 			);
 }
-int GetJoypadStickFrameD	( JoypadStickD stick )
-{
-	assert( 0 <= stick && stick < StickDEnd );
 
-	return pad.at( 0 ).pDInput->sticksFrame[stick];
+///<summary>
+/// 「スティックを倒しているフレーム数」を返す。<para></para>
+/// 戻り値 : <para></para>
+/// ~-1 : 上or左に倒している<para></para>
+///  0  : 倒していない<para></para>
+///  1~ : 下or右に倒している
+///</summary>
+int GetJoypadStickFrameD	( int padNum, JoypadStickD stick )
+{
+	assert( 0 <= padNum && padNum < scast<int>( pad.size() ) );
+	assert( 0 <= stick  && stick < StickDEnd );
+
+	return pad.at( padNum ).pDInput->sticksFrame[stick];
 
 }
-float GetJoypadStickAngleD	( JoypadLRStickD side )
-{
-	assert( 0 <= side || side < LRStickDEnd );
 
-	return pad.at( 0 ).pDInput->angle[side];
-}
-bool IsTiltJoypadStickD		( JoypadLRStickD side )
+/// <summary>
+/// 「スティックを傾けている角度」を返す。<para></para>
+/// 上を０度とし，時計まわりに増えていく
+/// </summary>
+float GetJoypadStickAngleD	( int padNum, JoypadLRStickD side )
 {
-	assert( side != LRStickDEnd );
+	assert( 0 <= padNum && padNum < scast<int>( pad.size() ) );
+	assert( 0 <= side   && side < LRStickDEnd );
+
+	return pad.at( padNum ).pDInput->angle[side];
+}
+
+/// <summary>
+/// 「スティックを倒しているかどうか」を返す。
+/// </summary>
+bool IsTiltJoypadStickD		( int padNum, JoypadLRStickD side )
+{
+	assert( 0 <= padNum && padNum < scast<int>( pad.size() ) );
+	assert( 0 <= side   && side < LRStickDEnd );
 
 	if ( side == D_RIGHT )
 	{
-		if ( GetJoypadStickFrameD( D_STICK_R_X ) ) { return true; }
-		if ( GetJoypadStickFrameD( D_STICK_R_Y ) ) { return true; }
+		if ( GetJoypadStickFrameD( padNum, D_STICK_R_X ) ) { return true; }
+		if ( GetJoypadStickFrameD( padNum, D_STICK_R_Y ) ) { return true; }
 		// else
 		return false;
 	}
 	// else
 
-	if ( GetJoypadStickFrameD( D_STICK_L_X ) ) { return true; }
-	if ( GetJoypadStickFrameD( D_STICK_L_Y ) ) { return true; }
+	if ( GetJoypadStickFrameD( padNum, D_STICK_L_X ) ) { return true; }
+	if ( GetJoypadStickFrameD( padNum, D_STICK_L_Y ) ) { return true; }
 	// else
 	return false;
+}
+
+
+Input operator | ( Input L, Input R )
+{
+	return static_cast<Input>( static_cast<int>( L ) | static_cast<int>( R ) );
+}
+Input operator & ( Input L, Input R )
+{
+	return static_cast<Input>( static_cast<int>( L ) & static_cast<int>( R ) );
+}
+
+bool IsConnectJoypad()
+{
+	if ( pad.empty() )
+	{
+		return false;
+	}
+	// elee
+
+	return true;
+}
+int  GetConnectedJoypadNum()
+{
+	return scast<int>( pad.size() );
+}
+int  GetJoypadButton( int padNum, Input input )
+{
+	if ( pad.empty() )
+	{
+		return 0;
+	}
+	// else
+
+	assert( 0 <= padNum && padNum < scast<int>( pad.size() ) );
+
+	// XInput
+	if ( pad.at( padNum ).pXInput )
+	{
+		// Button
+		{
+			JoypadButtonX button = ButtonXEnd;
+			switch ( input )
+			{
+			case Input::UP:			button = XB_UP;			break;
+			case Input::DOWN:		button = XB_DOWN;		break;
+			case Input::LEFT:		button = XB_LEFT;		break;
+			case Input::RIGHT:		button = XB_RIGHT;		break;
+			case Input::START:		button = XB_START;		break;
+			case Input::SELECT:		button = XB_SELECT;		break;
+			case Input::L1:			button = XB_L;			break;
+			case Input::R1:			button = XB_R;			break;
+			case Input::A:			button = XB_A;			break;
+			case Input::B:			button = XB_B;			break;
+			case Input::X:			button = XB_X;			break;
+			case Input::Y:			button = XB_Y;			break;
+			case Input::PRESS_L:	button = XB_PUSH_L;		break;
+			case Input::PRESS_R:	button = XB_PUSH_R;		break;
+			}
+			if ( button != ButtonXEnd )
+			{
+				return GetJoypadButtonX( padNum, button );
+			}
+		}
+		// else
+
+		// Stick
+		{
+			JoypadStickX stick = StickXEnd;
+			switch ( input )
+			{
+			case Input::STICK_LX: stick = X_STICK_L_X; break;
+			case Input::STICK_LY: stick = X_STICK_L_Y; break;
+			case Input::STICK_RX: stick = X_STICK_R_X; break;
+			case Input::STICK_RY: stick = X_STICK_R_Y; break;
+			}
+			if ( stick != StickXEnd )
+			{
+				return GetJoypadStickFrameX( padNum, stick );
+			}
+		}
+		// else
+
+		// Shoulder
+		{
+			JoypadLRTriggerX trigger = LRTriggerXEnd;
+			switch ( input )
+			{
+			case Input::L2: trigger = XT_LEFT;  break;
+			case Input::R2: trigger = XT_RIGHT; break;
+			}
+			if ( trigger != LRTriggerXEnd )
+			{
+				return GetJoypadTriggerFrameX( padNum, trigger );
+			}
+		}
+
+		assert( !"Error : input argument error." );
+		return NULL;
+	}
+	// else
+
+	// DInput
+	if ( pad.at( padNum ).pDInput )
+	{
+		// Button
+		{
+			JoypadButtonD button = ButtonDEnd;
+			switch ( input )
+			{
+			case Input::START:		button = DB_START;		break;
+			case Input::SELECT:		button = DB_SELECT;		break;
+			case Input::L1:			button = DB_L1;			break;
+			case Input::R1:			button = DB_R1;			break;
+			case Input::L2:			button = DB_L2;			break;
+			case Input::R2:			button = DB_R2;			break;
+			case Input::A:			button = DB_A;			break;
+			case Input::B:			button = DB_B;			break;
+			case Input::X:			button = DB_X;			break;
+			case Input::Y:			button = DB_Y;			break;
+			case Input::PRESS_L:	button = DB_PUSH_L;		break;
+			case Input::PRESS_R:	button = DB_PUSH_R;		break;
+			}
+			if ( button != ButtonDEnd )
+			{
+				return GetJoypadButtonD( padNum, button );
+			}
+		}
+		// else
+
+		// POV
+		{
+			JoypadPOV_D pov = JoypadPOVEnd;
+			switch ( input )
+			{
+			case Input::UP:		pov = POV_UP;		break;
+			case Input::DOWN:	pov = POV_DOWN;		break;
+			case Input::LEFT:	pov = POV_LEFT;		break;
+			case Input::RIGHT:	pov = POV_RIGHT;	break;
+			}
+			if ( input == ( Input::UP	| Input::RIGHT	) ) { pov = POV_RIGHT_UP;	}
+			if ( input == ( Input::DOWN	| Input::RIGHT	) ) { pov = POV_RIGHT_DOWN;	}
+			if ( input == ( Input::UP	| Input::LEFT	) ) { pov = POV_LEFT_UP;	}
+			if ( input == ( Input::DOWN	| Input::LEFT	) ) { pov = POV_LEFT_DOWN;	}
+
+			if ( pov != JoypadPOVEnd )
+			{
+				return GetJoypadPOV_D( padNum, pov );
+			}
+		}
+		// else
+
+		// Stick
+		{
+			JoypadStickD stick = StickDEnd;
+			switch ( input )
+			{
+			case Input::STICK_LX: stick = D_STICK_L_X; break;
+			case Input::STICK_LY: stick = D_STICK_L_Y; break;
+			case Input::STICK_RX: stick = D_STICK_R_X; break;
+			case Input::STICK_RY: stick = D_STICK_R_Y; break;
+			}
+			if ( stick != StickDEnd )
+			{
+				return GetJoypadStickFrameD( padNum, stick );
+			}
+		}
+		// else
+
+		assert( !"Error : input argument error." );
+		return NULL;
+	}
+	// else
+
+	assert( !"Error : Joypad type is not expected type." );
+	exit( EXIT_FAILURE );
+	return NULL;
 }

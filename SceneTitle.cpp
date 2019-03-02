@@ -191,7 +191,7 @@ void Title::MainUpdate()
 {
 
 	if	(
-		( TRG( KEY_INPUT_Z ) || TRG( KEY_INPUT_RETURN ) || TRG_J_X( XB_A ) )
+		( TRG( KEY_INPUT_Z ) || TRG( KEY_INPUT_RETURN ) || TRG_J( 0, Input::A ) )
 		&& isOpenFade && nextState != State::GotoGame
 		)
 	{
@@ -641,5 +641,15 @@ void Title::Draw()
 
 	SetDrawBlendMode( DX_BLENDGRAPHTYPE_NORMAL, 255 );
 
-
+	// Debug::Šm”F—p
+	if ( IsConnectJoypad() )
+	{
+		DrawExtendGraph
+		(
+			0, 0,
+			360, 360,
+			TitleImage::hHuman,
+			TRUE
+		);
+	}
 }

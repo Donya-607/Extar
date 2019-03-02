@@ -118,12 +118,11 @@ int WINAPI WinMain(	HINSTANCE	hCurInst/*インスタンスハンドル*/,	HINSTANCE	hPrevI
 #endif // USE_IMGUI
 
 		KeyboardUpdate();
+
+		if ( TRG( KEY_INPUT_ESCAPE ) ) { break; }
+		if ( TRG( KEY_INPUT_F5 ) ) { JoypadInit(); }
+
 		JoypadUpdate();
-		// エスケープキーで終了
-		if ( TRG( KEY_INPUT_ESCAPE ) )
-		{
-			break;
-		}
 
 		pManager->Update();
 

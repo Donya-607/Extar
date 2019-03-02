@@ -5,14 +5,14 @@ bool IsTriggerPauseButton()
 {
 #if USE_DIRECT_INPUT
 
-	if ( TRG_J_D( D_B_START ) || TRG_J_D( D_B_SELECT ) )
+	if ( TRG_J( 0, Input::START ) || TRG_J( 0, INput::SELECT ) )
 	{
 		return true;
 	}
 
 #else
 
-	if ( TRG_J_X( XB_START ) )
+	if ( TRG_J( 0, Input::START ) )
 	{
 		return true;
 	}

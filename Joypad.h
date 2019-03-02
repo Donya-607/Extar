@@ -9,48 +9,35 @@
 //
 //-----------------------
 
-// 「傾いている」と判断する境界値
-extern const int stickBorderLine;
-// 「トリガー入力している」と判断する境界値，0 ~ 255
-extern const int triggerBorderLine;
-
 // ボタンを押した瞬間かどうか
-// Xbox
-#define TRG_J_X( x )			( 1 == GetJoypadButtonX( x ) )
-#define TRG_J_STICK_X( x )		( 1 == GetJoypadStickFrameX( x ) )
-#define TRG_J_TRIGGER_X( x )	( 1 == GetJoypadTriggerFrameX( x ) )
-// DirectInput
-#define TRG_J_D( x )			( 1 == GetJoypadButtonD( x ) )
+#define TRG_J( padNum, input )		( 1 == GetJoypadButton( padNum, input ) )
 
 // ボタンを押しているかどうか
-// Xbox
-#define PRESS_J_X( x )			( GetJoypadButtonX( x ) )
-// DirectInput
-#define PRESS_J_D( x )			( GetJoypadButtonD( x ) )
+#define PRESS_J( padNum, input )	( GetJoypadButton( padNum, input ) )
 
 // スティックを倒した瞬間か
 // Xbox
-#define TRG_J_STICK_X_UP		( X_S_UP	== GetJoypadStickFrameX( X_STICK_L_Y ) )
-#define TRG_J_STICK_X_DOWN		( X_S_DOWN	== GetJoypadStickFrameX( X_STICK_L_Y ) )
-#define TRG_J_STICK_X_LEFT		( X_S_LEFT	== GetJoypadStickFrameX( X_STICK_L_X ) )
-#define TRG_J_STICK_X_RIGHT		( X_S_RIGHT	== GetJoypadStickFrameX( X_STICK_L_X ) )
+#define TRG_J_STICK_X_UP( padNum )			( X_S_UP	== GetJoypadButton( padNum, Input::STICK_LY ) )
+#define TRG_J_STICK_X_DOWN( padNum )		( X_S_DOWN	== GetJoypadButton( padNum, Input::STICK_LY ) )
+#define TRG_J_STICK_X_LEFT( padNum )		( X_S_LEFT	== GetJoypadButton( padNum, Input::STICK_LX ) )
+#define TRG_J_STICK_X_RIGHT( padNum )		( X_S_RIGHT	== GetJoypadButton( padNum, Input::STICK_LX ) )
 // DirectInput
-#define TRG_J_STICK_D_UP		( D_S_UP	== GetJoypadStickFrameD( D_STICK_L_Y ) )
-#define TRG_J_STICK_D_DOWN		( D_S_DOWN	== GetJoypadStickFrameD( D_STICK_L_Y ) )
-#define TRG_J_STICK_D_LEFT		( D_S_LEFT	== GetJoypadStickFrameD( D_STICK_L_X ) )
-#define TRG_J_STICK_D_RIGHT		( D_S_RIGHT	== GetJoypadStickFrameD( D_STICK_L_X ) )
+#define TRG_J_STICK_D_UP( padNum )			( D_S_UP	== GetJoypadButton( padNum, Input::STICK_LY ) )
+#define TRG_J_STICK_D_DOWN( padNum )		( D_S_DOWN	== GetJoypadButton( padNum, Input::STICK_LY ) )
+#define TRG_J_STICK_D_LEFT( padNum )		( D_S_LEFT	== GetJoypadButton( padNum, Input::STICK_LX ) )
+#define TRG_J_STICK_D_RIGHT( padNum )		( D_S_RIGHT	== GetJoypadButton( padNum, Input::STICK_LX ) )
 
 // スティックを倒しているか
 // Xbox
-#define TILT_STICK_X_UP			( X_S_UP	== GetJoypadStickInputX( X_STICK_L_Y ) )
-#define TILT_STICK_X_DOWN		( X_S_DOWN	== GetJoypadStickInputX( X_STICK_L_Y ) )
-#define TILT_STICK_X_LEFT		( X_S_LEFT	== GetJoypadStickInputX( X_STICK_L_X ) )
-#define TILT_STICK_X_RIGHT		( X_S_RIGHT	== GetJoypadStickInputX( X_STICK_L_X ) )
+#define TILT_STICK_X_UP( padNum )			( X_S_UP	== GetJoypadButton( padNum, Input::STICK_LY ) )
+#define TILT_STICK_X_DOWN( padNum )			( X_S_DOWN	== GetJoypadButton( padNum, Input::STICK_LY ) )
+#define TILT_STICK_X_LEFT( padNum )			( X_S_LEFT	== GetJoypadButton( padNum, Input::STICK_LX ) )
+#define TILT_STICK_X_RIGHT( padNum )		( X_S_RIGHT	== GetJoypadButton( padNum, Input::STICK_LX ) )
 // DirectInput
-#define TILT_STICK_D_UP			( D_S_UP	== GetJoypadStickInputD( D_STICK_L_Y ) )
-#define TILT_STICK_D_DOWN		( D_S_DOWN	== GetJoypadStickInputD( D_STICK_L_Y ) )
-#define TILT_STICK_D_LEFT		( D_S_LEFT	== GetJoypadStickInputD( D_STICK_L_X ) )
-#define TILT_STICK_D_RIGHT		( D_S_RIGHT	== GetJoypadStickInputD( D_STICK_L_X ) )
+#define TILT_STICK_D_UP( padNum )			( D_S_UP	== GetJoypadButton( padNum, Input::STICK_LY ) )
+#define TILT_STICK_D_DOWN( padNum )			( D_S_DOWN	== GetJoypadButton( padNum, Input::STICK_LY ) )
+#define TILT_STICK_D_LEFT( padNum )			( D_S_LEFT	== GetJoypadButton( padNum, Input::STICK_LX ) )
+#define TILT_STICK_D_RIGHT( padNum )		( D_S_RIGHT	== GetJoypadButton( padNum, Input::STICK_LX ) )
 
 // Xboxコントローラ
 enum JoypadButtonX
@@ -164,9 +151,42 @@ void JoypadUninit();
 
 void JoypadUpdate();
 
-// 分岐用関数
-int GetJoypadButton();
+enum class Input
+{
+	UP			= 1 << 0,
+	DOWN		= 1 << 1,
+	LEFT		= 1 << 2,
+	RIGHT		= 1 << 3,
 
+	START		= 1 << 4,
+	SELECT		= 1 << 5,
+
+	L1			= 1 << 6,	// LB
+	R1			= 1 << 7,	// RB
+	L2			= 1 << 8,	// LT
+	R2			= 1 << 9,	// RT
+
+	A			= 1 << 10,
+	B			= 1 << 11,
+	X			= 1 << 12,
+	Y			= 1 << 13,
+
+	STICK_LX	= 1 << 14,	// フレーム数を返す
+	STICK_LY	= 1 << 15,	// フレーム数を返す
+	STICK_RX	= 1 << 16,	// フレーム数を返す
+	STICK_RY	= 1 << 17,	// フレーム数を返す
+
+	PRESS_L		= 1 << 18,
+	PRESS_R		= 1 << 19,
+};
+Input operator | ( Input L, Input R );
+Input operator & ( Input L, Input R );
+
+bool IsConnectJoypad();
+int  GetConnectedJoypadNum();
+int  GetJoypadButton( int padNum, Input input );
+
+/*
 // XBox
 int GetJoypadButtonX		( JoypadButtonX button );
 
@@ -244,5 +264,7 @@ float GetJoypadStickAngleD	( JoypadLRStickD side );
 /// 「スティックを倒しているかどうか」を返す。
 /// </summary>
 bool IsTiltJoypadStickD		( JoypadLRStickD side );
+
+*/
 
 #endif //INCLUDED_JOYPAD_H_
