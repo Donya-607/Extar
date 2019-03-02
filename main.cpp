@@ -78,6 +78,8 @@ int WINAPI WinMain(	HINSTANCE	hCurInst/*インスタンスハンドル*/,	HINSTANCE	hPrevI
 
 	MusicInit();
 
+	JoypadInit();
+
 	FadeImage::Load();
 	Fade::GetInstance()->Init
 	(
@@ -145,6 +147,8 @@ int WINAPI WinMain(	HINSTANCE	hCurInst/*インスタンスハンドル*/,	HINSTANCE	hPrevI
 	ImGui_ImplDxLib_Shutdown();
 
 #endif // USE_IMGUI
+
+	JoypadUninit();
 
 	MusicUninit();
 

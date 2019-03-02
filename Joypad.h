@@ -52,14 +52,6 @@ extern const int triggerBorderLine;
 #define TILT_STICK_D_LEFT		( D_S_LEFT	== GetJoypadStickInputD( D_STICK_L_X ) )
 #define TILT_STICK_D_RIGHT		( D_S_RIGHT	== GetJoypadStickInputD( D_STICK_L_X ) )
 
-// コントローラの種類
-enum JoypadType
-{
-	T_Nothing = -1, 
-	T_XInput, 
-	T_DInput, 
-	JoypadTypeEnd
-};
 // Xboxコントローラ
 enum JoypadButtonX
 {
@@ -167,8 +159,9 @@ enum JoypadLRStickD
 	LRStickDEnd
 };
 
-// ループ用関数
-void JoipadInit();
+void JoypadInit();
+void JoypadUninit();
+
 void JoypadUpdate();
 
 // 分岐用関数
