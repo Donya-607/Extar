@@ -213,13 +213,12 @@ namespace StageSelect
 		return GetMaxRow() * GetMaxColumn();
 	}
 
-	static bool isGlowBack = false;
+	static bool isGlowBack  = false;
+	static bool isGlowLR[2] = { false, false };
 	void SetBackGlow( bool isGlow )
 	{
 		isGlowBack = isGlow;
 	}
-
-	static bool isGlowLR[2] = { false, false };
 	void SetLRGlow( bool isL, bool isGlow )
 	{
 		isGlowLR[( isL ) ? 0 : 1] = isGlow;

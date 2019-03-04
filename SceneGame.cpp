@@ -22,6 +22,9 @@
 
 #include "Fade.h"
 
+#undef min
+#undef max
+
 namespace TextBehavior
 {
 	// 文の数とフレームの数は揃えてください
@@ -2054,72 +2057,7 @@ void Game::GameDraw()
 	// セリフ
 	if ( 0 != textLength )
 	{
-		if ( nextState == State::Clear )	// クリア
-		{
-			int index = textNumber % scast<int>( TextBehavior::CLEAR_SAY.size() );
-			int length = textLength * 2/* 日本語で２バイト文字なので，倍にして対応 */;
-			if ( scast<int>( TextBehavior::CLEAR_SAY[index].size() ) <= textLength )
-			{
-				length = scast<int>( TextBehavior::CLEAR_SAY[index].size() );
-			}
-
-			constexpr int DIST_X = 80;
-			constexpr int DIST_Y = 52;
-
-			DrawExtendStringToHandle
-			(
-				HumanBehavior::BALLOON_POS_X + DIST_X,
-				HumanBehavior::BALLOON_POS_Y + DIST_Y,
-				2.0, 2.0,
-				( TextBehavior::CLEAR_SAY[index].substr( 0, length ) ).c_str(),
-				GetColor( 42, 97, 110 ),
-				hFont
-			);
-		}
-		else if ( stageNumber == 1 )	// チュートリアル
-		{
-			int index  = textNumber % scast<int>( TextBehavior::TUTORIAL.size() );
-			int length = textLength * 2/* 日本語で２バイト文字なので，倍にして対応 */;
-			if ( scast<int>( TextBehavior::TUTORIAL[index].size() ) <= textLength )
-			{
-				length = scast<int>( TextBehavior::TUTORIAL[index].size() );
-			}
-
-			constexpr int DIST_X = 80;
-			constexpr int DIST_Y = 52;
-
-			DrawExtendStringToHandle
-			(
-				HumanBehavior::BALLOON_POS_X + DIST_X,
-				HumanBehavior::BALLOON_POS_Y + DIST_Y,
-				2.0, 2.0,
-				( TextBehavior::TUTORIAL[index].substr( 0, length ) ).c_str(),
-				GetColor( 42, 97, 110 ),
-				hFont
-			);
-		}
-		else	// ランダム発言
-		{
-			int index  = textNumber % scast<int>( TextBehavior::RAND_SAY.size() );
-			int length = textLength * 2/* 日本語で２バイト文字なので，倍にして対応 */;
-			if ( scast<int>( TextBehavior::RAND_SAY[index].size() ) <= textLength )
-			{
-				length = scast<int>( TextBehavior::RAND_SAY[index].size() );
-			}
-
-			constexpr int DIST_X = 80;
-			constexpr int DIST_Y = 52;
-
-			DrawExtendStringToHandle
-			(
-				HumanBehavior::BALLOON_POS_X + DIST_X,
-				HumanBehavior::BALLOON_POS_Y + DIST_Y,
-				2.0, 2.0,
-				( TextBehavior::RAND_SAY[index].substr( 0, length ) ).c_str(),
-				GetColor( 42, 97, 110 ),
-				hFont
-			);
-		}
+		TextDraw();
 	}
 }
 
@@ -2465,6 +2403,189 @@ void Game::ClearDraw()
 		288,
 		ClearImage::GetStatementHandle( choice + 1, isFinalStage ),
 		TRUE
+	);
+}
+
+void Game::TextDraw()
+{
+	if ( nextState == State::Clear )	// クリア
+	{
+		int index = textNumber % scast<int>( TextBehavior::CLEAR_SAY.size() );
+		int length = textLength * 2/* 日本語で２バイト文字なので，倍にして対応 */;
+		if ( scast<int>( TextBehavior::CLEAR_SAY[index].size() ) <= textLength )
+		{
+			length = scast<int>( TextBehavior::CLEAR_SAY[index].size() );
+		}
+
+		constexpr int DIST_X = 80;
+		constexpr int DIST_Y = 52;
+
+		DrawExtendStringToHandle
+		(
+			HumanBehavior::BALLOON_POS_X + DIST_X,
+			HumanBehavior::BALLOON_POS_Y + DIST_Y,
+			2.0, 2.0,
+			( TextBehavior::CLEAR_SAY[index].substr( 0, length ) ).c_str(),
+			GetColor( 42, 97, 110 ),
+			hFont
+		);
+
+		return;
+	}
+	// else
+
+	if ( stageNumber == 1 )	// チュートリアル
+	{
+		int index = textNumber % scast<int>( TextBehavior::TUTORIAL.size() );
+		int length = textLength * 2/* 日本語で２バイト文字なので，倍にして対応 */;
+		if ( scast<int>( TextBehavior::TUTORIAL[index].size() ) <= textLength )
+		{
+			length = scast<int>( TextBehavior::TUTORIAL[index].size() );
+		}
+
+		constexpr int DIST_X	= 80;
+		constexpr int DIST_Y	= 52;
+		constexpr double MAGNI	= 2.0;
+
+		int emphasisPos = 0, i = 0;
+		for ( ; i < scast<int>( TextBehavior::EMPHASIS_STR.size() ); i++ )
+		{
+			emphasisPos = TextBehavior::TUTORIAL[index].find( TextBehavior::EMPHASIS_STR[i] );
+			if ( emphasisPos != std::string::npos )
+			{
+				break;
+			}
+		}
+
+		if ( i == scast<int>( TextBehavior::EMPHASIS_STR.size() ) )	// ループが終わったら，見つからなかったということになる
+		{
+			DrawExtendStringToHandle
+			(
+				HumanBehavior::BALLOON_POS_X + DIST_X,
+				HumanBehavior::BALLOON_POS_Y + DIST_Y,
+				MAGNI, MAGNI,
+				( TextBehavior::TUTORIAL[index].substr( 0, length ) ).c_str(),
+				GetColor( 42, 97, 110 ),
+				hFont
+			);
+
+			return;
+		}
+		// else
+
+		// HACK:文字列と色の違いを除けばほとんど同じ処理なので，ループ文にまとめられるかも？
+
+		if ( length <= 0 )
+		{
+			return;
+		}
+		// else
+
+		int charWidth = 0;
+		std::string text = "";
+
+		// 強調する文字列まで
+		text = TextBehavior::TUTORIAL[index].substr( 0, std::min( length, emphasisPos ) );
+
+		// Draw
+		{
+			DrawExtendStringToHandle
+			(
+				HumanBehavior::BALLOON_POS_X + DIST_X + charWidth,
+				HumanBehavior::BALLOON_POS_Y + DIST_Y,
+				MAGNI, MAGNI,
+				text.c_str(),
+				GetColor( 42, 97, 110 ),
+				hFont
+			);
+			charWidth += GetDrawExtendStringWidthToHandle
+			(
+				MAGNI,
+				text.c_str(),
+				text.size(),
+				hFont
+			);
+		}
+
+		length -= scast<int>( text.size() );
+
+		if ( length <= 0 )
+		{
+			return;
+		}
+		// else
+
+		// 強調文字列
+		text = TextBehavior::TUTORIAL[index].substr( emphasisPos, std::min( length, scast<int>( TextBehavior::EMPHASIS_STR[i].size() ) ) );
+
+		// Draw
+		{
+			DrawExtendStringToHandle
+			(
+				HumanBehavior::BALLOON_POS_X + DIST_X + charWidth,
+				HumanBehavior::BALLOON_POS_Y + DIST_Y,
+				MAGNI, MAGNI,
+				text.c_str(),
+				GetColor( 255, 0, 0 ),
+				hFont
+			);
+			charWidth += GetDrawExtendStringWidthToHandle
+			(
+				MAGNI,
+				text.c_str(),
+				text.size(),
+				hFont
+			);
+		}
+
+		length -= scast<int>( text.size() );
+
+		if ( length <= 0 )
+		{
+			return;
+		}
+		// else
+
+		// その後の文字列
+		text = TextBehavior::TUTORIAL[index].substr( emphasisPos + TextBehavior::EMPHASIS_STR[i].size(), length );
+
+		// Draw
+		{
+			DrawExtendStringToHandle
+			(
+				HumanBehavior::BALLOON_POS_X + DIST_X + charWidth,
+				HumanBehavior::BALLOON_POS_Y + DIST_Y,
+				MAGNI, MAGNI,
+				text.c_str(),
+				GetColor( 42, 97, 110 ),
+				hFont
+			);
+		}
+
+		return;
+	}
+	// else
+
+	// ランダム発言
+
+	int index = textNumber % scast<int>( TextBehavior::RAND_SAY.size() );
+	int length = textLength * 2/* 日本語で２バイト文字なので，倍にして対応 */;
+	if ( scast<int>( TextBehavior::RAND_SAY[index].size() ) <= textLength )
+	{
+		length = scast<int>( TextBehavior::RAND_SAY[index].size() );
+	}
+
+	constexpr int DIST_X = 80;
+	constexpr int DIST_Y = 52;
+
+	DrawExtendStringToHandle
+	(
+		HumanBehavior::BALLOON_POS_X + DIST_X,
+		HumanBehavior::BALLOON_POS_Y + DIST_Y,
+		2.0, 2.0,
+		( TextBehavior::RAND_SAY[index].substr( 0, length ) ).c_str(),
+		GetColor( 42, 97, 110 ),
+		hFont
 	);
 }
 

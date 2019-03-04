@@ -219,6 +219,8 @@ public:
 	void GameDraw();
 	void ClearDraw();
 
+	void TextDraw();
+
 	void PauseDraw();
 
 	void SelectDrawUI();
