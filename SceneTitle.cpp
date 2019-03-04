@@ -641,15 +641,5 @@ void Title::Draw()
 
 	SetDrawBlendMode( DX_BLENDGRAPHTYPE_NORMAL, 255 );
 
-	// Debug::Šm”F—p
-	if ( IsConnectJoypad() )
-	{
-		DrawExtendGraph
-		(
-			0, 0,
-			360, 360,
-			TitleImage::hHuman,
-			TRUE
-		);
-	}
+
 }

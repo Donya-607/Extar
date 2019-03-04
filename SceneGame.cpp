@@ -38,7 +38,7 @@ namespace TextBehavior
 	};
 	const std::vector<int> TUTORIAL_SHOW_FRAME =
 	{
-		240,
+		210,
 		180,
 		180,
 
