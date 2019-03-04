@@ -331,6 +331,8 @@ void Title::Draw()
 
 	}
 	SetDrawBlendMode( DX_BLENDGRAPHTYPE_NORMAL, 0 );
+
+
 	timer++;	// ŠÔ·‚ğì‚é‚½‚ß
 
 	//Human

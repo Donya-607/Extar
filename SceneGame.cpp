@@ -275,6 +275,38 @@ namespace ClearRelated
 	constexpr int GOTO_NEXT_WAIT	= 120;
 }
 
+namespace ShootingStar
+{
+	static int hShootingStar[2];
+
+	void Load()
+	{
+		// ‚·‚Å‚É’l‚ª“ü‚Á‚Ä‚¢‚½‚çC“Ç‚İ‚ñ‚¾‚à‚Ì‚Æ‚İ‚È‚µ‚Ä”ò‚Î‚·
+		if ( 0 != hShootingStar[0] )
+		{
+			return;
+		}
+		// else
+
+		hShootingStar[0] = LoadGraph( "./Data/Images/Title/TitleStar1.png" );
+		hShootingStar[1] = LoadGraph( "./Data/Images/Title/TitleStar2.png" );
+	}
+	void Release()
+	{
+		DeleteGraph( hShootingStar[0] );
+		DeleteGraph( hShootingStar[1] );
+		hShootingStar[0] = 0;
+		hShootingStar[1] = 0;
+	}
+
+	int  GetHandle( int index )
+	{
+		assert( 0 <= index && index <= 1 );
+
+		return hShootingStar[index];
+	}
+}
+
 namespace PauseImage
 {
 	constexpr int SIZE_X = 736;
@@ -529,6 +561,8 @@ void Game::Init()
 	PauseImage::Load();
 	HumanImage::Load();
 
+	ShootingStar::Load();
+
 	CameraImage::Load();
 	StarImage::Load();
 	StageImage::Load();
@@ -652,6 +686,8 @@ void Game::Uninit()
 	ClearImage::Release();
 	PauseImage::Release();
 	HumanImage::Release();
+
+	ShootingStar::Release();
 
 	CameraImage::Release();
 	StarImage::Release();
@@ -1135,6 +1171,11 @@ void Game::ClearUpdate()
 #endif // DEBUG_MODE
 
 	ShakeUpdate();
+}
+
+void Game::ShootingStarUpdate()
+{
+
 }
 
 void Game::BalloonUpdate()

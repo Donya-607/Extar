@@ -175,6 +175,8 @@ public:
 	void GameUpdate();
 	void ClearUpdate();
 
+	void ShootingStarUpdate();
+
 	void BalloonUpdate();
 
 	void FadeBegin();
