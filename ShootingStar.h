@@ -91,6 +91,7 @@ public:
 	~ShootingStarMng()
 	{
 		std::vector<ShootingStar>().swap( stars );
+		std::vector<VisionStar>().swap( visions );
 	}
 
 	void Init();

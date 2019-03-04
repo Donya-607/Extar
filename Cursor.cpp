@@ -162,14 +162,15 @@ namespace StageImage
 }
 namespace StageSelect
 {
-	const Vector2 LEFT_TOP_POS{ 128.0f, 144.0f };
-	// const Vector2 SIZE{ 512.0f, 378.0f };	// 展示時の数値
-	// const Vector2 SIZE{ 500.0f, 256.0f };	// 比率をそろえた数値
-	const Vector2 SIZE{ 512.0f, 320.0f };
-	// const Vector2 MARGIN{ 64.0f, 64.0f };	// 展示時の数値
+	// const Vector2 LEFT_TOP_POS{ 128.0f, 168.0f };// 展示時の数値
+	// const Vector2 SIZE{ 512.0f, 378.0f };		// 展示時の数値
+	// const Vector2 MARGIN{ 64.0f, 32.0f };		// 展示時の数値
+
+	const Vector2 LEFT_TOP_POS{ 99.0f, 208.0f };
+	const Vector2 SIZE{ 531.5f, 307.2f };			// 比率は揃っていないが，割とごまかせている数値
 	const Vector2 MARGIN{ 64.0f, 64.0f };
 
-	const Vector2 BACK_CENTER_POS{ 200.0f, 72.0f };
+	const Vector2 BACK_CENTER_POS{ 171.0f, 112.0f };
 	const Vector2 BACK_SIZE{ 96.0f, 96.0f };
 
 	static const int maxRow  = 3;

@@ -770,6 +770,7 @@ void Game::Update()
 		if ( TRG( KEY_INPUT_S ) )
 		{
 			pSSMng->GenerateStar( { scast<float>( x ), scast<float>( y ) } );
+			PlaySE( M_RECORD_STAR );
 		}
 	}
 
@@ -1822,6 +1823,13 @@ void Game::Draw()
 
 	if ( pSSMng )
 	{
+		int x, y;
+		GetMousePoint( &x, &y );
+		DrawCircle
+		(
+			x, y, 16, GetColor( 255, 255, 255 )
+		);
+
 		pSSMng->Draw( shake );
 	}
 

@@ -44,26 +44,20 @@ void VisionStar::Uninit()
 void VisionStar::Update()
 {
 	timer++;
+	angle += 5;
 }
 
 void VisionStar::Draw( Vector2 shake ) const
 {
-	// SetDrawBlendMode( DX_BLENDMODE_NOBLEND, 255 );
+	constexpr int AMPL = 10;
+	SetDrawBlendMode( DX_BLENDMODE_ALPHA, 255 - ( timer * AMPL ) );
+
+	constexpr double SHRINK = 0.03;
 	DrawRotaGraph
 	(
 		scast<int>( pos.x ),
 		scast<int>( pos.y ),
-		1.0,
-		ToRadian( angle ),
-		handle,
-		TRUE
-	);
-	SetDrawBlendMode( DX_BLENDMODE_ADD, 255 - timer );
-	DrawRotaGraph
-	(
-		scast<int>( pos.x ),
-		scast<int>( pos.y ),
-		1.0,
+		1.0 - ( scast<double>( timer ) * SHRINK ),
 		ToRadian( angle ),
 		handle,
 		TRUE
@@ -73,7 +67,7 @@ void VisionStar::Draw( Vector2 shake ) const
 
 bool VisionStar::IsDisappear() const
 {
-	constexpr int EXIST_TIME = 30;
+	constexpr int EXIST_TIME = 20;
 
 	return ( EXIST_TIME <= timer ) ? true : false;
 }
@@ -84,7 +78,7 @@ void ShootingStar::Init( Vector2 centerPos )
 {
 	pos = centerPos;
 
-	constexpr float SPD = 10.0f;
+	constexpr float SPD = 30.0f;
 	velo.x = -SPD;
 	velo.y = SPD;
 }
@@ -103,7 +97,6 @@ void ShootingStar::Update()
 
 void ShootingStar::Draw( Vector2 shake ) const
 {
-	// SetDrawBlendMode( DX_BLENDMODE_NOBLEND, 255 );
 	DrawRotaGraph
 	(
 		scast<int>( pos.x ),
@@ -113,28 +106,18 @@ void ShootingStar::Draw( Vector2 shake ) const
 		ShootingStarImage::GetHandle(),
 		TRUE
 	);
-	SetDrawBlendMode( DX_BLENDMODE_ADD, 255 - timer );
-	DrawRotaGraph
-	(
-		scast<int>( pos.x ),
-		scast<int>( pos.y ),
-		1.0,
-		ToRadian( angle ),
-		ShootingStarImage::GetHandle(),
-		TRUE
-	);
-	SetDrawBlendMode( DX_BLENDMODE_NOBLEND, 255 );
 }
 
 bool ShootingStar::IsRequestingGenerateVision() const
 {
-	constexpr int GENERATE_INTERVAL = 2;
-	return ( ( timer % GENERATE_INTERVAL ) == 1 ) ? true : false;
+	return true;
+	// constexpr int GENERATE_INTERVAL = 2;
+	// return ( ( timer % GENERATE_INTERVAL ) == 1 ) ? true : false;
 }
 
 bool ShootingStar::IsDisappear() const
 {
-	constexpr int EXIST_TIME = 30;
+	constexpr int EXIST_TIME = 50;
 
 	return ( EXIST_TIME <= timer ) ? true : false;
 }
