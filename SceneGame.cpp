@@ -316,6 +316,7 @@ namespace PauseImage
 
 	// 0:All, 1:ToGame, 2:Retry, 3:ToSelect, 4:ToTitle
 	static int hPauseStatements[NUM_ROW];
+	static int hPause;
 
 	void Load()
 	{
@@ -334,6 +335,8 @@ namespace PauseImage
 			SIZE_X, SIZE_Y,
 			hPauseStatements
 		);
+
+		hPause = LoadGraph( "./Data/Images/Pause/Pause.png" );
 	}
 	void Release()
 	{
@@ -342,13 +345,20 @@ namespace PauseImage
 			DeleteGraph( hPauseStatements[i] );
 			hPauseStatements[i] = 0;
 		}
+
+		DeleteGraph( hPause );
+		hPause = 0;
 	}
 
-	int  GetHandle( int index )
+	int  GetMenuHandle( int index )
 	{
 		assert( 0 <= index && index <= NUM_ROW );
 
 		return hPauseStatements[index];
+	}
+	int  GetHandle()
+	{
+		return hPause;
 	}
 }
 
@@ -619,17 +629,19 @@ void Game::GameInit()
 	pNumMoves.reset( new NumMoves() );
 	pNumMoves->Init( stageNumber );
 
-	numMoves = 0;
-	choice = 0;
+	numMoves	= 0;
+	pauseTimer	= 0;
+	choice		= 0;
 
-	mouthIndex = 0;
-	balloonLength = 0;
-	textTimer = 0;
-	textLength = 0;
+	mouthIndex		= 0;
+	balloonLength	= 0;
+	textTimer		= 0;
+	textLength		= 0;
 	textExtendInterval = 0;
-	textNumber = 0;
+	textNumber		= 0;
 
-	armPos = { 0, scast<float>( ( SCREEN_HEIGHT - HumanImage::SIZE_Y ) + HumanBehavior::HAND_LET_DOWN_PLUS_Y ) };
+	armPos		= { 0, scast<float>( ( SCREEN_HEIGHT - HumanImage::SIZE_Y ) + HumanBehavior::HAND_LET_DOWN_PLUS_Y ) };
+	pausePos	= { 704.0f, 64.0f };
 
 	isOpenBalloon = true;
 	isDoneMoveArm = false;
@@ -953,6 +965,8 @@ void Game::GameUpdate()
 		pNumMoves->Update();
 	}
 
+	ShootingStarUpdate();
+
 	BalloonUpdate();
 
 #if DEBUG_MODE
@@ -1175,7 +1189,14 @@ void Game::ClearUpdate()
 
 void Game::ShootingStarUpdate()
 {
+	constexpr int AMOUNT = 5;
+	sStarTimer += ( sStarState == 0 ) ? AMOUNT : -AMOUNT;
 
+	constexpr int FLASH_INTERVAL = 120;
+	if ( sStarTimer < 0 || FLASH_INTERVAL <= sStarTimer )
+	{
+		sStarState = ( sStarState == 0 ) ? 1 : 0;
+	}
 }
 
 void Game::BalloonUpdate()
@@ -1628,6 +1649,14 @@ bool Game::IsInputPauseButton()
 }
 void Game::PauseUpdate()
 {
+	// ポーズ文字
+	{
+		constexpr int INTERVAL	= 120;
+		constexpr float AMPL	= 0.6f;
+		pauseTimer++;
+		pausePos.y += sinf( ( PI / INTERVAL ) * pauseTimer ) * AMPL;
+	}
+
 	// choice は 0 始まりである
 
 	constexpr int MAX_MENU = 4;
@@ -1842,6 +1871,43 @@ void Game::GameDraw()
 			0, 0,
 			GameImage::hFrameUI,
 			TRUE
+		);
+	}
+
+	// 流れ星
+	{
+		SetDrawArea
+		(
+			0, 0,
+			FRAME_POS_X,
+			SCREEN_HEIGHT
+		);
+
+		constexpr int POS_X = 0;
+		constexpr int POS_Y = 200;
+
+		constexpr int ENHANCE = 50;
+		SetDrawBlendMode( DX_BLENDMODE_ALPHA, sStarTimer + ENHANCE );
+		DrawGraph
+		(
+			POS_X, POS_Y,
+			ShootingStar::GetHandle( 0 ),
+			TRUE
+		);
+		SetDrawBlendMode( DX_BLENDMODE_ALPHA, 255 - ( sStarTimer + ENHANCE ) );
+		DrawGraph
+		(
+			POS_X, POS_Y,
+			ShootingStar::GetHandle( 1 ),
+			TRUE
+		);
+		SetDrawBlendMode( DX_BLENDMODE_NOBLEND, 255 );
+
+		SetDrawArea
+		(
+			0, 0,
+			SCREEN_WIDTH,
+			SCREEN_HEIGHT
 		);
 	}
 
@@ -2381,12 +2447,21 @@ void Game::PauseDraw()
 	);
 	*/
 
+	// ポーズ
+	DrawGraph
+	(
+		scast<int>( pausePos.x ),
+		scast<int>( pausePos.y ),
+		PauseImage::GetHandle(),
+		TRUE
+	);
+
 	// 項目
 	DrawGraph
 	(
 		608,
 		288,
-		PauseImage::GetHandle( 0 ),
+		PauseImage::GetMenuHandle( 0 ),
 		TRUE
 	);
 	// 強調
@@ -2394,7 +2469,7 @@ void Game::PauseDraw()
 	(
 		608,
 		288,
-		PauseImage::GetHandle( choice + 1 ),
+		PauseImage::GetMenuHandle( choice + 1 ),
 		TRUE
 	);
 }

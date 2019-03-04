@@ -174,7 +174,7 @@ void Title::Update()
 #if DEBUG_MODE
 
 	if	(
-		( TRG( KEY_INPUT_Z ) || TRG( KEY_INPUT_RETURN ) || TRG_J_X( XB_A ) )
+		( TRG( KEY_INPUT_Z ) || TRG( KEY_INPUT_RETURN ) || TRG_J( 0, Input::A ) )
 		&& isOpenFade && nextState != State::GotoGame
 		)
 	{

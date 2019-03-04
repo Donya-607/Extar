@@ -61,6 +61,10 @@ private:
 	int  stageNumber;	// 1始まり
 	int  numMoves;		// 今の手数，0始まり，アンドゥで減る
 
+	int  sStarState;	// 0:明るく, 1:暗く
+	int  sStarTimer;
+
+	int  pauseTimer;
 	int  choice;		// 0始まり, ポーズとリザルトを兼ねている
 
 	int  clearTimer;
@@ -80,6 +84,8 @@ private:
 	State nextState;
 
 	Vector2 armPos;		// LeftTop
+
+	Vector2 pausePos;	// LeftTop;
 
 	std::unique_ptr<Cursor>   pCursor;
 
@@ -121,6 +127,8 @@ private:	// 他ＰＧによる作業
 public:
 	Game( SceneMng *pMng ) : Scene( pMng ),
 		stageNumber( 1 ), numMoves( 0 ),
+		sStarState( 0 ), sStarTimer( 0 ),
+		pauseTimer( 0 ),
 		choice( 0 ),
 		clearTimer( 0 ),
 		hScreenShot( 0 ), hFont( 0 ),
@@ -131,6 +139,7 @@ public:
 		gotoNextPosX( SCREEN_WIDTH ),
 		state( State::Select ), nextState( State::Null ),
 		armPos( { scast<float>( SCREEN_WIDTH ), scast<float>( SCREEN_HEIGHT ) } ),
+		pausePos(),
 		pCursor( nullptr ),
 		pCamera( nullptr ), pStarMng( nullptr ), pNumMoves( nullptr ),
 		pBoard( nullptr ), recordStars(),
