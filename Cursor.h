@@ -86,6 +86,10 @@ public:
 
 	void Draw( Vector2 shake ) const;
 public:
+	void SetNowStagenumber( int number )
+	{
+		nowStageNumber = number;
+	}
 	int  GetNowStageNumber() const
 	{
 		return nowStageNumber;

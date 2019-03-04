@@ -610,6 +610,7 @@ void Game::SelectInit()
 	numMoves = 0;
 
 	pCursor.reset( new Cursor() );
+	pCursor->SetNowStagenumber( stageNumber );
 	pCursor->Init();
 }
 void Game::GameInit()

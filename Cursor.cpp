@@ -163,8 +163,11 @@ namespace StageImage
 namespace StageSelect
 {
 	const Vector2 LEFT_TOP_POS{ 128.0f, 144.0f };
-	const Vector2 SIZE{ 512.0f, 378.0f };
-	const Vector2 MARGIN{ 64.0f, 32.0f };
+	// const Vector2 SIZE{ 512.0f, 378.0f };	// ìWé¶éûÇÃêîíl
+	// const Vector2 SIZE{ 500.0f, 256.0f };	// î‰ó¶ÇÇªÇÎÇ¶ÇΩêîíl
+	const Vector2 SIZE{ 512.0f, 320.0f };
+	// const Vector2 MARGIN{ 64.0f, 64.0f };	// ìWé¶éûÇÃêîíl
+	const Vector2 MARGIN{ 64.0f, 64.0f };
 
 	const Vector2 BACK_CENTER_POS{ 200.0f, 72.0f };
 	const Vector2 BACK_SIZE{ 96.0f, 96.0f };
@@ -404,7 +407,10 @@ namespace StageSelect
 
 void Cursor::Init()
 {
-	pos = StageSelect::GetPosLeftTop();
+	int row = ( ( nowStageNumber - 1 ) % StageSelect::GetMaxDisplayNumber() ) % StageSelect::GetMaxRow();
+	int clum = ( ( nowStageNumber - 1 ) % StageSelect::GetMaxDisplayNumber() ) / StageSelect::GetMaxRow();
+	pos.x = StageSelect::GetPosLeftTop().x + ( row  * ( StageSelect::GetSize().x + StageSelect::GetMargin().x ) );
+	pos.y = StageSelect::GetPosLeftTop().y + ( clum * ( StageSelect::GetSize().y + StageSelect::GetMargin().y ) );
 }
 void Cursor::Uninit()
 {
