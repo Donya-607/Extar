@@ -48,6 +48,7 @@ void VisionStar::Update()
 
 void VisionStar::Draw( Vector2 shake ) const
 {
+	// SetDrawBlendMode( DX_BLENDMODE_NOBLEND, 255 );
 	DrawRotaGraph
 	(
 		scast<int>( pos.x ),
@@ -57,6 +58,17 @@ void VisionStar::Draw( Vector2 shake ) const
 		handle,
 		TRUE
 	);
+	SetDrawBlendMode( DX_BLENDMODE_ADD, 255 - timer );
+	DrawRotaGraph
+	(
+		scast<int>( pos.x ),
+		scast<int>( pos.y ),
+		1.0,
+		ToRadian( angle ),
+		handle,
+		TRUE
+	);
+	SetDrawBlendMode( DX_BLENDMODE_NOBLEND, 255 );
 }
 
 bool VisionStar::IsDisappear() const
@@ -91,6 +103,7 @@ void ShootingStar::Update()
 
 void ShootingStar::Draw( Vector2 shake ) const
 {
+	// SetDrawBlendMode( DX_BLENDMODE_NOBLEND, 255 );
 	DrawRotaGraph
 	(
 		scast<int>( pos.x ),
@@ -100,6 +113,17 @@ void ShootingStar::Draw( Vector2 shake ) const
 		ShootingStarImage::GetHandle(),
 		TRUE
 	);
+	SetDrawBlendMode( DX_BLENDMODE_ADD, 255 - timer );
+	DrawRotaGraph
+	(
+		scast<int>( pos.x ),
+		scast<int>( pos.y ),
+		1.0,
+		ToRadian( angle ),
+		ShootingStarImage::GetHandle(),
+		TRUE
+	);
+	SetDrawBlendMode( DX_BLENDMODE_NOBLEND, 255 );
 }
 
 bool ShootingStar::IsRequestingGenerateVision() const
@@ -180,6 +204,7 @@ void ShootingStarMng::Draw( Vector2 shake ) const
 	{
 		it.Draw( shake );
 	}
+
 	for ( const ShootingStar &it : stars )
 	{
 		it.Draw( shake );

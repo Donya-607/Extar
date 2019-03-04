@@ -1,5 +1,5 @@
-#ifndef INCLUDED_STAR_H_
-#define INCLUDED_STAR_H_
+#ifndef INCLUDED_SHOOTING_STAR_H_
+#define INCLUDED_SHOOTING_STAR_H_
 
 #include <vector>
 
@@ -113,4 +113,4 @@ public:
 #endif // USE_IMGUI
 };
 
-#endif //INCLUDED_STAR_H_
+#endif //INCLUDED_SHOOTING_STAR_H_

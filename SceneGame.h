@@ -14,6 +14,8 @@
 
 #include "Board.h"
 
+#include "ShootingStar.h"
+
 //--------------------
 //
 //		Game.h
@@ -87,6 +89,8 @@ private:
 
 	Vector2 pausePos;	// LeftTop;
 
+	std::unique_ptr<ShootingStarMng> pSSMng;
+
 	std::unique_ptr<Cursor>   pCursor;
 
 	std::unique_ptr<Camera>   pCamera;
@@ -140,6 +144,7 @@ public:
 		state( State::Select ), nextState( State::Null ),
 		armPos( { scast<float>( SCREEN_WIDTH ), scast<float>( SCREEN_HEIGHT ) } ),
 		pausePos(),
+		pSSMng( nullptr ),
 		pCursor( nullptr ),
 		pCamera( nullptr ), pStarMng( nullptr ), pNumMoves( nullptr ),
 		pBoard( nullptr ), recordStars(),

@@ -275,7 +275,7 @@ namespace ClearRelated
 	constexpr int GOTO_NEXT_WAIT	= 120;
 }
 
-namespace ShootingStar
+namespace MilkyWayImage
 {
 	static int hShootingStar[2];
 
@@ -571,7 +571,8 @@ void Game::Init()
 	PauseImage::Load();
 	HumanImage::Load();
 
-	ShootingStar::Load();
+	MilkyWayImage::Load();
+	ShootingStarImage::Load();
 
 	CameraImage::Load();
 	StarImage::Load();
@@ -586,6 +587,9 @@ void Game::Init()
 		-1,				// 太さ（-1：デフォルト）
 		DX_FONTTYPE_NORMAL
 	);
+
+	pSSMng.reset( new ShootingStarMng() );
+	pSSMng->Init();
 
 	switch ( state )
 	{
@@ -700,7 +704,8 @@ void Game::Uninit()
 	PauseImage::Release();
 	HumanImage::Release();
 
-	ShootingStar::Release();
+	MilkyWayImage::Release();
+	ShootingStarImage::Release();
 
 	CameraImage::Release();
 	StarImage::Release();
@@ -709,6 +714,8 @@ void Game::Uninit()
 	BoardImage::Release();
 
 	DeleteFontToHandle( hFont );
+
+	if ( pSSMng ) { pSSMng->Uninit(); }
 
 	Grid::SetSize( { 0, 0 } );
 
@@ -752,6 +759,18 @@ void Game::Update()
 	{
 		// もはや当たり判定表示はいらない
 		// isDrawCollision = !isDrawCollision;
+	}
+
+	// 流れ星を出す
+	if ( pSSMng )
+	{
+		int x, y;
+		GetMousePoint( &x, &y );
+
+		if ( TRG( KEY_INPUT_S ) )
+		{
+			pSSMng->GenerateStar( { scast<float>( x ), scast<float>( y ) } );
+		}
 	}
 
 #endif // DEBUG_MODE
@@ -798,6 +817,10 @@ void Game::Update()
 		return;
 	}
 
+	if ( pSSMng )
+	{
+		pSSMng->Update();
+	}
 
 	// シャッター演出
 	{
@@ -1797,6 +1820,11 @@ void Game::Draw()
 		return;
 	}
 
+	if ( pSSMng )
+	{
+		pSSMng->Draw( shake );
+	}
+
 	if ( isPause )
 	{
 		SetDrawBright( 255, 255, 255 );
@@ -1892,14 +1920,14 @@ void Game::GameDraw()
 		DrawGraph
 		(
 			POS_X, POS_Y,
-			ShootingStar::GetHandle( 0 ),
+			MilkyWayImage::GetHandle( 0 ),
 			TRUE
 		);
 		SetDrawBlendMode( DX_BLENDMODE_ALPHA, 255 - ( sStarTimer + ENHANCE ) );
 		DrawGraph
 		(
 			POS_X, POS_Y,
-			ShootingStar::GetHandle( 1 ),
+			MilkyWayImage::GetHandle( 1 ),
 			TRUE
 		);
 		SetDrawBlendMode( DX_BLENDMODE_NOBLEND, 255 );
