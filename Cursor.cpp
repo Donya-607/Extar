@@ -166,11 +166,12 @@ namespace StageSelect
 	// const Vector2 SIZE{ 512.0f, 378.0f };		// 展示時の数値
 	// const Vector2 MARGIN{ 64.0f, 32.0f };		// 展示時の数値
 
-	const Vector2 LEFT_TOP_POS{ 99.0f, 208.0f };
+	// const Vector2 LEFT_TOP_POS{ 99.0f, 204.0f };
+	const Vector2 LEFT_TOP_POS{ 115.0f, 204.0f };
 	const Vector2 SIZE{ 531.5f, 307.2f };			// 比率は揃っていないが，割とごまかせている数値
-	const Vector2 MARGIN{ 64.0f, 64.0f };
+	const Vector2 MARGIN{ 48.0f, 64.0f };
 
-	const Vector2 BACK_CENTER_POS{ 171.0f, 112.0f };
+	const Vector2 BACK_CENTER_POS{ 187.0f, 112.0f };
 	const Vector2 BACK_SIZE{ 96.0f, 96.0f };
 
 	static const int maxRow  = 3;
@@ -378,10 +379,12 @@ namespace StageSelect
 
 			// L
 			{
+				int tweakX = -8;
+
 				double scale = ( isGlowLR[0] ) ? 1.5 : 1.0;
 				DrawRotaGraph
 				(
-					baseX,
+					baseX + tweakX,
 					baseY,
 					scale,
 					ToRadian( 0 ),
@@ -391,10 +394,12 @@ namespace StageSelect
 			}
 			// R
 			{
+				int tweakX = 8;
+
 				double scale = ( isGlowLR[1] ) ? 1.5 : 1.0;
 				DrawRotaGraph
 				(
-					SCREEN_WIDTH - baseX,
+					SCREEN_WIDTH - baseX + tweakX,
 					baseY,
 					scale,
 					ToRadian( 0 ),
