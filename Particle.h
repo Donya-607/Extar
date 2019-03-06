@@ -20,20 +20,24 @@ namespace ParticleImage
 class Particle
 {
 private:
-	int		timer;
+	int		type;	// 0 ~ ParticleImage::TYPES
+
 	float	angle;	// Degree, ClockWise
+	float	alpha;	// 0.0 ~ 1.0f
+	float	scale;	// 0.0 ~ 1.0f
 
 	Vector2	pos;	// Center
 	Vector2 velo;	// Velocity
+	Vector2 destPos;
 public:
 	Particle() :
-		timer( 0 ),
-		angle( 0 ),
-		pos(), velo()
+		type( 0 ),
+		angle( 0 ), alpha( 1.0f ), scale( 1.0f ),
+		pos(), velo(), destPos()
 	{}
 	~Particle() {}
 
-	void Init( Vector2 centerPos );
+	void Init( Vector2 centerPos, Vector2 velocity );
 	void Uninit();
 
 	void Update();
@@ -45,12 +49,12 @@ public:
 class ParticleMng
 {
 private:
-	std::vector<Particle> stars;
+	std::vector<Particle> particles;
 public:
-	ParticleMng() : stars() {}
+	ParticleMng() : particles() {}
 	~ParticleMng()
 	{
-		std::vector<Particle>().swap( stars );
+		std::vector<Particle>().swap( particles );
 	}
 
 	void Init();
@@ -60,11 +64,11 @@ public:
 
 	void Draw( Vector2 shake ) const;
 public:
-	void Generate( Vector2 centerPos );
+	void Generate( int num, Vector2 centerPos );
 public:
 	int  GetArraySize() const
 	{
-		return scast<int>( stars.size() );
+		return scast<int>( particles.size() );
 	}
 };
 

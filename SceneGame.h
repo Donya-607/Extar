@@ -7,6 +7,8 @@
 #include "Scene.h"
 #include "SceneManager.h"
 
+#include "Particle.h"
+
 #include "Camera.h"
 #include "Star.h"
 #include "NumMoves.h"
@@ -94,6 +96,7 @@ private:
 	Vector2 pausePos;	// LeftTop
 
 	std::unique_ptr<ShootingStarMng> pSSMng;
+	std::unique_ptr<ParticleMng> pParticleMng;
 
 	std::unique_ptr<Cursor>   pCursor;
 
@@ -150,7 +153,7 @@ public:
 		selectPos(),
 		armPos( { scast<float>( SCREEN_WIDTH ), scast<float>( SCREEN_HEIGHT ) } ),
 		pausePos(),
-		pSSMng( nullptr ),
+		pSSMng( nullptr ), pParticleMng( nullptr ),
 		pCursor( nullptr ),
 		pCamera( nullptr ), pStarMng( nullptr ), pNumMoves( nullptr ),
 		pBoard( nullptr ), recordStars(),

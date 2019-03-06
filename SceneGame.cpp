@@ -25,6 +25,11 @@
 #undef min
 #undef max
 
+namespace
+{
+	constexpr int PARTICLE_AMOUNT = 6;
+}
+
 namespace TextBehavior
 {
 	// 文の数とフレームの数は揃えてください
@@ -576,6 +581,8 @@ void Game::Init()
 
 	Number::Load();
 
+	ParticleImage::Load();
+
 	SelectImage::Load();
 	GameImage::Load();
 	ClearImage::Load();
@@ -601,6 +608,9 @@ void Game::Init()
 
 	pSSMng.reset( new ShootingStarMng() );
 	pSSMng->Init();
+
+	pParticleMng.reset( new ParticleMng() );
+	pParticleMng->Init();
 
 	switch ( state )
 	{
@@ -712,6 +722,8 @@ void Game::Uninit()
 
 	Number::Release();
 
+	ParticleImage::Release();
+
 	SelectImage::Release();
 	GameImage::Release();
 	ClearImage::Release();
@@ -730,6 +742,7 @@ void Game::Uninit()
 	DeleteFontToHandle( hFont );
 
 	if ( pSSMng ) { pSSMng->Uninit(); }
+	if ( pParticleMng ) { pParticleMng->Uninit(); }
 
 	Grid::SetSize( { 0, 0 } );
 
@@ -849,6 +862,11 @@ void Game::Update()
 		}
 
 		pSSMng->Update();
+	}
+
+	if ( pParticleMng )
+	{
+		pParticleMng->Update();
 	}
 
 	// シャッター演出
@@ -1128,6 +1146,11 @@ void Game::ClearUpdate()
 
 			if ( isGlow )
 			{
+				if ( pParticleMng )
+				{
+					pParticleMng->Generate( PARTICLE_AMOUNT, base );
+				}
+
 				PlaySE( M_RECORD_STAR );
 			}
 			else
@@ -1652,6 +1675,11 @@ bool Game::Exposure()
 			if ( IsInsideStarFourCorners( camera, star ) )
 			{
 				targets.push_back( i );
+				
+				if ( pParticleMng )
+				{
+					pParticleMng->Generate( PARTICLE_AMOUNT, { star.cx, star.cy } );
+				}
 			}
 			else
 			{
@@ -1901,6 +1929,11 @@ void Game::SelectDraw()
 		pSSMng->Draw( shake );
 	}
 
+	if ( pParticleMng )
+	{
+		pParticleMng->Draw( shake );
+	}
+
 	// 文字
 	{
 		// セレクト
@@ -2007,6 +2040,11 @@ void Game::GameDraw()
 	if ( pSSMng )
 	{
 		pSSMng->Draw( shake );
+	}
+
+	if ( pParticleMng )
+	{
+		pParticleMng->Draw( shake );
 	}
 
 	if ( pStarMng )
@@ -2464,6 +2502,11 @@ void Game::ClearDraw()
 	for ( const RecordStar &it : recordStars )
 	{
 		it.Draw( shake );
+	}
+
+	if ( pParticleMng )
+	{
+		pParticleMng->Draw( shake );
 	}
 
 	// 「次へ」表示
