@@ -53,10 +53,12 @@ void Particle::Init( Vector2 centerPos, Vector2 velocity )
 
 	angle = scast<float>( rand() % 360 );
 
+	scale = 1.0f;
+
 	pos   = centerPos;
 	velo  = velocity;
 
-	destPos = pos + ( velo * EXIST_TIME );
+	destPos = pos + ( velo * scast<float>( EXIST_TIME ) );
 }
 
 void Particle::Uninit()
@@ -74,7 +76,7 @@ void Particle::Update()
 		angle += ROTATE_SPD + scast<float>( rand() % RAND_RANGE );
 	}
 
-	// Scale
+	if ( 0 <= scale )
 	{
 		constexpr float SHRINK_SPD	= 0.05f;
 		constexpr int	DIGIT		= 100;	// ¬”“_ˆÈ‰º‚ÌŒ…”
@@ -82,19 +84,20 @@ void Particle::Update()
 
 		// 0.0 ~ 0.3
 		float randShrink = ( rand() % DIGIT ) / scast<float>( RANGE * DIGIT );
+		randShrink *= 0.1f;
 
 		scale -= SHRINK_SPD + randShrink;
 	}
 
-	// Alpha
+	if ( 0 <= alpha )
 	{
-		constexpr float DECREASE = 1.0 / EXIST_TIME;
+		constexpr float DECREASE = 1.0f / scast<float>( EXIST_TIME );
 		alpha -= DECREASE;
 	}
 
 	// Position
 	{
-		constexpr float RESISTANCE = 0.2f;
+		constexpr float RESISTANCE = 0.1f;
 
 		velo = ( destPos - pos ) * RESISTANCE;
 
@@ -104,7 +107,7 @@ void Particle::Update()
 
 void Particle::Draw( Vector2 shake ) const
 {
-	SetDrawBlendMode( DX_BLENDMODE_ALPHA, alpha * 255 );
+	SetDrawBlendMode( DX_BLENDMODE_ALPHA, scast<int>( alpha * 255.0f ) );
 
 	DrawRotaGraph
 	(
