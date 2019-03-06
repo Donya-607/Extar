@@ -625,7 +625,7 @@ void Game::SelectInit()
 	numMoves = 0;
 
 	selectTimer	= 0;
-	selectPos	= { 742.0f, 24.0f };
+	selectPos	= { 710.0f, 40.0f };
 
 	pCursor.reset( new Cursor() );
 	pCursor->SetNowStagenumber( stageNumber );
@@ -1943,7 +1943,11 @@ void Game::GameDraw()
 		);
 		SetDrawBlendMode( DX_BLENDMODE_NOBLEND, 255 );
 
-		// 枠の画像
+	}
+
+	// 枠の画像
+	if ( !isPause )
+	{
 		DrawGraph
 		(
 			0, 0,
@@ -2042,7 +2046,7 @@ void Game::GameDraw()
 		TakeScreenShot();
 	}
 
-	if ( nextState == State::Null && pCamera )
+	if ( nextState != State::Clear && pCamera )
 	{
 		pCamera->Draw( shake );
 	}
@@ -2103,107 +2107,112 @@ void Game::ClearDraw()
 {
 	Vector2 shake = GetShakeAmount();
 
-	// 背景
+	// フェードアウトしていくものたち
 	if ( !isShowClearMenu )
 	{
-		DrawGraph
-		(
-			0, 0,
-			GameImage::hGameBG,
-			TRUE
-		);
-
-		SetDrawBlendMode( DX_BLENDMODE_ADD, 255 );
-		// 枠
-		DrawGraph
-		(
-			0, 0,
-			GameImage::hFrameBG,
-			TRUE
-		);
-		SetDrawBlendMode( DX_BLENDMODE_NOBLEND, 255 );
-
-		// 枠の画像
-		DrawGraph
-		(
-			0, 0,
-			GameImage::hFrameUI,
-			TRUE
-		);
-	}
-
-	if ( !isShowClearMenu && pStarMng )
-	{
-		pStarMng->Draw( shake );
-	}
-
-	// 人
-	if ( !isShowClearMenu )
-	{
-		int animIndex = 0;
-
-		// 体
-		DrawGraph
-		(
-			0,
-			SCREEN_HEIGHT - HumanImage::SIZE_Y,
-			HumanImage::GetBodyHandle( animIndex ),
-			TRUE
-		);
-
-		// 口
-		DrawGraph
-		(
-			0,
-			SCREEN_HEIGHT - HumanImage::SIZE_Y,
-			HumanImage::GetMouthHandle( mouthIndex ),
-			TRUE
-		);
-
-		// 腕
-		DrawGraph
-		(
-			scast<int>( armPos.x ),
-			scast<int>( armPos.y ),
-			HumanImage::GetArmHandle( animIndex ),
-			TRUE
-		);
-	}
-	// フキダシ
-	if ( 0 != balloonLength )
-	{
-		DrawExtendGraph
-		(
-			HumanBehavior::BALLOON_POS_X,
-			HumanBehavior::BALLOON_POS_Y,
-			HumanBehavior::BALLOON_POS_X + balloonLength,
-			HumanBehavior::BALLOON_POS_Y + HumanImage::SIZE_BALLOON_Y,
-			HumanImage::GetBalloonHandle(),
-			TRUE
-		);
-	}
-	// セリフ
-	if ( 0 != textLength )
-	{
-		int index = textNumber % scast<int>( TextBehavior::CLEAR_SAY.size() );
-		int length = textLength * 2/* 日本語で２バイト文字なので，倍にして対応 */;
-		if ( scast<int>( TextBehavior::CLEAR_SAY[index].size() ) <= textLength )
+		// 背景
 		{
-			length = scast<int>( TextBehavior::CLEAR_SAY[index].size() );
+			DrawGraph
+			(
+				0, 0,
+				GameImage::hGameBG,
+				TRUE
+			);
+
+			SetDrawBlendMode( DX_BLENDMODE_ADD, 255 );
+			// 枠
+			DrawGraph
+			(
+				0, 0,
+				GameImage::hFrameBG,
+				TRUE
+			);
+			SetDrawBlendMode( DX_BLENDMODE_NOBLEND, 255 );
+
+			// 枠の画像
+			DrawGraph
+			(
+				0, 0,
+				GameImage::hFrameUI,
+				TRUE
+			);
 		}
 
-		constexpr int DIST_X = 80;
-		constexpr int DIST_Y = 52;
+		// 星
+		if ( pStarMng )
+		{
+			pStarMng->Draw( shake );
+		}
 
-		DrawExtendStringToHandle
-		(
-			HumanBehavior::BALLOON_POS_X + DIST_X,
-			HumanBehavior::BALLOON_POS_Y + DIST_Y,
-			2.0, 2.0,
-			( TextBehavior::CLEAR_SAY[index].substr( 0, length ) ).c_str(),
-			GetColor( 42, 97, 110 ),
-			hFont
-		);
+		// 人
+		{
+			int animIndex = 0;
+
+			// 体
+			DrawGraph
+			(
+				0,
+				SCREEN_HEIGHT - HumanImage::SIZE_Y,
+				HumanImage::GetBodyHandle( animIndex ),
+				TRUE
+			);
+
+			// 口
+			DrawGraph
+			(
+				0,
+				SCREEN_HEIGHT - HumanImage::SIZE_Y,
+				HumanImage::GetMouthHandle( mouthIndex ),
+				TRUE
+			);
+
+			// 腕
+			DrawGraph
+			(
+				scast<int>( armPos.x ),
+				scast<int>( armPos.y ),
+				HumanImage::GetArmHandle( animIndex ),
+				TRUE
+			);
+		}
+		// フキダシ
+		if ( 0 != balloonLength )
+		{
+			DrawExtendGraph
+			(
+				HumanBehavior::BALLOON_POS_X,
+				HumanBehavior::BALLOON_POS_Y,
+				HumanBehavior::BALLOON_POS_X + balloonLength,
+				HumanBehavior::BALLOON_POS_Y + HumanImage::SIZE_BALLOON_Y,
+				HumanImage::GetBalloonHandle(),
+				TRUE
+			);
+		}
+		// セリフ
+		if ( 0 != textLength )
+		{
+			int index = textNumber % scast<int>( TextBehavior::CLEAR_SAY.size() );
+			int length = textLength * 2/* 日本語で２バイト文字なので，倍にして対応 */;
+			if ( scast<int>( TextBehavior::CLEAR_SAY[index].size() ) <= textLength )
+			{
+				length = scast<int>( TextBehavior::CLEAR_SAY[index].size() );
+			}
+
+			constexpr int DIST_X = 80;
+			constexpr int DIST_Y = 52;
+
+			DrawExtendStringToHandle
+			(
+				HumanBehavior::BALLOON_POS_X + DIST_X,
+				HumanBehavior::BALLOON_POS_Y + DIST_Y,
+				2.0, 2.0,
+				( TextBehavior::CLEAR_SAY[index].substr( 0, length ) ).c_str(),
+				GetColor( 42, 97, 110 ),
+				hFont
+			);
+		}
+
+		GameDrawUI();
 	}
 
 	if ( isShowClearMenu )
@@ -2629,20 +2638,6 @@ void Game::TextDraw()
 
 void Game::PauseDraw()
 {
-	/*
-	int x = 0;
-	int y = 0;
-
-	GetMousePoint( &x, &y );
-
-	DrawCircle
-	(
-		x, y,
-		16,
-		GetColor( 200, 200, 200 )
-	);
-	*/
-
 	// ポーズ
 	DrawGraph
 	(
@@ -2677,6 +2672,54 @@ void Game::SelectDrawUI()
 
 void Game::GameDrawUI()
 {
+	// ステージ数
+	{
+		constexpr int MAX_DIGIT = 2;
+
+		const int POS_X = 160;
+		const int POS_Y = 0;
+
+		int stgNum = stageNumber;
+		for ( int digit = 0; digit < MAX_DIGIT; digit++ )
+		{
+			if ( stageNumber < 10 )
+			{
+				if ( digit != 0 )
+				{
+					continue;
+				}
+				// else
+
+				DrawExtendGraph
+				(
+					POS_X,
+					POS_Y,
+					POS_X + ( Number::SIZE_X >> 1 ),
+					POS_Y + ( Number::SIZE_Y >> 1 ),
+					Number::GetHandle( stgNum % 10, true ),
+					TRUE
+				);
+
+				continue;
+			}
+			// else
+
+			int tweakX = 0;
+
+			DrawExtendGraph
+			(
+				POS_X + tweakX + ( ( ( MAX_DIGIT - 1 ) - digit ) * ( Number::SIZE_X >> 1 )/* 字間 */ ),
+				POS_Y,
+				POS_X + ( Number::SIZE_X >> 1 ) + tweakX + ( ( ( MAX_DIGIT - 1 ) - digit ) * ( Number::SIZE_X >> 1 )/* 字間 */ ),
+				POS_Y + ( Number::SIZE_Y >> 1 ),
+				Number::GetHandle( stgNum % 10, true ),
+				TRUE
+			);
+
+			stgNum /= 10;
+		}
+	}
+
 	// 手数
 	{
 		DrawGraph
@@ -2779,7 +2822,7 @@ void Game::GameDrawUI()
 
 void Game::ClearDrawUI()
 {
-	
+
 }
 
 void Game::CollisionCheck()
