@@ -109,6 +109,8 @@ namespace TextBehavior
 namespace SelectImage
 {
 	static int hSelectBG;
+	static int hStatement;
+	static int hUsage;
 
 	void Load()
 	{
@@ -119,12 +121,18 @@ namespace SelectImage
 		}
 		// else
 
-		hSelectBG = LoadGraph( "./Data/Images/BG/Select.png" );
+		hSelectBG	= LoadGraph( "./Data/Images/BG/Select.png" );
+		hStatement	= LoadGraph( "./Data/Images/Select/Statement.png" );
+		hUsage		= LoadGraph( "./Data/Images/Select/Usage.png" );
 	}
 	void Release()
 	{
 		DeleteGraph( hSelectBG );
+		DeleteGraph( hStatement );
+		DeleteGraph( hUsage );
 		hSelectBG = 0;
+		hStatement = 0;
+		hUsage = 0;
 	}
 }
 namespace GameImage
@@ -280,33 +288,33 @@ namespace ClearRelated
 
 namespace MilkyWayImage
 {
-	static int hShootingStar[2];
+	static int hMilkyWay[2];
 
 	void Load()
 	{
 		// すでに値が入っていたら，読み込んだものとみなして飛ばす
-		if ( 0 != hShootingStar[0] )
+		if ( 0 != hMilkyWay[0] )
 		{
 			return;
 		}
 		// else
 
-		hShootingStar[0] = LoadGraph( "./Data/Images/Title/TitleStar1.png" );
-		hShootingStar[1] = LoadGraph( "./Data/Images/Title/TitleStar2.png" );
+		hMilkyWay[0] = LoadGraph( "./Data/Images/Title/TitleStar1.png" );
+		hMilkyWay[1] = LoadGraph( "./Data/Images/Title/TitleStar2.png" );
 	}
 	void Release()
 	{
-		DeleteGraph( hShootingStar[0] );
-		DeleteGraph( hShootingStar[1] );
-		hShootingStar[0] = 0;
-		hShootingStar[1] = 0;
+		DeleteGraph( hMilkyWay[0] );
+		DeleteGraph( hMilkyWay[1] );
+		hMilkyWay[0] = 0;
+		hMilkyWay[1] = 0;
 	}
 
 	int  GetHandle( int index )
 	{
 		assert( 0 <= index && index <= 1 );
 
-		return hShootingStar[index];
+		return hMilkyWay[index];
 	}
 }
 
@@ -616,6 +624,9 @@ void Game::SelectInit()
 
 	numMoves = 0;
 
+	selectTimer	= 0;
+	selectPos	= { 742.0f, 24.0f };
+
 	pCursor.reset( new Cursor() );
 	pCursor->SetNowStagenumber( stageNumber );
 	pCursor->Init();
@@ -875,6 +886,14 @@ void Game::Update()
 
 void Game::SelectUpdate()
 {
+	// セレクト文字
+	{
+		constexpr int INTERVAL = 120;
+		constexpr float AMPL = 0.6f;
+		selectTimer++;
+		selectPos.y += sinf( ( PI / INTERVAL ) * selectTimer ) * AMPL;
+	}
+
 	if ( pCursor )
 	{
 		pCursor->Update( isOpenFade/* フェードイン中の操作制限のため */ );
@@ -993,7 +1012,7 @@ void Game::GameUpdate()
 		pNumMoves->Update();
 	}
 
-	ShootingStarUpdate();
+	MilkyWayUpdate();
 
 	BalloonUpdate();
 
@@ -1215,7 +1234,7 @@ void Game::ClearUpdate()
 	ShakeUpdate();
 }
 
-void Game::ShootingStarUpdate()
+void Game::MilkyWayUpdate()
 {
 	constexpr int AMOUNT = 5;
 	sStarTimer += ( sStarState == 0 ) ? AMOUNT : -AMOUNT;
@@ -1874,6 +1893,25 @@ void Game::SelectDraw()
 		);
 	}
 
+	// 文字
+	{
+		// セレクト
+		DrawGraph
+		(
+			scast<int>( selectPos.x ),
+			scast<int>( selectPos.y ),
+			SelectImage::hStatement,
+			TRUE
+		);
+		// 操作方法
+		DrawGraph
+		(
+			0, 0,
+			SelectImage::hUsage,
+			TRUE
+		);
+	}
+
 	StageSelect::Draw( stageNumber );
 
 	if ( pCursor )
@@ -2526,7 +2564,7 @@ void Game::TextDraw()
 				HumanBehavior::BALLOON_POS_Y + DIST_Y,
 				MAGNI, MAGNI,
 				text.c_str(),
-				GetColor( 255, 0, 0 ),
+				GetColor( 194, 36, 0 ),
 				hFont
 			);
 			charWidth += GetDrawExtendStringWidthToHandle

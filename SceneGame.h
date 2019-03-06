@@ -63,6 +63,8 @@ private:
 	int  stageNumber;	// 1始まり
 	int  numMoves;		// 今の手数，0始まり，アンドゥで減る
 
+	int  selectTimer;
+
 	int  sStarState;	// 0:明るく, 1:暗く
 	int  sStarTimer;
 
@@ -85,9 +87,11 @@ private:
 	State state;
 	State nextState;
 
+	Vector2 selectPos;	// LeftTop
+
 	Vector2 armPos;		// LeftTop
 
-	Vector2 pausePos;	// LeftTop;
+	Vector2 pausePos;	// LeftTop
 
 	std::unique_ptr<ShootingStarMng> pSSMng;
 
@@ -131,6 +135,7 @@ private:	// 他ＰＧによる作業
 public:
 	Game( SceneMng *pMng ) : Scene( pMng ),
 		stageNumber( 1 ), numMoves( 0 ),
+		selectTimer( 0 ),
 		sStarState( 0 ), sStarTimer( 0 ),
 		pauseTimer( 0 ),
 		choice( 0 ),
@@ -142,6 +147,7 @@ public:
 		textLength( 0 ), textExtendInterval( 0 ), textNumber( 0 ),
 		gotoNextPosX( SCREEN_WIDTH ),
 		state( State::Select ), nextState( State::Null ),
+		selectPos(),
 		armPos( { scast<float>( SCREEN_WIDTH ), scast<float>( SCREEN_HEIGHT ) } ),
 		pausePos(),
 		pSSMng( nullptr ),
@@ -189,7 +195,7 @@ public:
 	void GameUpdate();
 	void ClearUpdate();
 
-	void ShootingStarUpdate();
+	void MilkyWayUpdate();
 
 	void BalloonUpdate();
 
