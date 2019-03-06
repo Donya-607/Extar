@@ -1199,7 +1199,7 @@ void Game::ClearUpdate()
 	// uŸ‚Öv‚ÌˆÚ“®
 	if ( !isShowClearMenu && ClearRelated::FADE_WAIT + ClearRelated::GOTO_NEXT_WAIT < clearTimer )
 	{
-		const int   DESTINATION = SCREEN_WIDTH - ClearImage::SIZE_GOTO_NEXT_X;
+		const int   DESTINATION = SCREEN_WIDTH - ( ClearImage::SIZE_GOTO_NEXT_X + 32/* —]”’ */);
 		const float RESISTANCE = 0.3f;
 
 		float dist = fabsf( scast<float>( DESTINATION - gotoNextPosX ) );
