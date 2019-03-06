@@ -30,10 +30,11 @@ namespace ShootingStarImage
 	}
 }
 
-void VisionStar::Init( int imageHandle, Vector2 centerPos )
+void VisionStar::Init( int imageHandle, float degree, Vector2 centerPos )
 {
 	handle	= imageHandle;
 	pos		= centerPos;
+	angle	= degree;
 }
 
 void VisionStar::Uninit()
@@ -150,7 +151,7 @@ void ShootingStarMng::Update()
 
 		if ( it->IsRequestingGenerateVision() )
 		{
-			GenerateVision( it->GetHandle(), it->GetPos() );
+			GenerateVision( it->GetHandle(), it->GetAngle(), it->GetPos() );
 		}
 
 		if ( it->IsDisappear() )
@@ -200,8 +201,8 @@ void ShootingStarMng::GenerateStar( Vector2 centerPos )
 	stars.back().Init( centerPos );
 }
 
-void ShootingStarMng::GenerateVision( int imageHandle, Vector2 centerPos )
+void ShootingStarMng::GenerateVision( int imageHandle, float angle, Vector2 centerPos )
 {
 	visions.push_back( VisionStar() );
-	visions.back().Init( imageHandle, centerPos );
+	visions.back().Init( imageHandle, angle, centerPos );
 }

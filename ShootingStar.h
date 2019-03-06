@@ -34,7 +34,7 @@ public:
 	VisionStar() : timer( 0 ), handle( 0 ), angle( 0 ), pos() {}
 	~VisionStar() {}
 
-	void Init( int imageHandle, Vector2 pos );
+	void Init( int imageHandle, float angle, Vector2 pos );
 	void Uninit();
 
 	void Update();
@@ -70,6 +70,10 @@ public:
 	bool IsDisappear() const;
 public:
 	int GetHandle() const;
+	float GetAngle() const
+	{
+		return angle;
+	}
 	Vector2 GetPos() const
 	{
 		return pos;
@@ -103,7 +107,7 @@ public:
 public:
 	void GenerateStar( Vector2 centerPos );
 private:
-	void GenerateVision( int imageHandle, Vector2 centerPos );
+	void GenerateVision( int imageHandle, float angle, Vector2 centerPos );
 public:
 	int  GetArraySize() const
 	{

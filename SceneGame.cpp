@@ -775,19 +775,6 @@ void Game::Update()
 		// isDrawCollision = !isDrawCollision;
 	}
 
-	// ó¨ÇÍêØÇèoÇ∑
-	if ( pSSMng )
-	{
-		int x, y;
-		GetMousePoint( &x, &y );
-
-		if ( TRG( KEY_INPUT_S ) )
-		{
-			pSSMng->GenerateStar( { scast<float>( x ), scast<float>( y ) } );
-			PlaySE( M_RECORD_STAR );
-		}
-	}
-
 #endif // DEBUG_MODE
 
 	if ( Fade::GetInstance()->IsDoneFade() )
@@ -834,6 +821,33 @@ void Game::Update()
 
 	if ( pSSMng )
 	{
+		// î≠ê∂
+		if ( isOpenFade )
+		{
+			constexpr int PROBABILITY = 256;
+			if ( !( rand() % PROBABILITY ) )
+			{
+				const std::vector<float> POS_X =
+				{
+					256.0f,
+					512.0f,
+					768.0f,
+					1280.0f,
+					1312.0f,
+					1344.0f
+				};
+				const std::vector<float> POS_Y =
+				{
+					0
+				};
+
+				float x = POS_X[rand() % scast<int>( POS_X.size() )];
+				float y = POS_Y[rand() % scast<int>( POS_Y.size() )];
+
+				pSSMng->GenerateStar( { x, y } );
+			}
+		}
+
 		pSSMng->Update();
 	}
 
@@ -1845,13 +1859,6 @@ void Game::Draw()
 
 	if ( pSSMng )
 	{
-		int x, y;
-		GetMousePoint( &x, &y );
-		DrawCircle
-		(
-			x, y, 16, GetColor( 255, 255, 255 )
-		);
-
 		pSSMng->Draw( shake );
 	}
 
