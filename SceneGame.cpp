@@ -1857,11 +1857,6 @@ void Game::Draw()
 		return;
 	}
 
-	if ( pSSMng )
-	{
-		pSSMng->Draw( shake );
-	}
-
 	if ( isPause )
 	{
 		SetDrawBright( 255, 255, 255 );
@@ -1898,6 +1893,12 @@ void Game::SelectDraw()
 			SelectImage::hSelectBG,
 			TRUE
 		);
+	}
+
+	// —¬‚ê¯
+	if ( pSSMng )
+	{
+		pSSMng->Draw( shake );
 	}
 
 	// •¶š
@@ -1963,7 +1964,7 @@ void Game::GameDraw()
 		);
 	}
 
-	// —¬‚ê¯
+	// “V‚Ìì
 	{
 		SetDrawArea
 		(
@@ -2001,6 +2002,12 @@ void Game::GameDraw()
 	}
 
 	Grid::Draw( shake );
+
+	// —¬‚ê¯
+	if ( pSSMng )
+	{
+		pSSMng->Draw( shake );
+	}
 
 	if ( pStarMng )
 	{
@@ -2136,13 +2143,56 @@ void Game::ClearDraw()
 			);
 			SetDrawBlendMode( DX_BLENDMODE_NOBLEND, 255 );
 
-			// ˜g‚Ì‰æ‘œ
-			DrawGraph
+		}
+		// ˜g‚Ì‰æ‘œ
+		DrawGraph
+		(
+			0, 0,
+			GameImage::hFrameUI,
+			TRUE
+		);
+
+		// “V‚Ìì
+		{
+			SetDrawArea
 			(
 				0, 0,
-				GameImage::hFrameUI,
+				FRAME_POS_X,
+				SCREEN_HEIGHT
+			);
+
+			constexpr int POS_X = 0;
+			constexpr int POS_Y = 200;
+
+			constexpr int ENHANCE = 50;
+			SetDrawBlendMode( DX_BLENDMODE_ALPHA, sStarTimer + ENHANCE );
+			DrawGraph
+			(
+				POS_X, POS_Y,
+				MilkyWayImage::GetHandle( 0 ),
 				TRUE
 			);
+			SetDrawBlendMode( DX_BLENDMODE_ALPHA, 255 - ( sStarTimer + ENHANCE ) );
+			DrawGraph
+			(
+				POS_X, POS_Y,
+				MilkyWayImage::GetHandle( 1 ),
+				TRUE
+			);
+			SetDrawBlendMode( DX_BLENDMODE_NOBLEND, 255 );
+
+			SetDrawArea
+			(
+				0, 0,
+				SCREEN_WIDTH,
+				SCREEN_HEIGHT
+			);
+		}
+
+		// —¬‚ê¯
+		if ( pSSMng )
+		{
+			pSSMng->Draw( shake );
 		}
 
 		// ¯
