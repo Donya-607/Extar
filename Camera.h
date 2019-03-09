@@ -37,7 +37,7 @@ private:
 	int		glowTimer;
 
 	Vector2 pos;		// LeftTop Position
-	Vector2 velo;		// Velocity
+	Vector2 denialShake;
 	Vector2 size;		// 全体サイズ
 
 	std::vector<int> rowStorage;
@@ -51,7 +51,7 @@ public:
 	Camera() : row( 0 ), column( 0 ), width( 1 ), height( 1 ),
 		moveAmount( 1 ),
 		glowTimer( 0 ),
-		pos(), velo(), size(),
+		pos(), denialShake(), size(),
 		rowStorage(), clumStorage(),
 		isGlow( false ),
 		isExposure( false ),
@@ -72,8 +72,9 @@ public:
 	void Draw( Vector2 shake ) const;
 private:
 	void Move();
+	void Interpolate();
 	void ClampPos();
-	bool ClampMatrix();	// 補正したらTRUE
+	void ClampMatrix();
 
 	void Shake();
 
@@ -118,8 +119,6 @@ private:
 		// else
 		return false;
 	}
-private:
-	void MoveBySelfMatrix();
 #if USE_IMGUI
 private:
 	void ChangeParametersByImGui();

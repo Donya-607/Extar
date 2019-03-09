@@ -910,7 +910,9 @@ void Game::SelectUpdate()
 					256.0f * 3,
 					256.0f * 4,
 					256.0f * 5,
-					256.0f * 6
+					256.0f * 6,
+					256.0f * 7,
+					256.0f * 8
 				};
 				const std::vector<float> POS_Y =
 				{
@@ -1146,7 +1148,9 @@ void Game::ClearUpdate()
 					256.0f * 3,
 					256.0f * 4,
 					256.0f * 5,
-					256.0f * 6
+					256.0f * 6,
+					256.0f * 7,
+					256.0f * 8,
 				};
 				const std::vector<float> POS_Y =
 				{
@@ -1711,7 +1715,9 @@ bool Game::Exposure()
 	// else
 
 	Box camera = pCamera->FetchColWorldPos();
-	std::vector<int> targets;
+
+	std::vector<int> targets{};
+	std::vector<Vector2> particlePos{};
 
 	// “K—p”Ô†‚ÌŒŸ¸
 	int end = pStarMng->GetArraySize();
@@ -1732,11 +1738,7 @@ bool Game::Exposure()
 			if ( IsInsideStarFourCorners( camera, star ) )
 			{
 				targets.push_back( i );
-				
-				if ( pParticleMng )
-				{
-					pParticleMng->Generate( PARTICLE_AMOUNT, { star.cx, star.cy }, /* isBig = */false );
-				}
+				particlePos.push_back( { star.cx, star.cy } );
 			}
 			else
 			{
@@ -1768,6 +1770,13 @@ bool Game::Exposure()
 	for ( int i = 0; i < scast<int>( targets.size() ); i++ )
 	{
 		pStarMng->Expose( targets.at( i ) );
+	}
+	if ( pParticleMng )
+	{
+		for ( int i = 0; i < scast<int>( particlePos.size() ); i++ )
+		{
+			pParticleMng->Generate( PARTICLE_AMOUNT, particlePos.at( i ), /* isBig = */false );
+		}
 	}
 
 	return true;

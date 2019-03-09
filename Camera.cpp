@@ -8,6 +8,8 @@
 
 #include "FileIO.h"
 
+#include "Easing.h"
+
 #include <algorithm>	// Clampで使用
 #undef min				// Clampで使用
 #undef max				// Clampで使用
@@ -78,6 +80,7 @@ void Camera::Uninit()
 void Camera::Update()
 {
 	Move();
+	Interpolate();
 
 	Shake();
 
@@ -102,10 +105,10 @@ void Camera::Draw( Vector2 shake ) const
 {
 	DrawExtendGraph
 	(
-		FRAME_POS_X + scast<int>( pos.x - shake.x ),
-		FRAME_POS_Y + scast<int>( pos.y - shake.y ),
-		FRAME_POS_X + scast<int>( pos.x + size.x - shake.x ),
-		FRAME_POS_Y + scast<int>( pos.y + size.y - shake.y ),
+		FRAME_POS_X + scast<int>( pos.x - denialShake.x - shake.x ),
+		FRAME_POS_Y + scast<int>( pos.y - denialShake.y - shake.y ),
+		FRAME_POS_X + scast<int>( pos.x + size.x - denialShake.x - shake.x ),
+		FRAME_POS_Y + scast<int>( pos.y + size.y - denialShake.y - shake.y ),
 		CameraImage::GetHandle( ( isGlow ) ? 1 : 0 ),
 		TRUE
 	);
@@ -113,7 +116,7 @@ void Camera::Draw( Vector2 shake ) const
 
 void Camera::Move()
 {
-	// 仮の動きとして，posを直接書き換えている
+	constexpr float RESPONSE_MOVE_AMOUNT = 12.0f;	// 押した瞬間に，かならず移動させる量
 
 	bool isUp = false, isDown = false, isLeft = false, isRight = false;
 
@@ -122,48 +125,49 @@ void Camera::Move()
 	if ( IS_TRG_LEFT	) { isLeft	= true;	}
 	if ( IS_TRG_RIGHT	) { isRight	= true;	}
 
-	if ( isUp		&& !isDown	)	{ pos.y -= Grid::GetSize().y * moveAmount; column	-= moveAmount; }
-	if ( isDown		&& !isUp	)	{ pos.y += Grid::GetSize().y * moveAmount; column	+= moveAmount; }
-	if ( isLeft		&& !isRight	)	{ pos.x -= Grid::GetSize().x * moveAmount; row		-= moveAmount; }
-	if ( isRight	&& !isLeft	)	{ pos.x += Grid::GetSize().x * moveAmount; row		+= moveAmount; }
+	if ( isUp		&& !isDown	)	{ pos.y -= RESPONSE_MOVE_AMOUNT * moveAmount; column	-= moveAmount; PlaySE( M_CAMERA_MOVE ); }
+	if ( isDown		&& !isUp	)	{ pos.y += RESPONSE_MOVE_AMOUNT * moveAmount; column	+= moveAmount; PlaySE( M_CAMERA_MOVE ); }
+	if ( isLeft		&& !isRight	)	{ pos.x -= RESPONSE_MOVE_AMOUNT * moveAmount; row		-= moveAmount; PlaySE( M_CAMERA_MOVE ); }
+	if ( isRight	&& !isLeft	)	{ pos.x += RESPONSE_MOVE_AMOUNT * moveAmount; row		+= moveAmount; PlaySE( M_CAMERA_MOVE ); }
 
 	if ( isUp || isDown | isLeft || isRight )
 	{
-		ClampPos();
-		if ( !ClampMatrix() )
-		{
-			PlaySE( M_CAMERA_MOVE );
-		}
+		// ClampPos(); 移動方法を変えたため，不要になった
+		ClampMatrix();
 	}
 }
+void Camera::Interpolate()
+{
+	Vector2 destination{};
+	destination.x = ( row		* Grid::GetSize().x );
+	destination.y = ( column	* Grid::GetSize().y );
+
+	constexpr float LOWER_DISTANCE = 3.0f;
+	if ( fabsf( ( destination - pos ).Length() ) < LOWER_DISTANCE )
+	{
+		pos = destination;
+		return;
+	}
+	// else
+
+	pos += Easing::Interpolate( pos, destination, 0.4f );
+}
+
 void Camera::ClampPos()
 {
-	if ( !isShake )
-	{
-		pos.x = std::min( pos.x, scast<float>( FRAME_WIDTH  ) - ( Grid::GetSize().x * width  ) );
-		pos.x = std::max( pos.x, 0.0f );
-	}
+	pos.x = std::min( pos.x, scast<float>( FRAME_WIDTH  ) - ( Grid::GetSize().x * width  ) );
+	pos.x = std::max( pos.x, 0.0f );
 
 	pos.y = std::min( pos.y, scast<float>( FRAME_HEIGHT ) - ( Grid::GetSize().y * height ) );
 	pos.y = std::max( pos.y, 0.0f );
 }
-bool Camera::ClampMatrix()
+void Camera::ClampMatrix()
 {
-	int oldRow		= row;
-	int oldColumn	= column;
-
 	row		= std::min( row,	Grid::GetRowMax()		- width  );
 	row		= std::max( row,	0 );
 
 	column	= std::min( column,	Grid::GetColumnMax()	- height );
 	column	= std::max( column,	0 );
-
-	if ( oldRow != row || oldColumn != column )
-	{
-		return true;
-	}
-	// else
-	return false;
 }
 
 void Camera::SetGlow()
@@ -182,12 +186,10 @@ void Camera::Shake()
 	}
 	// else
 
-	pos -= velo;	// もどす
-
 	constexpr float LOWER = 4.0f;
-	if ( fabsf( velo.x ) < LOWER )
+	if ( fabsf( denialShake.x ) < LOWER )
 	{
-		velo.x = 0;
+		denialShake.x = 0;
 		isShake = false;
 
 		return;
@@ -195,10 +197,8 @@ void Camera::Shake()
 	// else
 
 	constexpr float DECREASE = 0.7f;
-	velo.x *= DECREASE;
-	velo.x *= -1;
-
-	pos += velo;	// ずらす
+	denialShake.x *= DECREASE;
+	denialShake.x *= -1;
 }
 
 void Camera::Exposure()
@@ -216,13 +216,10 @@ void Camera::Exposure()
 
 void Camera::SetShake()
 {
-	isShake = true;
-	pos -= velo;	// もどしておく
-
 	const Vector2 INIT_SHAKE{ 48.0f, 0 };
-	velo = INIT_SHAKE;
+	denialShake = INIT_SHAKE;
 
-	pos += velo;
+	isShake = true;
 }
 
 Box  Camera::FetchColWorldPos() const
@@ -268,15 +265,7 @@ bool Camera::Undo()
 	rowStorage.pop_back();
 	clumStorage.pop_back();
 
-	MoveBySelfMatrix();
-
 	return true;
-}
-
-void Camera::MoveBySelfMatrix()
-{
-	pos.x = ( row		* Grid::GetSize().x );
-	pos.y = ( column	* Grid::GetSize().y );
 }
 
 #if USE_IMGUI
