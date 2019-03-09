@@ -832,38 +832,6 @@ void Game::Update()
 		return;
 	}
 
-	if ( pSSMng )
-	{
-		// î≠ê∂
-		if ( isOpenFade )
-		{
-			constexpr int PROBABILITY = 256;
-			if ( !( rand() % PROBABILITY ) )
-			{
-				const std::vector<float> POS_X =
-				{
-					256.0f,
-					512.0f,
-					768.0f,
-					1280.0f,
-					1312.0f,
-					1344.0f
-				};
-				const std::vector<float> POS_Y =
-				{
-					0
-				};
-
-				float x = POS_X[rand() % scast<int>( POS_X.size() )];
-				float y = POS_Y[rand() % scast<int>( POS_Y.size() )];
-
-				pSSMng->GenerateStar( { x, y } );
-			}
-		}
-
-		pSSMng->Update();
-	}
-
 	if ( pParticleMng )
 	{
 		pParticleMng->Update();
@@ -893,6 +861,7 @@ void Game::Update()
 
 					nextState = State::Clear;
 					FadeDone();
+					isOpenFade = true;
 				}
 				break;
 
@@ -924,6 +893,38 @@ void Game::SelectUpdate()
 		constexpr float AMPL = 0.6f;
 		selectTimer++;
 		selectPos.y += sinf( ( PI / INTERVAL ) * selectTimer ) * AMPL;
+	}
+
+	if ( pSSMng )
+	{
+		// î≠ê∂
+		if ( isOpenFade )
+		{
+			constexpr int PROBABILITY = 256;
+			if ( !( rand() % PROBABILITY ) )
+			{
+				const std::vector<float> POS_X =
+				{
+					256.0f * 1,
+					256.0f * 2,
+					256.0f * 3,
+					256.0f * 4,
+					256.0f * 5,
+					256.0f * 6
+				};
+				const std::vector<float> POS_Y =
+				{
+					0
+				};
+
+				float x = POS_X[rand() % scast<int>( POS_X.size() )];
+				float y = POS_Y[rand() % scast<int>( POS_Y.size() )];
+
+				pSSMng->GenerateStar( { x, y } );
+			}
+		}
+
+		pSSMng->Update();
 	}
 
 	if ( pCursor )
@@ -1025,6 +1026,31 @@ void Game::GameUpdate()
 		}
 	}
 
+	if ( pSSMng )
+	{
+		// î≠ê∂
+		if ( isOpenFade )
+		{
+			constexpr int PROBABILITY = 12;// 256;
+			if ( !( rand() % PROBABILITY ) )
+			{
+				const std::vector<Vector2> POS =
+				{
+					{ 256.0f, 0 },
+					{ 384.0f, 0 },
+					{ 1920.0f, 640.0f },
+					{ 1920.0f, 768.0f },
+				};
+
+				Vector2 pos = POS[rand() % scast<int>( POS.size() )];
+
+				pSSMng->GenerateStar( pos );
+			}
+		}
+
+		pSSMng->Update();
+	}
+
 	if ( pStarMng )
 	{
 		pStarMng->Update();
@@ -1105,6 +1131,37 @@ void Game::ClearUpdate()
 		BalloonUpdate();
 	}
 
+	if ( pSSMng )
+	{
+		// î≠ê∂
+		if ( isOpenFade )
+		{
+			constexpr int PROBABILITY = 12;// 256;
+			if ( !( rand() % PROBABILITY ) )
+			{
+				const std::vector<float> POS_X =
+				{
+					256.0f * 1,
+					256.0f * 2,
+					256.0f * 3,
+					256.0f * 4,
+					256.0f * 5,
+					256.0f * 6
+				};
+				const std::vector<float> POS_Y =
+				{
+					0
+				};
+
+				float x = POS_X[rand() % scast<int>( POS_X.size() )];
+				float y = POS_Y[rand() % scast<int>( POS_Y.size() )];
+
+				pSSMng->GenerateStar( { x, y } );
+			}
+		}
+
+		pSSMng->Update();
+	}
 
 	if ( pBoard )
 	{
@@ -1148,7 +1205,7 @@ void Game::ClearUpdate()
 			{
 				if ( pParticleMng )
 				{
-					pParticleMng->Generate( PARTICLE_AMOUNT, base );
+					pParticleMng->Generate( PARTICLE_AMOUNT, base, /* isBig = */true );
 				}
 
 				PlaySE( M_RECORD_STAR );
@@ -1678,7 +1735,7 @@ bool Game::Exposure()
 				
 				if ( pParticleMng )
 				{
-					pParticleMng->Generate( PARTICLE_AMOUNT, { star.cx, star.cy } );
+					pParticleMng->Generate( PARTICLE_AMOUNT, { star.cx, star.cy }, /* isBig = */false );
 				}
 			}
 			else
@@ -1986,15 +2043,10 @@ void Game::GameDraw()
 
 	}
 
-	// ògÇÃâÊëú
-	if ( !isPause )
+	// ó¨ÇÍêØ
+	if ( pSSMng )
 	{
-		DrawGraph
-		(
-			0, 0,
-			GameImage::hFrameUI,
-			TRUE
-		);
+		pSSMng->Draw( shake );
 	}
 
 	// ìVÇÃêÏ
@@ -2034,13 +2086,18 @@ void Game::GameDraw()
 		);
 	}
 
-	Grid::Draw( shake );
-
-	// ó¨ÇÍêØ
-	if ( pSSMng )
+	// ògÇÃUI
+	if ( !isPause )
 	{
-		pSSMng->Draw( shake );
+		DrawGraph
+		(
+			0, 0,
+			GameImage::hFrameUI,
+			TRUE
+		);
 	}
+
+	Grid::Draw( shake );
 
 	if ( pParticleMng )
 	{
@@ -2182,13 +2239,6 @@ void Game::ClearDraw()
 			SetDrawBlendMode( DX_BLENDMODE_NOBLEND, 255 );
 
 		}
-		// ògÇÃâÊëú
-		DrawGraph
-		(
-			0, 0,
-			GameImage::hFrameUI,
-			TRUE
-		);
 
 		// ìVÇÃêÏ
 		{
@@ -2227,11 +2277,13 @@ void Game::ClearDraw()
 			);
 		}
 
-		// ó¨ÇÍêØ
-		if ( pSSMng )
-		{
-			pSSMng->Draw( shake );
-		}
+		// ògÇÃUI
+		DrawGraph
+		(
+			0, 0,
+			GameImage::hFrameUI,
+			TRUE
+		);
 
 		// êØ
 		if ( pStarMng )
@@ -2332,6 +2384,24 @@ void Game::ClearDraw()
 		ClearImage::hClearBG,
 		TRUE
 	);
+
+	// ó¨ÇÍêØ
+	if ( pSSMng )
+	{
+		pSSMng->Draw( shake );
+
+		if ( clearTimer < 255 )
+		{
+			int alpha = ( 255 / ClearRelated::FADE_WAIT )/* AMPL */ * clearTimer;
+
+			SetDrawBlendMode( DX_BLENDMODE_ALPHA, alpha );
+		}
+		else
+		{
+			SetDrawBlendMode( DX_BLENDMODE_ALPHA, 255 );
+		}
+	}
+
 	// Statement
 	DrawGraph
 	(
@@ -2499,14 +2569,14 @@ void Game::ClearDraw()
 		pBoard->Draw( hScreenShot, shake );
 	}
 
-	for ( const RecordStar &it : recordStars )
-	{
-		it.Draw( shake );
-	}
-
 	if ( pParticleMng )
 	{
 		pParticleMng->Draw( shake );
+	}
+
+	for ( const RecordStar &it : recordStars )
+	{
+		it.Draw( shake );
 	}
 
 	// ÅuéüÇ÷Åvï\é¶

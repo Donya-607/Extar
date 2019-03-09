@@ -37,7 +37,7 @@ public:
 	{}
 	~Particle() {}
 
-	void Init( Vector2 centerPos, Vector2 velocity );
+	void Init( Vector2 centerPos, Vector2 velocity, bool isBig );
 	void Uninit();
 
 	void Update();
@@ -64,7 +64,7 @@ public:
 
 	void Draw( Vector2 shake ) const;
 public:
-	void Generate( int num, Vector2 centerPos );
+	void Generate( int num, Vector2 centerPos, bool isBig );
 public:
 	int  GetArraySize() const
 	{

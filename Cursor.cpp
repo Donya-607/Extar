@@ -426,6 +426,11 @@ void Cursor::Update( bool isAcceptInput )
 {
 	if ( !isAcceptInput )
 	{
+		if ( !isDoneMove )
+		{
+			Interpolate();
+		}
+
 		StageSelect::SetBackGlow( isChooseBack );
 		GlowUpdate();
 

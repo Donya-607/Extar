@@ -47,18 +47,18 @@ namespace ParticleImage
 	}
 }
 
-void Particle::Init( Vector2 centerPos, Vector2 velocity )
+void Particle::Init( Vector2 centerPos, Vector2 velocity, bool isBig )
 {
 	type  = rand() % ParticleImage::TYPES;
 
 	angle = scast<float>( rand() % 360 );
 
-	scale = 1.0f;
+	scale = ( isBig ) ? 8.0f : 4.0f;
 
 	pos   = centerPos;
 	velo  = velocity;
 
-	destPos = pos + ( velo * scast<float>( EXIST_TIME ) );
+	destPos = pos + ( velo * scast<float>( EXIST_TIME >> 1 ) );
 }
 
 void Particle::Uninit()
@@ -172,7 +172,7 @@ void ParticleMng::Draw( Vector2 shake ) const
 	SetDrawBlendMode( DX_BLENDMODE_NOBLEND, 255 );
 }
 
-void ParticleMng::Generate( int num, Vector2 centerPos )
+void ParticleMng::Generate( int num, Vector2 centerPos, bool isBig )
 {
 	constexpr int	RAND_DIGIT	= 100;	// è¨êîì_à»â∫ÇÃåÖêî
 
@@ -195,6 +195,6 @@ void ParticleMng::Generate( int num, Vector2 centerPos )
 		velocity.Rotate( ( i * BASE_ANGLE ) + randAngle );
 
 		particles.push_back( Particle() );
-		particles.back().Init( centerPos, velocity );
+		particles.back().Init( centerPos, velocity, isBig );
 	}
 }
