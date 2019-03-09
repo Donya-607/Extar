@@ -56,7 +56,7 @@ void Particle::Init( Vector2 centerPos, Vector2 velocity, bool isBig )
 	scale = ( isBig ) ? 8.0f : 4.0f;
 
 	pos   = centerPos;
-	velo  = velocity;
+	velo  = ( isBig ) ? velocity * 2.0f : velocity;
 
 	destPos = pos + ( velo * scast<float>( EXIST_TIME >> 1 ) );
 }

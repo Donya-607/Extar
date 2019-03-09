@@ -900,7 +900,7 @@ void Game::SelectUpdate()
 		// î≠ê∂
 		if ( isOpenFade )
 		{
-			constexpr int PROBABILITY = 256;
+			constexpr int PROBABILITY = 12;// 256;
 			if ( !( rand() % PROBABILITY ) )
 			{
 				const std::vector<float> POS_X =
