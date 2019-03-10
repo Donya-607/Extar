@@ -28,6 +28,7 @@
 namespace
 {
 	constexpr int PARTICLE_AMOUNT = 6;
+	constexpr int SS_PROBABILITY  = 128;
 }
 
 namespace TextBehavior
@@ -523,6 +524,8 @@ void RecordStar::Init( Vector2 centerPos, bool isGlowStar )
 
 void RecordStar::Update()
 {
+	timer++;
+
 	if( angle < 360.0f )
 	{
 		constexpr float MINUS_SPD	= 0.3f;
@@ -782,12 +785,6 @@ void Game::Update()
 		char debugstoper = 0;
 	}
 
-	if ( TRG( KEY_INPUT_V ) )
-	{
-		// もはや当たり判定表示はいらない
-		// isDrawCollision = !isDrawCollision;
-	}
-
 #endif // DEBUG_MODE
 
 	if ( Fade::GetInstance()->IsDoneFade() )
@@ -869,10 +866,7 @@ void Game::Update()
 		}
 	}
 
-
-	CollisionCheck();
-
-#if DEBUG_MODE	// TODO:ここをデバッグビルドかどうか判定するやつに変えたい
+#if DEBUG_MODE
 
 	if ( TRG( KEY_INPUT_RETURN ) )
 	{
@@ -898,10 +892,10 @@ void Game::SelectUpdate()
 	if ( pSSMng )
 	{
 		// 発生
-		if ( isOpenFade )
+		if ( 0 && isOpenFade )	// DEBUG
 		{
-			constexpr int PROBABILITY = 12;// 256;
-			if ( !( rand() % PROBABILITY ) )
+			// constexpr int PROBABILITY = 12;// 256;
+			if ( !( rand() % SS_PROBABILITY ) )
 			{
 				const std::vector<float> POS_X =
 				{
@@ -1031,10 +1025,10 @@ void Game::GameUpdate()
 	if ( pSSMng )
 	{
 		// 発生
-		if ( isOpenFade )
+		if ( 0 && isOpenFade )	// DEBUG
 		{
-			constexpr int PROBABILITY = 12;// 256;
-			if ( !( rand() % PROBABILITY ) )
+			// constexpr int PROBABILITY = 12;// 256;
+			if ( !( rand() % SS_PROBABILITY ) )
 			{
 				const std::vector<Vector2> POS =
 				{
@@ -1136,10 +1130,10 @@ void Game::ClearUpdate()
 	if ( pSSMng )
 	{
 		// 発生
-		if ( isOpenFade )
+		if ( 0 && isOpenFade )	// DEBUG
 		{
-			constexpr int PROBABILITY = 12;// 256;
-			if ( !( rand() % PROBABILITY ) )
+			// constexpr int PROBABILITY = 12;// 256;
+			if ( !( rand() % SS_PROBABILITY ) )
 			{
 				const std::vector<float> POS_X =
 				{
@@ -1207,11 +1201,6 @@ void Game::ClearUpdate()
 
 			if ( isGlow )
 			{
-				if ( pParticleMng )
-				{
-					pParticleMng->Generate( PARTICLE_AMOUNT, base, /* isBig = */true );
-				}
-
 				PlaySE( M_RECORD_STAR );
 			}
 			else
@@ -1223,6 +1212,15 @@ void Game::ClearUpdate()
 	for ( RecordStar &it : recordStars )
 	{
 		it.Update();
+
+		constexpr int GENERATE_PARTICLE_TIME = 8;
+		if ( it.GetTimer() == GENERATE_PARTICLE_TIME )
+		{
+			if ( pParticleMng )
+			{
+				pParticleMng->Generate( PARTICLE_AMOUNT, it.GetPos(), /* isBig = */true );
+			}
+		}
 	}
 
 	// 項目選択
@@ -1960,15 +1958,6 @@ void Game::Draw()
 
 	SetDrawBright( 255, 255, 255 );
 	SetDrawBlendMode( DX_BLENDMODE_NOBLEND, 255 );
-
-#if	DEBUG_MODE
-
-	if ( isDrawCollision )
-	{
-		ShowCollisionArea();
-	}
-
-#endif	// DEBUG_MODE
 }
 
 void Game::SelectDraw()
@@ -2852,6 +2841,7 @@ void Game::SelectDrawUI()
 void Game::GameDrawUI()
 {
 	// ステージ数
+	if ( !isPause )
 	{
 		constexpr int MAX_DIGIT = 2;
 
@@ -3002,56 +2992,4 @@ void Game::GameDrawUI()
 void Game::ClearDrawUI()
 {
 
-}
-
-void Game::CollisionCheck()
-{
-
-}
-
-void Game::ShowCollisionArea()
-{
-	Vector2 shake = GetShakeAmount();
-
-	SetDrawBlendMode( DX_BLENDMODE_ALPHA, 96 );
-	{
-		unsigned int red   = GetColor( 200, 32, 32 );
-		unsigned int green = GetColor( 32, 200, 32 );
-		unsigned int blue  = GetColor( 32, 32, 200 );
-
-		if ( pCamera )
-		{
-			Box tmp = pCamera->FetchColWorldPos();
-
-			DrawBoxAA
-			(
-				tmp.cx - tmp.w,
-				tmp.cy - tmp.h,
-				tmp.cx + tmp.w,
-				tmp.cy + tmp.h,
-				blue,
-				TRUE
-			);
-		}
-
-		if ( pStarMng )
-		{
-			int end = pStarMng->GetArraySize();
-			for ( int i = 0; i < end; i++ )
-			{
-				Box star = pStarMng->FetchColWorldPos( i );
-
-				DrawBoxAA
-				(
-					star.cx - star.w,
-					star.cy - star.h,
-					star.cx + star.w,
-					star.cy + star.h,
-					green,
-					TRUE
-				);
-			}
-		}
-	}
-	SetDrawBlendMode( DX_BLENDMODE_NOBLEND, 255 );
 }

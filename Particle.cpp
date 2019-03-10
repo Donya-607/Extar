@@ -182,6 +182,8 @@ void ParticleMng::Generate( int num, Vector2 centerPos, bool isBig )
 	const float	BASE_ANGLE		= 360.0f / num;
 	const int	RANGE_ANGLE		= 20;	// 0 ~ 20
 
+	bool big = false;
+
 	for ( int i = 0; i < num; i++ )
 	{
 		// 0.0 ~ 0. RANGE f
@@ -194,7 +196,19 @@ void ParticleMng::Generate( int num, Vector2 centerPos, bool isBig )
 		velocity.x += randSpd;
 		velocity.Rotate( ( i * BASE_ANGLE ) + randAngle );
 
+		if ( isBig )
+		{
+			const std::vector<bool> BOOLEAN =
+			{
+				true,
+				true,
+				false
+			};
+
+			big = BOOLEAN[rand() % scast<int>( BOOLEAN.size() )];
+		}
+
 		particles.push_back( Particle() );
-		particles.back().Init( centerPos, velocity, isBig );
+		particles.back().Init( centerPos, velocity, big );
 	}
 }

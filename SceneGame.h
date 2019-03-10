@@ -27,18 +27,21 @@
 class RecordStar
 {
 private:
-	Vector2 pos;		// Center
+	int   timer;
 
 	float angle;		// Degree
 	float scale;
 	float rotateSpd;
 	float magniSpd;		// ägëÂèkè¨
 
+	Vector2 pos;		// Center
+
 	bool isGlow;
 public:
-	RecordStar() : pos(),
+	RecordStar() : timer( 0 ),
 		angle( 0 ), scale( 0 ),
 		rotateSpd( 0 ), magniSpd( 0 ),
+		pos(),
 		isGlow( false )
 	{}
 	~RecordStar() {}
@@ -46,6 +49,14 @@ public:
 	void Init( Vector2 centerPos, bool isGlowStar );
 
 	void Update();
+	int  GetTimer() const
+	{
+		return timer;
+	}
+	Vector2 GetPos() const
+	{
+		return pos;
+	}
 
 	void Draw(  Vector2 shake ) const;
 };
@@ -235,9 +246,6 @@ public:
 	void SelectDrawUI();
 	void GameDrawUI();
 	void ClearDrawUI();
-private:
-	void CollisionCheck();
-	void ShowCollisionArea();
 };
 
 #endif //INCLUDED_GAME_H_
