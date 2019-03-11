@@ -452,8 +452,8 @@ void Cursor::Update( bool isAcceptInput )
 
 	StageSelect::SetBackGlow( isChooseBack );
 	GlowUpdate();
-
-	if ( IS_TRG_EXPOSURE )
+	
+	if ( ( !PRESS_CTRL && TRG( KEY_INPUT_Z ) ) || TRG_J( 0, Input::A ) )
 	{
 		isDecision = true;
 	}
