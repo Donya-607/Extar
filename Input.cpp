@@ -3,9 +3,10 @@
 
 bool IsTriggerPauseButton()
 {
+	/*
 #if USE_DIRECT_INPUT
 
-	if ( TRG_J( 0, Input::START ) || TRG_J( 0, INput::SELECT ) )
+	if ( TRG_J( 0, Input::START ) || TRG_J( 0, Input::SELECT ) )
 	{
 		return true;
 	}
@@ -18,6 +19,7 @@ bool IsTriggerPauseButton()
 	}
 
 #endif // USE_DIRECT_INPUT
+	*/
 
 	if ( TRG( KEY_INPUT_P ) ) { return true; }
 

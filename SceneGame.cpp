@@ -43,7 +43,7 @@ namespace TextBehavior
 
 		"露光は、範囲内にある星を明るくできるよ",
 		"すべての星の明るさをそろえよう★",
-		"セレクトボタンでもう一度教えるよ！"
+		"エンターキーでもう一度教えるよ！"
 	};
 	const std::vector<int> TUTORIAL_SHOW_FRAME =
 	{
@@ -60,7 +60,7 @@ namespace TextBehavior
 		"水色の枠",
 		"露光",
 		"すべて",
-		"セレクトボタン"
+		"エンターキー"
 	};
 
 	const std::vector<std::string> RAND_SAY =

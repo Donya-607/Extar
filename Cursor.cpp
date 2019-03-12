@@ -453,7 +453,7 @@ void Cursor::Update( bool isAcceptInput )
 	StageSelect::SetBackGlow( isChooseBack );
 	GlowUpdate();
 	
-	if ( ( !PRESS_CTRL && TRG( KEY_INPUT_Z ) ) || TRG_J( 0, Input::A ) )
+	if ( IS_TRG_EXPOSURE )
 	{
 		isDecision = true;
 	}
@@ -465,66 +465,69 @@ void Cursor::Move()
 
 	bool isLB = false, isRB = false, isInput = false;
 
-	if ( IS_TRG_L ) { isLB = true; }
-	if ( IS_TRG_R ) { isRB = true; }
-	if ( !isChooseBack && isLB && !isRB ) { pos.y -= RESPONSE_MOVE_AMOUNT; isInput = true; }
-	if ( !isChooseBack && isRB && !isLB ) { pos.y -= RESPONSE_MOVE_AMOUNT; isInput = true; }
-
-	if ( isInput )
+	if ( !"for_Keyboard_Version" )
 	{
-		// Reaction
+		if ( IS_TRG_L ) { isLB = true; }
+		if ( IS_TRG_R ) { isRB = true; }
+		if ( !isChooseBack && isLB && !isRB ) { pos.y -= RESPONSE_MOVE_AMOUNT; isInput = true; }
+		if ( !isChooseBack && isRB && !isLB ) { pos.y -= RESPONSE_MOVE_AMOUNT; isInput = true; }
+
+		if ( isInput )
 		{
-			constexpr int GLOW_TIME = 10;
-
-			StageSelect::SetLRGlow( isLB, /* isGlow = */true );
-			glowTimer[( isLB ) ? 0 : 1] = GLOW_TIME;
-			PlaySE( M_SELECT );
-		}
-
-		isDoneMove = false;
-
-		int moveAmount = StageSelect::GetMaxDisplayNumber();
-		int pageNum = ( ( nowStageNumber - 1 ) / StageSelect::GetMaxDisplayNumber() ); // 0始まり
-
-		if ( isLB )
-		{
-			if ( 0 == pageNum )
+			// Reaction
 			{
-				// 最初のステージにカーソルが合っている場合のみ，最後に合わせる
-				nowStageNumber =
-					( 1 == nowStageNumber )
-					? FileIO::GetMaxStageNumber()
-					: 1;
+				constexpr int GLOW_TIME = 10;
+
+				StageSelect::SetLRGlow( isLB, /* isGlow = */true );
+				glowTimer[( isLB ) ? 0 : 1] = GLOW_TIME;
+				PlaySE( M_SELECT );
 			}
-			else
+
+			isDoneMove = false;
+
+			int moveAmount = StageSelect::GetMaxDisplayNumber();
+			int pageNum = ( ( nowStageNumber - 1 ) / StageSelect::GetMaxDisplayNumber() ); // 0始まり
+
+			if ( isLB )
 			{
-				nowStageNumber -= moveAmount;
-			}
-		}
-		if ( isRB )
-		{
-			// 開いているのが最後のページだったら
-			if ( FileIO::GetMaxStageNumber() - 1 < ( pageNum + 1 ) * StageSelect::GetMaxDisplayNumber() )
-			{
-				// 最後のステージにカーソルが合っている場合のみ，最初に合わせる
-				nowStageNumber =
-					( FileIO::GetMaxStageNumber()  == nowStageNumber )
-					? 1
-					: FileIO::GetMaxStageNumber();
-			}
-			else
-			{
-				nowStageNumber += moveAmount;
-				if ( FileIO::GetMaxStageNumber() < nowStageNumber )
+				if ( 0 == pageNum )
 				{
-					nowStageNumber = FileIO::GetMaxStageNumber();
+					// 最初のステージにカーソルが合っている場合のみ，最後に合わせる
+					nowStageNumber =
+						( 1 == nowStageNumber )
+						? FileIO::GetMaxStageNumber()
+						: 1;
+				}
+				else
+				{
+					nowStageNumber -= moveAmount;
 				}
 			}
-		}
+			if ( isRB )
+			{
+				// 開いているのが最後のページだったら
+				if ( FileIO::GetMaxStageNumber() - 1 < ( pageNum + 1 ) * StageSelect::GetMaxDisplayNumber() )
+				{
+					// 最後のステージにカーソルが合っている場合のみ，最初に合わせる
+					nowStageNumber =
+						( FileIO::GetMaxStageNumber()  == nowStageNumber )
+						? 1
+						: FileIO::GetMaxStageNumber();
+				}
+				else
+				{
+					nowStageNumber += moveAmount;
+					if ( FileIO::GetMaxStageNumber() < nowStageNumber )
+					{
+						nowStageNumber = FileIO::GetMaxStageNumber();
+					}
+				}
+			}
 
-		return;
+			return;
+		}
+		// else
 	}
-	// else
 
 	isInput = false;
 
