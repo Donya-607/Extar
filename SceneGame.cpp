@@ -39,7 +39,7 @@ namespace TextBehavior
 	{
 		"‚â‚Á‚Ù[A‰SŽÒ‚³‚ñH@‚â‚è•û‹³‚¦‚é‚Ëô",
 		"…F‚Ì˜g‚ªƒJƒƒ‰‚Ì”ÍˆÍ‚¾‚æI",
-		"”ÍˆÍ“à‚É¯‚ð‚¨‚³‚ß‚é‚ÆA‚w‚©‚`‚Å˜IŒõ‚ªŽg‚¦‚é‚æ",
+		"”ÍˆÍ“à‚É¯‚ð‚¨‚³‚ß‚é‚ÆA‚yƒL[‚Å˜IŒõ‚ªŽg‚¦‚é‚æ",
 
 		"˜IŒõ‚ÍA”ÍˆÍ“à‚É‚ ‚é¯‚ð–¾‚é‚­‚Å‚«‚é‚æ",
 		"‚·‚×‚Ä‚Ì¯‚Ì–¾‚é‚³‚ð‚»‚ë‚¦‚æ‚¤š",
@@ -743,6 +743,7 @@ void Game::Uninit()
 	BoardImage::Release();
 
 	DeleteFontToHandle( hFont );
+	hFont = 0;
 
 	if ( pSSMng ) { pSSMng->Uninit(); }
 	if ( pParticleMng ) { pParticleMng->Uninit(); }

@@ -20,6 +20,9 @@
 
 #endif // DEBUG_MODE
 
+void FontPrepare();
+void FontRelease();
+
 #if USE_IMGUI
 
 #include <imgui.h>
@@ -43,7 +46,7 @@ int WINAPI WinMain(	HINSTANCE	hCurInst/*インスタンスハンドル*/,	HINSTANCE	hPrevI
 	SetGraphMode( SCREEN_WIDTH, SCREEN_HEIGHT, 16 );// SizeX, SizeY, ColorBitNum
 	SetWindowIconID( 128 );							// タイトルバーのアイコンを変更
 	SetMainWindowText( "エクスタ" );					// タイトルバーのテキストを変更
-	ChangeWindowMode( FALSE );						// TRUE:ウィンドウモード, FALSE:フルスクリーンモード
+	ChangeWindowMode( TRUE );						// TRUE:ウィンドウモード, FALSE:フルスクリーンモード
 
 	if ( DxLib_Init() == -1 )
 	{
@@ -75,6 +78,8 @@ int WINAPI WinMain(	HINSTANCE	hCurInst/*インスタンスハンドル*/,	HINSTANCE	hPrevI
 	);
 
 #endif // USE_IMGUI
+	
+	FontPrepare();
 
 	MusicInit();
 
@@ -151,9 +156,24 @@ int WINAPI WinMain(	HINSTANCE	hCurInst/*インスタンスハンドル*/,	HINSTANCE	hPrevI
 
 	MusicUninit();
 
+	FontRelease();
+
 	DxLib_End();	// DXライブラリ終了処理
 
 	return 0;
+}
+
+void FontPrepare()
+{
+	LPCSTR fontname = ".\\Data\\Font\\JF-Dot-K12.TTF";
+	AddFontResourceEx( fontname, FR_PRIVATE, 0 );
+}
+void FontRelease()
+{
+	// https://docs.microsoft.com/ja-jp/windows/desktop/api/wingdi/nf-wingdi-removefontresourceexa
+
+	LPCSTR fontname = ".\\Data\\Font\\JF-Dot-K12.TTF";
+	RemoveFontResourceEx( fontname, FR_PRIVATE, 0 );
 }
 
 #if USE_IMGUI
