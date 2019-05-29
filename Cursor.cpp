@@ -465,7 +465,6 @@ void Cursor::Move()
 
 	bool isLB = false, isRB = false, isInput = false;
 
-	if ( !"for_Keyboard_Version" )
 	{
 		if ( IS_TRG_L ) { isLB = true; }
 		if ( IS_TRG_R ) { isRB = true; }

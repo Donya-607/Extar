@@ -2096,7 +2096,81 @@ void Game::GameDraw()
 		);
 	}
 
-	Grid::Draw( shake );
+	// 手数目標
+	if ( pNumMoves )
+	{
+		int x = 0, y = 0;
+		GetMousePoint( &x, &y );
+		
+		constexpr int BASE_X = 100;
+		constexpr int BASE_Y = 360;
+
+		constexpr int INTERVAL = ClearImage::SIZE_STAR_Y >> 1;
+
+		std::vector<int> dataAscendingOrder = pNumMoves->GetData();
+		int content = -1;
+		int nowRank = pNumMoves->CalcRank( numMoves );	// 0 始まり
+		int glowImageIndex = -1;
+		size_t end = dataAscendingOrder.size();
+		for ( size_t i = 0; i < end; ++i )
+		{
+			content = dataAscendingOrder[i];
+
+			// 星
+			{
+				glowImageIndex = ( scast<size_t>( nowRank ) <= i ) ? 1 : 0;
+				DrawRotaGraph
+				(
+					BASE_X,
+					BASE_Y + ( INTERVAL * i ) + 8/* 星の中心が画像の中心ではないので，少しずらしている */,
+					0.5,
+					ToRadian( 0 ),
+					ClearImage::hRecordStar[glowImageIndex],
+					TRUE
+				);
+			}
+
+			// 手数
+			{
+				int movNum = content;
+				for ( int digit = 0; digit < 2; digit++ )
+				{
+					if ( content < 10 )
+					{
+						if ( digit != 0 ) { continue; }
+						// else
+
+						DrawRotaGraph
+						(
+							BASE_X,
+							BASE_Y + ( INTERVAL * i ),
+							0.5,
+							0,
+							Number::GetHandle( movNum % 10, true ),
+							TRUE
+						);
+
+						continue;
+					}
+					// else
+
+					DrawRotaGraph
+					(
+						BASE_X + ( Number::SIZE_X >> 3 ) - ( ( Number::SIZE_X >> 2 ) * digit ),
+						BASE_Y + ( INTERVAL * i ),
+						0.5,
+						0,
+						Number::GetHandle( movNum % 10, true ),
+						TRUE
+					);
+
+					movNum /= 10;
+				}
+			}
+		}
+	}
+
+	// Grid::Draw( shake );
 
 	if ( pParticleMng )
 	{
@@ -2283,6 +2357,80 @@ void Game::ClearDraw()
 			GameImage::hFrameUI,
 			TRUE
 		);
+
+		// 手数目標
+		if ( pNumMoves )
+		{
+			int x = 0, y = 0;
+			GetMousePoint( &x, &y );
+
+			constexpr int BASE_X = 100;
+			constexpr int BASE_Y = 360;
+
+			constexpr int INTERVAL = ClearImage::SIZE_STAR_Y >> 1;
+
+			std::vector<int> dataAscendingOrder = pNumMoves->GetData();
+			int content = -1;
+			int nowRank = pNumMoves->CalcRank( numMoves );	// 0 始まり
+			int glowImageIndex = -1;
+			size_t end = dataAscendingOrder.size();
+			for ( size_t i = 0; i < end; ++i )
+			{
+				content = dataAscendingOrder[i];
+
+				// 星
+				{
+					glowImageIndex = ( scast<size_t>( nowRank ) <= i ) ? 1 : 0;
+					DrawRotaGraph
+					(
+						BASE_X,
+						BASE_Y + ( INTERVAL * i ) + 8/* 星の中心が画像の中心ではないので，少しずらしている */,
+						0.5,
+						ToRadian( 0 ),
+						ClearImage::hRecordStar[glowImageIndex],
+						TRUE
+					);
+				}
+
+				// 手数
+				{
+					int movNum = content;
+					for ( int digit = 0; digit < 2; digit++ )
+					{
+						if ( content < 10 )
+						{
+							if ( digit != 0 ) { continue; }
+							// else
+
+							DrawRotaGraph
+							(
+								BASE_X,
+								BASE_Y + ( INTERVAL * i ),
+								0.5,
+								0,
+								Number::GetHandle( movNum % 10, true ),
+								TRUE
+							);
+
+							continue;
+						}
+						// else
+
+						DrawRotaGraph
+						(
+							BASE_X + ( Number::SIZE_X >> 3 ) - ( ( Number::SIZE_X >> 2 ) * digit ),
+							BASE_Y + ( INTERVAL * i ),
+							0.5,
+							0,
+							Number::GetHandle( movNum % 10, true ),
+							TRUE
+						);
+
+						movNum /= 10;
+					}
+				}
+			}
+		}
 
 		// 星
 		if ( pStarMng )
