@@ -893,7 +893,7 @@ void Game::SelectUpdate()
 	if ( pSSMng )
 	{
 		// î≠ê∂
-		if ( 0 && isOpenFade )	// DEBUG
+		if ( isOpenFade )	// DEBUG
 		{
 			// constexpr int PROBABILITY = 12;// 256;
 			if ( !( rand() % SS_PROBABILITY ) )
@@ -1026,7 +1026,7 @@ void Game::GameUpdate()
 	if ( pSSMng )
 	{
 		// î≠ê∂
-		if ( 0 && isOpenFade )	// DEBUG
+		if (  isOpenFade )	// DEBUG
 		{
 			// constexpr int PROBABILITY = 12;// 256;
 			if ( !( rand() % SS_PROBABILITY ) )
@@ -1131,7 +1131,7 @@ void Game::ClearUpdate()
 	if ( pSSMng )
 	{
 		// î≠ê∂
-		if ( 0 && isOpenFade )	// DEBUG
+		if ( isOpenFade )	// DEBUG
 		{
 			// constexpr int PROBABILITY = 12;// 256;
 			if ( !( rand() % SS_PROBABILITY ) )

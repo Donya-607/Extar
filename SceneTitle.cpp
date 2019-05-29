@@ -57,7 +57,7 @@ namespace TitleImage
 		}
 		// else
 
-		hTitleBG = LoadGraph( "./Data/Images/BG/Title.png" );
+		// hTitleBG = LoadGraph( "./Data/Images/BG/Title.png" );
 
 
 		hTitlePushUI = LoadGraph( "./Data/Images/Title/PressAButton.png" );
@@ -292,7 +292,7 @@ void Title::Draw()
 
 	// îwåi
 	{
-		DrawExtendGraph
+		/*DrawExtendGraph
 		(
 			scast<int>( 0 - shake.x ),
 			scast<int>( 0 - shake.y ),
@@ -300,7 +300,7 @@ void Title::Draw()
 			scast<int>( SCREEN_HEIGHT - shake.y ),
 			TitleImage::hTitleBG,
 			TRUE
-		);
+		);*/
 	}
 
 	//å„ÇÎÇÃêØ
