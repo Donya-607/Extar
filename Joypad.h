@@ -29,15 +29,15 @@
 
 // スティックを倒しているか
 // Xbox
-#define TILT_STICK_X_UP( padNum )			( X_S_UP	== GetJoypadButton( padNum, Input::STICK_LY ) )
-#define TILT_STICK_X_DOWN( padNum )			( X_S_DOWN	== GetJoypadButton( padNum, Input::STICK_LY ) )
-#define TILT_STICK_X_LEFT( padNum )			( X_S_LEFT	== GetJoypadButton( padNum, Input::STICK_LX ) )
-#define TILT_STICK_X_RIGHT( padNum )		( X_S_RIGHT	== GetJoypadButton( padNum, Input::STICK_LX ) )
+#define TILT_STICK_X_UP( padNum )			( X_S_UP	>= GetJoypadButton( padNum, Input::STICK_LY ) )
+#define TILT_STICK_X_DOWN( padNum )			( X_S_DOWN	<= GetJoypadButton( padNum, Input::STICK_LY ) )
+#define TILT_STICK_X_LEFT( padNum )			( X_S_LEFT	>= GetJoypadButton( padNum, Input::STICK_LX ) )
+#define TILT_STICK_X_RIGHT( padNum )		( X_S_RIGHT	<= GetJoypadButton( padNum, Input::STICK_LX ) )
 // DirectInput
-#define TILT_STICK_D_UP( padNum )			( D_S_UP	== GetJoypadButton( padNum, Input::STICK_LY ) )
-#define TILT_STICK_D_DOWN( padNum )			( D_S_DOWN	== GetJoypadButton( padNum, Input::STICK_LY ) )
-#define TILT_STICK_D_LEFT( padNum )			( D_S_LEFT	== GetJoypadButton( padNum, Input::STICK_LX ) )
-#define TILT_STICK_D_RIGHT( padNum )		( D_S_RIGHT	== GetJoypadButton( padNum, Input::STICK_LX ) )
+#define TILT_STICK_D_UP( padNum )			( D_S_UP	>= GetJoypadButton( padNum, Input::STICK_LY ) )
+#define TILT_STICK_D_DOWN( padNum )			( D_S_DOWN	<= GetJoypadButton( padNum, Input::STICK_LY ) )
+#define TILT_STICK_D_LEFT( padNum )			( D_S_LEFT	>= GetJoypadButton( padNum, Input::STICK_LX ) )
+#define TILT_STICK_D_RIGHT( padNum )		( D_S_RIGHT	<= GetJoypadButton( padNum, Input::STICK_LX ) )
 
 // Xboxコントローラ
 enum JoypadButtonX
