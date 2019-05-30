@@ -2086,7 +2086,7 @@ void Game::GameDraw()
 	}
 
 	// 枠のUI
-	if ( !isPause )
+	//if ( !isPause )
 	{
 		DrawGraph
 		(
@@ -2990,7 +2990,7 @@ void Game::SelectDrawUI()
 void Game::GameDrawUI()
 {
 	// ステージ数
-	if ( !isPause )
+	//if ( !isPause )
 	{
 		constexpr int MAX_DIGIT = 2;
 
