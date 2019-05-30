@@ -58,68 +58,109 @@ namespace StageImage
 	constexpr int SIZE_LR_X		= 96;
 	constexpr int SIZE_LR_Y		= 128;
 
-	static std::vector<int> hThumbnails;
-	static int hBack[2];
-	static int hLR[NUM_LR_ROW * 2];
+	static std::vector<int> hOriginals{};
+	static std::vector<int> hThumbnails{};
+	static int hUIOriginal;			// contain Back, LR.
+	static int hBack[2];			// 0:Dark, 1:Bright
+	static int hLR[NUM_LR_ROW * 2];	// 0:DarkL, 1:BrightL, 2:DarkR, 3:BrightR
 
 	void Load()
 	{
 		// すでに値が入っていたら，読み込んだものとみなして飛ばす
-		if ( scast<int>( hThumbnails.size() ) )
-		{
-			return;
-		}
+		if ( scast<int>( hThumbnails.size() ) ) { return; }
 		// else
 
-		hThumbnails.push_back( LoadGraph( "./Data/Images/Thumbnails/NoImage.png" ) );
-
-		for ( int i = 1; true; i++ )
+		// Thumbnails
 		{
-			std::string filePath = "./Data/Images/Thumbnails/Stage" + std::to_string( i ) + ".png";
-			int result = LoadGraph( filePath.c_str() );
+			hThumbnails.push_back( NULL ); // LoadGraph( "./Data/Images/Thumbnails/NoImage.png" )
 
-			// HACK:エラーが起きたものは，DeleteGraphしなくて大丈夫なのかどうか？
-			if ( result == -1 )
+			constexpr int THUMBNAIL_WIDTH_PER_ONE  = 1536;
+			constexpr int THUMBNAIL_HEIGHT_PER_ONE = 768;
+			constexpr int GATHERING_NUM  = 6;
+			constexpr int GATHERING_ROW  = 3;
+			constexpr int GATHERING_CLUM = 2;
+			for ( int i = 1; true; i += GATHERING_NUM )
 			{
-				break;
-			}
-			// else
+				std::string filePath = "./Data/Images/Thumbnails/Stage" + std::to_string( i ) + ".png";
+				int result = LoadGraph( filePath.c_str() );
 
-			hThumbnails.push_back( result );
+				// HACK:エラーが起きたものは，DeleteGraphしなくて大丈夫なのかどうか？
+				if ( result == -1 ) { break; }
+				// else
+
+				hOriginals.push_back( result );
+				hThumbnails.resize( ( i * GATHERING_NUM ) + 1, -1 );
+				int thumbIndex = -1;
+				for ( int y = 0; y < GATHERING_CLUM; ++y )
+				{
+					for ( int x = 0; x < GATHERING_ROW; ++x )
+					{
+						thumbIndex = ( x + GATHERING_ROW * y ) + 1/* NoImage の枠 */;
+						thumbIndex += ( i - 1 );
+						int part = DerivationGraph
+						(
+							THUMBNAIL_WIDTH_PER_ONE  * x,
+							THUMBNAIL_HEIGHT_PER_ONE * y,
+							THUMBNAIL_WIDTH_PER_ONE,
+							THUMBNAIL_HEIGHT_PER_ONE,
+							hOriginals.back()
+						);
+
+						hThumbnails[thumbIndex] = part;
+					}
+				}
+			}
 		}
 
-		LoadDivGraph
-		(
-			"./Data/Images/UI/Back.png",
-			NUM_BACK,
-			NUM_BACK, 1,
-			SIZE_BACK_X, SIZE_BACK_Y,
-			hBack
-		);
-
-		LoadDivGraph
-		(
-			"./Data/Images/UI/UseLR.png",
-			NUM_LR_ROW * 2,
-			NUM_LR_ROW, 2,
-			SIZE_LR_X, SIZE_LR_Y,
-			hLR
-		);
+		// Back, LR
+		{
+			hUIOriginal = LoadGraph( "./Data/Images/UI/ChoosableMarks.png" );
+			for ( int i = 0; i < 2; ++i )
+			{
+				hBack[i] = DerivationGraph
+				(
+					i * SIZE_BACK_X,
+					0,
+					SIZE_BACK_X, SIZE_BACK_Y,
+					hUIOriginal
+				);
+			}
+			for ( int i = 0; i < ( NUM_LR_ROW * 2 ); ++i )
+			{
+				hLR[i] = DerivationGraph
+				(
+					( i % 2 )
+					? SIZE_LR_X
+					: 0,
+					( NUM_LR_ROW <= i )
+					? SIZE_BACK_Y + SIZE_LR_Y
+					: SIZE_BACK_Y,
+					SIZE_LR_X, SIZE_LR_Y,
+					hUIOriginal
+				);
+			}
+		}
 	}
 	void Release()
 	{
+		for ( ; !hOriginals.empty(); )
+		{
+			DeleteGraph( hOriginals.back() );
+			hOriginals.pop_back();
+		}
 		for ( ; !hThumbnails.empty(); )
 		{
 			DeleteGraph( hThumbnails.back() );
 			hThumbnails.pop_back();
 		}
 
+		DeleteGraph( hUIOriginal );
+		hUIOriginal = 0;
 		for ( int i = 0; i < NUM_BACK; i++ )
 		{
 			DeleteGraph( hBack[i] );
 			hBack[i] = 0;
 		}
-
 		for ( int i = 0; i < ( NUM_LR_ROW * 2 ); i++ )
 		{
 			DeleteGraph( hLR[i] );

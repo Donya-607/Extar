@@ -173,10 +173,7 @@ void Title::Update()
 
 #if DEBUG_MODE
 
-	if	(
-		( TRG( KEY_INPUT_Z ) || TRG( KEY_INPUT_RETURN ) || TRG_J( 0, Input::A ) )
-		&& isOpenFade && nextState != State::GotoGame
-		)
+	if ( IS_TRG_EXPOSURE && isOpenFade && nextState != State::GotoGame )
 	{
 		nextState = State::GotoGame;
 		FadeBegin();
@@ -190,7 +187,7 @@ void Title::Update()
 void Title::MainUpdate()
 {
 
-	if	( TRG( KEY_INPUT_Z ) && isOpenFade && nextState != State::GotoGame )
+	if ( IS_TRG_EXPOSURE && isOpenFade && nextState != State::GotoGame )
 	{
 		nextState = State::GotoGame;
 		FadeBegin();
