@@ -1248,6 +1248,7 @@ void Game::ClearUpdate()
 
 			if ( isGlow )
 			{
+				StartJoypadVibration( DX_INPUT_PAD1, 450, 300 );
 				PlaySE( M_RECORD_STAR );
 			}
 			else
