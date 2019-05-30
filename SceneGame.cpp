@@ -381,16 +381,12 @@ namespace PauseImage
 
 namespace HumanImage
 {
-	constexpr int NUM_ROW	 = 2;
-	constexpr int NUM_COLUMN = 2;
-	constexpr int NUM_ALL = NUM_ROW * NUM_COLUMN;
+	constexpr int NUM_BODY = 4;
 
 	constexpr int SIZE_X = 256;
 	constexpr int SIZE_Y = 352;
 
-	// static int hBody[NUM_ALL];
-	// static int hArm[NUM_ALL];
-	static int hBody;
+	static int hBody[NUM_BODY];
 	static int hArm;
 
 	constexpr int NUM_MOUTH_ROW = 3;
@@ -406,33 +402,18 @@ namespace HumanImage
 	void Load()
 	{
 		// Ç∑Ç≈Ç…ílÇ™ì¸Ç¡ÇƒÇ¢ÇΩÇÁÅCì«Ç›çûÇÒÇæÇ‡ÇÃÇ∆Ç›Ç»ÇµÇƒîÚÇŒÇ∑
-		// if ( 0 != hBody[0] )
-		if ( 0 != hBody )
-		{
-			return;
-		}
+		if ( 0 != hBody[0] ) { return; }
 		// else
 
-		/*
+		
 		LoadDivGraph
 		(
 			"./Data/Images/Human/Body.png",
-			NUM_ALL,
-			NUM_ROW, NUM_COLUMN,
+			NUM_BODY,
+			NUM_BODY, 1,
 			SIZE_X, SIZE_Y,
 			hBody
 		);
-
-		LoadDivGraph
-		(
-			"./Data/Images/Human/Arm.png",
-			NUM_ALL,
-			NUM_ROW, NUM_COLUMN,
-			SIZE_X, SIZE_Y,
-			hArm
-		);
-		*/
-		hBody = LoadGraph( "./Data/Images/Human/Body.png" );
 		hArm  = LoadGraph( "./Data/Images/Human/Arm.png" );
 
 		LoadDivGraph
@@ -448,13 +429,13 @@ namespace HumanImage
 	}
 	void Release()
 	{
-		// for ( int i = 0; i < NUM_ALL; i++ )
+		for ( int i = 0; i < NUM_BODY; i++ )
 		{
-			DeleteGraph( hBody );
-			DeleteGraph( hArm );
-			hBody = 0;
-			hArm = 0;
+			DeleteGraph( hBody[i] );
+			hBody[i] = 0;
 		}
+		DeleteGraph( hArm );
+		hArm = 0;
 		for ( int i = 0; i < NUM_MOUTH_ROW; i++ )
 		{
 			DeleteGraph( hMouth[i] );
@@ -467,10 +448,10 @@ namespace HumanImage
 
 	int  GetBodyHandle( int index )
 	{
-		// assert( 0 <= index && index < NUM_ALL );
+		if ( index < 0 || NUM_BODY <= index ) { return NULL; }
+		// else
 
-		// return hBody[index];
-		return hBody;
+		return hBody[index];
 	}
 	int  GetArmHandle( int index )
 	{
@@ -576,6 +557,63 @@ void RecordStar::Draw( Vector2 shake ) const
 	);
 }
 
+void Game::Wink::Init()
+{
+	Lottering();
+}
+void Game::Wink::Uninit()
+{
+	waitFrame = -1;
+}
+
+void Game::Wink::Update()
+{
+	Wait();
+	Animation();
+}
+
+void Game::Wink::Lottering()
+{
+	constexpr int MIN_SEC = 1;
+	waitFrame = rand() % 3;
+	waitFrame += MIN_SEC;
+
+	waitFrame *= 60;
+}
+
+void Game::Wink::Wait()
+{
+	if ( 0 < waitFrame )
+	{
+		waitFrame--;
+		if ( waitFrame == 0 )
+		{
+			timer = ANIME_SPD;
+		}
+		return;
+	}
+}
+void Game::Wink::Animation()
+{
+	if ( waitFrame != 0 ) { return; }
+	// else
+
+	timer--;
+	if ( timer <= 0 )
+	{
+		if ( animIndex < HumanImage::NUM_BODY - 1 )
+		{
+			animIndex++;
+			timer = ANIME_SPD;
+		}
+		else
+		{
+			animIndex = 0;
+			Lottering();
+		}
+	}
+}
+
 void Game::Init()
 {
 	FileIO::ReadAllCamera();
@@ -664,6 +702,8 @@ void Game::GameInit()
 	numMoves	= 0;
 	pauseTimer	= 0;
 	choice		= 0;
+
+	wink.Init();
 
 	mouthIndex		= 0;
 	balloonLength	= 0;
@@ -763,6 +803,8 @@ void Game::GameUninit()
 void Game::ClearUninit()
 {
 	clearTimer = 0;
+
+	wink.Uninit();
 
 	DeleteGraph( hScreenShot );
 	hScreenShot = 0;
@@ -1067,6 +1109,8 @@ void Game::GameUpdate()
 		pNumMoves->Update();
 	}
 
+	wink.Update();
+
 	MilkyWayUpdate();
 
 	BalloonUpdate();
@@ -1127,6 +1171,8 @@ void Game::ClearUpdate()
 	{
 		BalloonUpdate();
 	}
+
+	wink.Update();
 
 	if ( pSSMng )
 	{
@@ -2235,14 +2281,12 @@ void Game::GameDraw()
 	
 	// êl
 	{
-		int animIndex = 0;
-
 		// ëÃ
 		DrawGraph
 		(
 			0,
 			SCREEN_HEIGHT - HumanImage::SIZE_Y,
-			HumanImage::GetBodyHandle( animIndex ),
+			HumanImage::GetBodyHandle( wink.GetAnimeIndex() ),
 			TRUE
 		);
 
@@ -2260,7 +2304,7 @@ void Game::GameDraw()
 		(
 			scast<int>( armPos.x ),
 			scast<int>( armPos.y ),
-			HumanImage::GetArmHandle( animIndex ),
+			HumanImage::GetArmHandle( NULL ),
 			TRUE
 		);
 	}

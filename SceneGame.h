@@ -64,6 +64,27 @@ public:
 class Game : public Scene
 {
 private:
+	class Wink
+	{
+	private:
+		static constexpr int ANIME_SPD = 5;
+	private:
+		int waitFrame;
+		int timer;
+		int animIndex;
+	public:
+		Wink() : waitFrame( 0 ), timer( 0 ), animIndex( 0 ) {}
+	public:
+		void Init();
+		void Uninit();
+		void Update();
+		int  GetAnimeIndex() const { return animIndex; }
+	private:
+		void Lottering();
+		void Wait();
+		void Animation();
+	};
+private:
 	enum class State : int
 	{
 		Select = 0,
@@ -99,6 +120,8 @@ private:
 
 	State state;
 	State nextState;
+
+	Wink wink;
 
 	Vector2 selectPos;	// LeftTop
 
@@ -161,6 +184,7 @@ public:
 		textLength( 0 ), textExtendInterval( 0 ), textNumber( 0 ),
 		gotoNextPosX( SCREEN_WIDTH ),
 		state( State::Select ), nextState( State::Null ),
+		wink(),
 		selectPos(),
 		armPos( { scast<float>( SCREEN_WIDTH ), scast<float>( SCREEN_HEIGHT ) } ),
 		pausePos(),
