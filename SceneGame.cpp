@@ -31,12 +31,36 @@ namespace
 	constexpr int SS_PROBABILITY  = 128;
 }
 
+#define STRING_FOR_MOVIE ( 1 )
+
 namespace TextBehavior
 {
 	// 文の数とフレームの数は揃えてください
 
 	const std::vector<std::string> TUTORIAL =
 	{
+	#if STRING_FOR_MOVIE
+
+		"やっほー、エクスタ案内人のえっちゃんだよ！",
+
+		"君はカメラの枠を動かせるよ。",
+		"枠内にある星を露光して、星の明るさをあげられるよ。",
+		"すべての星の明るさを揃えよう！",
+
+		"星の明るさには、１等星から６等星まであるよ。",
+		"露光は、星の明るさを１段階あげられるよ。",
+
+		"がむしゃらにやってもできるけど・・・",
+		"うまくまとめられるように操作すると・・・",
+		"さっきよりも短く揃えられるよ！",
+
+		"短い手数で揃えてみよう☆",
+
+		"ステージは全部で30ステージ！",
+		"すべてのステージの星を揃えていこう！",
+
+	#else
+
 		"やっほー、初心者さん？　やり方教えるね♪",
 		"水色の枠がカメラの範囲だよ！",
 		"範囲内に星をおさめると、Ｚキーで露光が使えるよ",
@@ -44,9 +68,33 @@ namespace TextBehavior
 		"露光は、範囲内にある星を明るくできるよ",
 		"すべての星の明るさをそろえよう★",
 		"エンターキーでもう一度教えるよ！"
+
+	#endif // STRING_FOR_MOVIE
 	};
 	const std::vector<int> TUTORIAL_SHOW_FRAME =
 	{
+	#if STRING_FOR_MOVIE
+
+		300,
+		
+		300,
+		300,
+		300,
+
+		300,
+		300,
+
+		300,
+		300,
+		300,
+
+		300,
+
+		300,
+		-1,
+
+	#else
+
 		210,
 		180,
 		180,
@@ -54,13 +102,25 @@ namespace TextBehavior
 		180,
 		180,
 		-1
+
+	#endif // STRING_FOR_MOVIE
 	};
 	const std::vector<std::string> EMPHASIS_STR =	// RGB( 87, 101, 255 )
 	{
+	#if STRING_FOR_MOVIE
+
+		"星",
+		"露光",
+		"エクスタ",
+
+	#else
+
 		"水色の枠",
 		"露光",
 		"すべて",
 		"エンターキー"
+
+	#endif // STRING_FOR_MOVIE
 	};
 
 	const std::vector<std::string> RAND_SAY =
@@ -77,7 +137,7 @@ namespace TextBehavior
 		"いい感じかも♪",
 		"星がきれいだねー",
 
-		"キラッ★"
+		"キラッ☆"
 	};
 	const std::vector<int> RAND_SAY_SHOW_FRAME =
 	{
@@ -564,6 +624,7 @@ void Game::Wink::Init()
 void Game::Wink::Uninit()
 {
 	waitFrame = -1;
+	animIndex = 0;
 }
 
 void Game::Wink::Update()
@@ -574,11 +635,13 @@ void Game::Wink::Update()
 
 void Game::Wink::Lottering()
 {
-	constexpr int MIN_SEC = 1;
+	constexpr int MIN_SEC = 2;
 	waitFrame = rand() % 3;
 	waitFrame += MIN_SEC;
 
 	waitFrame *= 60;
+
+	animIndex = 0;
 }
 
 void Game::Wink::Wait()
@@ -641,7 +704,8 @@ void Game::Init()
 
 	hFont = CreateFontToHandle
 	(
-		"JFドットK12",
+		"メイリオ",
+		// "JFドットK12",
 		-1,				// サイズ（-1：デフォルト）
 		-1,				// 太さ（-1：デフォルト）
 		DX_FONTTYPE_NORMAL
@@ -3000,6 +3064,14 @@ void Game::TextDraw()
 
 void Game::PauseDraw()
 {
+	// 操作方法
+	DrawGraph
+	(
+		0, 0,
+		SelectImage::hUsage,
+		TRUE
+	);
+
 	// ポーズ
 	DrawGraph
 	(

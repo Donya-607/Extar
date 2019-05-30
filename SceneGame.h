@@ -67,7 +67,7 @@ private:
 	class Wink
 	{
 	private:
-		static constexpr int ANIME_SPD = 5;
+		static constexpr int ANIME_SPD = 3;
 	private:
 		int waitFrame;
 		int timer;
