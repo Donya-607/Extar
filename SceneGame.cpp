@@ -31,7 +31,7 @@ namespace
 	constexpr int SS_PROBABILITY  = 128;
 }
 
-#define STRING_FOR_MOVIE ( 1 )
+#define STRING_FOR_MOVIE ( 0 )
 
 namespace TextBehavior
 {
@@ -63,11 +63,11 @@ namespace TextBehavior
 
 		"やっほー、初心者さん？　やり方教えるね♪",
 		"水色の枠がカメラの範囲だよ！",
-		"範囲内に星をおさめると、Ｚキーで露光が使えるよ",
+		"範囲内に星をおさめると、Ａボタンで露光が使えるよ",
 
 		"露光は、範囲内にある星を明るくできるよ",
 		"すべての星の明るさをそろえよう★",
-		"エンターキーでもう一度教えるよ！"
+		"セレクトボタンでもう一度教えるよ！"
 
 	#endif // STRING_FOR_MOVIE
 	};
@@ -137,7 +137,7 @@ namespace TextBehavior
 		"いい感じかも♪",
 		"星がきれいだねー",
 
-		"キラッ☆"
+		"キラッ★"
 	};
 	const std::vector<int> RAND_SAY_SHOW_FRAME =
 	{
