@@ -146,7 +146,7 @@ namespace GameImage
 	static int hGameBG;
 	static int hFrameBG;
 	static int hFrameUI;
-	static int hMovesUI;
+	//static int hMovesUI;
 
 
 	static int hshutter;
@@ -164,7 +164,7 @@ namespace GameImage
 		hGameBG		= LoadGraph( "./Data/Images/BG/Game.png"  );
 		hFrameBG	= LoadGraph( "./Data/Images/BG/Frame.png" );
 		hFrameUI	= LoadGraph( "./Data/Images/UI/FrameUI.png" );
-		hMovesUI	= LoadGraph( "./Data/Images/UI/NumberOfMoves.png" );
+		//hMovesUI	= LoadGraph( "./Data/Images/UI/NumberOfMoves.png" );
 
 
 		hshutter	= LoadGraph( "./Data/Images/Camera/Shutter.png" );
@@ -176,11 +176,11 @@ namespace GameImage
 		DeleteGraph( hGameBG	);
 		DeleteGraph( hFrameBG	);
 		DeleteGraph( hFrameUI	);
-		DeleteGraph( hMovesUI );
+		//DeleteGraph( hMovesUI );
 		hGameBG		= 0;
 		hFrameBG	= 0;
 		hFrameUI	= 0;
-		hMovesUI	= 0;
+		//hMovesUI	= 0;
 
 
 		DeleteGraph( hshutter	);
@@ -3040,13 +3040,13 @@ void Game::GameDrawUI()
 
 	// éËêî
 	{
-		DrawGraph
-		(
-			FRAME_POS_X - 160,
-			FRAME_POS_Y,
-			GameImage::hMovesUI,
-			TRUE
-		);
+		//DrawGraph
+		//(
+		//	FRAME_POS_X - 160,
+		//	FRAME_POS_Y,
+		//	GameImage::hMovesUI,
+		//	TRUE
+		//);
 
 		// êîéö
 		{
@@ -3103,13 +3103,13 @@ void Game::GameDrawUI()
 		const Vector2 HALF_SIZE{ Grid::GetSize().x * 0.5f , Grid::GetSize().y * 0.5f };
 
 		// íiäKÇÃñÓàÛ
-		DrawGraph
-		(
-			scast<int>( BASE.x ),
-			scast<int>( BASE.y ),
-			StarImage::GetGradeHandle(),
-			TRUE
-		);
+		//DrawGraph
+		//(
+		//	scast<int>( BASE.x ),
+		//	scast<int>( BASE.y ),
+		//	StarImage::GetGradeHandle(),
+		//	TRUE
+		//);
 
 		for ( int i = 1; i <= Star::MAX_LEVEL; i++ )
 		{

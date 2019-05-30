@@ -19,7 +19,7 @@
 
 namespace TitleImage
 {
-	static int hTitleBG;
+	//static int hTitleBG;
 
 
 	static int hTitleUI;
@@ -51,7 +51,7 @@ namespace TitleImage
 	void Load()
 	{
 		// Ç∑Ç≈Ç…ílÇ™ì¸Ç¡ÇƒÇ¢ÇΩÇÁÅCì«Ç›çûÇÒÇæÇ‡ÇÃÇ∆Ç›Ç»ÇµÇƒîÚÇŒÇ∑
-		if ( 0 != hTitleBG )
+		if ( 0 != hTitlePushUI )
 		{
 			return;
 		}
@@ -91,8 +91,8 @@ namespace TitleImage
 	}
 	void Release()
 	{
-		DeleteGraph( hTitleBG	);
-		hTitleBG	= 0;
+		//DeleteGraph( hTitleBG	);
+		//hTitleBG	= 0;
 
 
 		DeleteGraph( hTitleUI );
@@ -170,18 +170,6 @@ void Title::Update()
 	}
 
 	FadeCheck();
-
-#if DEBUG_MODE
-
-	if ( IS_TRG_EXPOSURE && isOpenFade && nextState != State::GotoGame )
-	{
-		nextState = State::GotoGame;
-		FadeBegin();
-
-		PlaySE( M_E_NEXT );
-	}
-
-#endif // DEBUG_MODE
 }
 
 void Title::MainUpdate()

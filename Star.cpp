@@ -17,7 +17,7 @@ namespace StarImage
 	constexpr int SPD			= 6;
 
 	static int hStars[NUM_ALL];
-	static int hGrade;
+	//static int hGrade;
 
 	void Load()
 	{
@@ -37,7 +37,7 @@ namespace StarImage
 			hStars
 		);
 
-		hGrade = LoadGraph( "./Data/Images/UI/StarGrade.png" );
+		//hGrade = LoadGraph( "./Data/Images/UI/StarGrade.png" );
 	}
 	void Release()
 	{
@@ -47,8 +47,8 @@ namespace StarImage
 			hStars[i] = 0;
 		}
 
-		DeleteGraph( hGrade );
-		hGrade = 0;
+		/*DeleteGraph( hGrade );
+		hGrade = 0;*/
 	}
 
 	int  GetHandle( int level, int animIndex )
@@ -62,7 +62,7 @@ namespace StarImage
 	}
 	int  GetGradeHandle()
 	{
-		return hGrade;
+		return NULL;
 	}
 }
 

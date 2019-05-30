@@ -16,32 +16,38 @@ namespace CursorImage
 {
 	const Vector2 SIZE{ 512.0f, 378.0f };
 
-	static int hCursor;
-	static int hNotChoice;
+	static int hCursor[2];	// 0:Bright, 1:Dark
 
 	void Load()
 	{
 		// Ç∑Ç≈Ç…ílÇ™ì¸Ç¡ÇƒÇ¢ÇΩÇÁÅCì«Ç›çûÇÒÇæÇ‡ÇÃÇ∆Ç›Ç»ÇµÇƒîÚÇŒÇ∑
-		if ( 0 != hCursor )
+		if ( 0 != hCursor[0] )
 		{
 			return;
 		}
 		// else
 		
-		hCursor = LoadGraph( "./Data/Images/Camera/Cursor.png" );
-		hNotChoice = LoadGraph( "./Data/Images/Camera/NotChoice.png" );
+		LoadDivGraph
+		(
+			"./Data/Images/Camera/Cursor.png",
+			2, 1, 2,
+			192,
+			128,
+			hCursor
+		);
 	}
 	void Release()
 	{
-		DeleteGraph( hCursor );
-		DeleteGraph( hNotChoice );
-		hCursor = 0;
-		hNotChoice = 0;
+		DeleteGraph( hCursor[0] );
+		DeleteGraph( hCursor[1] );
+		hCursor[0] = 0;
+		hCursor[1] = 0;
 	}
 
 	int  GetHandle( bool isChoice )
 	{
-		return ( isChoice ) ? hCursor : hNotChoice;
+		auto tmp = ( isChoice ) ? hCursor[0] : hCursor[1];
+		return tmp;// ( isChoice ) ? hCursor[0] : hCursor[1];
 	}
 	Vector2 GetSize()
 	{
@@ -296,7 +302,7 @@ namespace StageSelect
 				TRUE
 			);
 			// Cursor
-			DrawExtendGraph
+			auto result = DrawExtendGraph
 			(
 				posX,
 				posY,
