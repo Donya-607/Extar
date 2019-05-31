@@ -115,6 +115,10 @@ namespace TitleImage
 void Title::Init()
 {
 	TitleImage::Load();
+	ShootingStarImage::Load();
+
+	pSSMng.reset( new ShootingStarMng() );
+	pSSMng->Init();
 
 	ShakeInit();
 
@@ -129,6 +133,9 @@ void Title::MainInit()
 void Title::Uninit()
 {
 	TitleImage::Release();
+	ShootingStarImage::Release();
+
+	if ( pSSMng ) { pSSMng->Uninit(); }
 
 	ShakeUninit();
 }
@@ -174,6 +181,39 @@ void Title::Update()
 
 void Title::MainUpdate()
 {
+
+	if ( pSSMng )
+	{
+		// î≠ê∂
+		if ( isOpenFade )	// DEBUG
+		{
+			constexpr int SS_PROBABILITY = 128;
+			if ( !( rand() % SS_PROBABILITY ) )
+			{
+				const std::vector<float> POS_X =
+				{
+					128.0f * 1,
+					128.0f * 2,
+					128.0f * 3,
+					128.0f * 4,
+					128.0f * 5,
+					128.0f * 6,
+					128.0f * 7,
+				};
+				const std::vector<float> POS_Y =
+				{
+					0
+				};
+
+				float x = POS_X[rand() % scast<int>( POS_X.size() )];
+				float y = POS_Y[rand() % scast<int>( POS_Y.size() )];
+
+				pSSMng->GenerateStar( { x, y } );
+			}
+		}
+
+		pSSMng->Update();
+	}
 
 	if ( IS_TRG_EXPOSURE && isOpenFade && nextState != State::GotoGame )
 	{
@@ -326,6 +366,12 @@ void Title::Draw()
 			TitleImage::hHuman,
 			TRUE
 		);
+	}
+
+	// ó¨ÇÍêØ
+	if ( pSSMng )
+	{
+		pSSMng->Draw( shake );
 	}
 
 	//ó¨ÇÍêØÇ≈ÇÕÇ»Ç¢ÇØÇ«ÅAì_ñ≈Ç∑ÇÈêØ

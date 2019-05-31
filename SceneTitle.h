@@ -8,6 +8,8 @@
 
 #include "Vector2.h"
 
+#include "ShootingStar.h"
+
 //--------------------
 //
 //		Title.h
@@ -27,6 +29,8 @@ private:
 private:
 	State	state;
 	State	nextState;
+
+	std::unique_ptr<ShootingStarMng> pSSMng;
 
 	bool	isOpenFade;	// TRUE‚Ì‚Æ‚«‚ÍƒtƒF[ƒh‚ª°‚ê‚Ä‚¢‚ÄC“®‚¯‚é
 private:	// ‘¼‚o‚f‚É‚æ‚éì‹Æ
@@ -62,6 +66,7 @@ private:	// ‘¼‚o‚f‚É‚æ‚éì‹Æ
 public:
 	Title( SceneMng *pMng ) : Scene( pMng ),
 		state( State::Main ), nextState( State::Null ),
+		pSSMng( nullptr ),
 		isOpenFade( false ),
 
 		star_pos(), E_pos(), Ku_pos(), Su_pos(), Ta_pos(), timer( 0 ),

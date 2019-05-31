@@ -59,6 +59,8 @@ public:
 	}
 
 	void Draw(  Vector2 shake ) const;
+public:
+	bool IsGlow() const { return isGlow; }
 };
 
 class Game : public Scene

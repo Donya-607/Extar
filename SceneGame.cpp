@@ -1326,7 +1326,7 @@ void Game::ClearUpdate()
 		it.Update();
 
 		constexpr int GENERATE_PARTICLE_TIME = 8;
-		if ( it.GetTimer() == GENERATE_PARTICLE_TIME )
+		if ( it.GetTimer() == GENERATE_PARTICLE_TIME && it.IsGlow() )
 		{
 			if ( pParticleMng )
 			{
