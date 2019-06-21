@@ -341,7 +341,7 @@ namespace FileIO
 	static bool isShowWindows = false;
 	void UpdateShowWIndowState()
 	{
-		if ( TRG( KEY_INPUT_V ) )
+		if ( TRG( CHANGE_SHOW_IMGUI_KEY ) )
 		{
 			isShowWindows = !isShowWindows;
 		}

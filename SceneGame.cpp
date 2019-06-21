@@ -975,7 +975,7 @@ void Game::Update()
 
 #if DEBUG_MODE
 
-	if ( TRG( KEY_INPUT_RETURN ) )
+	if ( 0 && TRG( KEY_INPUT_RETURN ) )
 	{
 		nextState = State::GotoTitle;
 		FadeBegin();
