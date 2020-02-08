@@ -45,6 +45,10 @@ private:
 	float angle;// Degree, ClockWise
 
 	Anim anim;
+private:	// ‰‰o‚Ì‰ñ“]‚Ég‚¤•Ï”ŒQ
+	float radian;
+	float rotateSpeed;
+	bool  nowRotate;	// ‰ñ“]’†‚É‰ñ“]‚³‚¹‚ç‚ê‚é‚Ì‚ğ–h‚®‚½‚ß
 private:	// ‘¼‚o‚f‚É‚æ‚éì‹Æ
 	int val;
 	int val_state;
@@ -54,6 +58,8 @@ public:
 		level( 6 ),
 		angle( 0 ),
 		anim(),
+
+		radian( 0 ), rotateSpeed( 0 ), nowRotate( false ),
 
 		val( 0 ),
 		val_state( 0 ),
@@ -97,6 +103,8 @@ public:
 
 	void BeExposed();
 
+	void Rotate();
+
 	void AcquireData( int *Row, int *Column, int *Width, int *Height, int *Level ) const
 	{
 		if ( nullptr != Row		)	{ *Row		= row;		}
@@ -113,6 +121,8 @@ public:
 		if ( NULL != Height	) { height	= Height;	}
 		if ( NULL != Level	) { level	= Level;	}
 	}
+private:
+	void RotateUpdate();
 };
 
 class StarMng
@@ -163,6 +173,12 @@ public:
 		assert( index < scast<int>( stars.size() ) );
 
 		return stars.at( index ).GetLevel();
+	}
+	void Rotate( int index )
+	{
+		assert( index < scast<int>( stars.size() ) );
+
+		stars.at( index ).Rotate();
 	}
 
 	void SaveLog();

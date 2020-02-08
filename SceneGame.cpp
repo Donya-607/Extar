@@ -1187,6 +1187,10 @@ void Game::GameUpdate()
 	MilkyWayUpdate();
 
 	RotatorUpdate();
+	if ( pRotator )
+	{
+		RotateStars( *pRotator );
+	}
 
 	BalloonUpdate();
 
@@ -1524,6 +1528,25 @@ void Game::RotatorDraw()
 #endif // DEBUG_MODE
 }
 #undef USE_IMGUI_FOR_ROTATOR
+void Game::RotateStars( const Rotator &rotator )
+{
+	if ( !pStarMng ) { return; }
+	// else
+
+	const Box rotatorBody = rotator.GetHitBox();
+
+	Box star{};
+	
+	const int starCount = pStarMng->GetArraySize();
+	for ( int i = 0; i < starCount; ++i )
+	{
+		star = pStarMng->FetchColWorldPos( i );
+		if ( Box::IsHitBox( star, rotatorBody ) )
+		{
+			pStarMng->Rotate( i );
+		}
+	}
+}
 
 void Game::BalloonUpdate()
 {

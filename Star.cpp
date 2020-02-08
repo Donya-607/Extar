@@ -1,12 +1,17 @@
+#include <algorithm>	// std::max()
+
 #include "DxLib.h"
 #include "Common.h"
 #include "Music.h"
-#include "Input.h"	// アンドゥにて使用
+#include "Input.h"		// アンドゥにて使用
 
 #include "Star.h"
 
 #include "FileIO.h"
 #include "Grid.h"
+
+#undef max
+#undef min
 
 namespace StarImage
 {
@@ -111,6 +116,8 @@ void Star::Update()
 {
 	anim.Update();
 
+	RotateUpdate();
+
 	// さしあたり長方形はナシになったので，とりあえず止めておく。使う可能性も残っているので，削除まではしない
 	assert( width == height );
 }
@@ -163,7 +170,7 @@ void Star::Draw( Vector2 shake ) const
 		StarImage::SIZE >> 1,	// 画像上の中心座標
 		scast<double>( width ),
 		scast<double>( height ),
-		scast<double>( ToRadian( angle ) ),
+		scast<double>( ToRadian( angle ) + radian ),
 		StarImage::GetHandle( level, anim.index ),
 		TRUE
 	);
@@ -177,7 +184,7 @@ void Star::Draw( Vector2 shake ) const
 		StarImage::SIZE >> 1,	// 画像上の中心座標
 		scast<double>( width ),
 		scast<double>( height ),
-		scast<double>( ToRadian( angle ) ),
+		scast<double>( ToRadian( angle ) + radian ),
 		StarImage::GetHandle( level, anim.index ),
 		TRUE
 	);
@@ -192,7 +199,94 @@ void Star::BeExposed()
 	CalcRotate();
 }
 
+#define USE_IMGUI_FOR_ROTATE ( true && DEBUG_MODE && USE_IMGUI )
+#if USE_IMGUI_FOR_ROTATE
+namespace ROTATE
+{
+	static float initRotSpeed	= ToRadian( 20.00f );
+	static float rotDecel		= ToRadian( 0.573f );
+	static float lowestSpeed	= ToRadian( 0.045f );
+	static float stopThreshold	= ToRadian( 5.732f );
+}
+#endif // USE_IMGUI_FOR_ROTATE
+void Star::Rotate()
+{
+	if ( nowRotate ) { return; }
+	// else
 
+	radian = 0.0f;
+#if USE_IMGUI_FOR_ROTATE
+	rotateSpeed = ROTATE::initRotSpeed;
+#else
+	rotateSpeed = ToRadian( 20.00f );
+#endif // USE_IMGUI_FOR_ROTATE
+
+	nowRotate = true;
+}
+void Star::RotateUpdate()
+{
+#if USE_IMGUI_FOR_ROTATE
+	if ( FileIO::IsShowImGuiWindow() )
+	{
+		ImGui::Begin( "Star's Rotate" );
+
+		ImGui::DragFloat( "Init Rotate Speed",	&ROTATE::initRotSpeed,	ToRadian( 1.0f ) );
+		ImGui::DragFloat( "Deceleration",		&ROTATE::rotDecel,		ToRadian( 0.1f ) );
+		ImGui::DragFloat( "Lowest Speed",		&ROTATE::lowestSpeed,	ToRadian( 0.1f ) );
+		ImGui::DragFloat( "Stopping Threshold",	&ROTATE::stopThreshold,	ToRadian( 0.1f ) );
+
+		ImGui::End();
+	}
+#endif // USE_IMGUI_FOR_ROTATE
+
+	if ( !nowRotate ) { return; }
+	// else
+
+	float deceleration{};
+	float lowestSpeed{};
+	float threshold{};
+#if USE_IMGUI_FOR_ROTATE
+	deceleration	= ROTATE::rotDecel;
+	lowestSpeed		= ROTATE::lowestSpeed;
+	threshold		= ROTATE::stopThreshold;
+#else
+	// ImGuiを使って動的に調整した値である
+	deceleration	= ToRadian( 0.573f );
+	lowestSpeed		= ToRadian( 0.045f );
+	threshold		= ToRadian( 5.732f );
+#endif // USE_IMGUI_FOR_ROTATE
+
+	// 回転を止める閾値が最低速度より小さいと，回転は永遠に止まらなくなってしまう
+	if ( fabsf( threshold ) < fabsf( lowestSpeed ) )
+	{
+		threshold = lowestSpeed;
+	}
+
+	constexpr float ROUND = 2.0f * PI;
+
+	if ( rotateSpeed <= threshold )
+	{
+		// 回転速度が閾値より低い状態で，無回転時との差分が回転速度以下になったら，回転を止める。
+		// 回転して元の角度に戻らなかったらヘンだと考えたためにこのような処理を加えた。
+		if ( ROUND - rotateSpeed < radian || radian < rotateSpeed )
+		{
+			nowRotate = false;
+
+			radian = 0.0f;
+			rotateSpeed = 0.0f;
+
+			return;
+		}
+		// else
+	}
+
+	radian += rotateSpeed;
+	radian =  std::fmodf( radian, ROUND );
+
+	rotateSpeed -= deceleration;
+	rotateSpeed =  std::max( lowestSpeed, rotateSpeed );
+}
+#undef USE_IMGUI_FOR_ROTATE
 
 void StarMng::Init( int stageNumber )
 {

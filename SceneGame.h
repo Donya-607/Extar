@@ -243,6 +243,7 @@ public:
 	void GenerateRotator();
 	void RotatorUpdate();
 	void RotatorDraw();
+	void RotateStars( const Rotator &rotator );
 
 	void BalloonUpdate();
 
