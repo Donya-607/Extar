@@ -79,6 +79,13 @@ void Camera::Uninit()
 
 void Camera::Update()
 {
+#if DEBUG_MODE
+	if ( TRG( KEY_INPUT_R ) )
+	{
+		ToggleAspectRatio();
+	}
+#endif // DEBUG_MODE
+
 	Move();
 	Interpolate();
 

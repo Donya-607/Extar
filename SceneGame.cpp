@@ -896,7 +896,7 @@ void Game::Update()
 		char debugstoper = 0;
 	}
 
-	if ( TRG( KEY_INPUT_R ) )
+	if ( TRG( KEY_INPUT_G ) )
 	{
 		GenerateRotator();
 	}
