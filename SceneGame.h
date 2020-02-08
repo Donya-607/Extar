@@ -18,6 +18,8 @@
 
 #include "ShootingStar.h"
 
+#include "Rotator.h"
+
 //--------------------
 //
 //		Game.h
@@ -139,6 +141,7 @@ private:
 	std::unique_ptr<Camera>   pCamera;
 	std::unique_ptr<StarMng>  pStarMng;
 	std::unique_ptr<NumMoves> pNumMoves;
+	std::unique_ptr<Rotator>  pRotator;
 
 	std::unique_ptr<Board>	  pBoard;
 	std::vector<RecordStar>	  recordStars;
@@ -192,7 +195,7 @@ public:
 		pausePos(),
 		pSSMng( nullptr ), pParticleMng( nullptr ),
 		pCursor( nullptr ),
-		pCamera( nullptr ), pStarMng( nullptr ), pNumMoves( nullptr ),
+		pCamera( nullptr ), pStarMng( nullptr ), pNumMoves( nullptr ), pRotator( nullptr ),
 		pBoard( nullptr ), recordStars(),
 		isOpenFade( false ),
 		isOpenBalloon( true ),
@@ -236,6 +239,10 @@ public:
 	void ClearUpdate();
 
 	void MilkyWayUpdate();
+
+	void GenerateRotator();
+	void RotatorUpdate();
+	void RotatorDraw();
 
 	void BalloonUpdate();
 

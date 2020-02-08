@@ -763,6 +763,8 @@ void Game::GameInit()
 	pNumMoves.reset( new NumMoves() );
 	pNumMoves->Init( stageNumber );
 
+	pRotator.reset();
+
 	numMoves	= 0;
 	pauseTimer	= 0;
 	choice		= 0;
@@ -863,6 +865,8 @@ void Game::SelectUninit()
 void Game::GameUninit()
 {
 	if ( pCamera   ) { pCamera->Uninit();   }
+
+	pRotator.reset();
 }
 void Game::ClearUninit()
 {
@@ -890,6 +894,11 @@ void Game::Update()
 	if ( TRG( KEY_INPUT_C ) )
 	{
 		char debugstoper = 0;
+	}
+
+	if ( TRG( KEY_INPUT_R ) )
+	{
+		GenerateRotator();
 	}
 
 #endif // DEBUG_MODE
@@ -1177,6 +1186,8 @@ void Game::GameUpdate()
 
 	MilkyWayUpdate();
 
+	RotatorUpdate();
+
 	BalloonUpdate();
 
 #if DEBUG_MODE
@@ -1453,6 +1464,66 @@ void Game::MilkyWayUpdate()
 		sStarState = ( sStarState == 0 ) ? 1 : 0;
 	}
 }
+
+#define USE_IMGUI_FOR_ROTATOR ( true && DEBUG_MODE && USE_IMGUI )
+#if USE_IMGUI_FOR_ROTATOR
+namespace ROTATOR
+{
+	static float generatePos	= 1750.0f;
+	static float lineWidth		= 5.0f;
+	static float moveSpeed		= -32.0f;
+}
+#endif // USE_IMGUI_FOR_ROTATOR
+void Game::GenerateRotator()
+{
+	// HACK: Ç‡ÇµìØéûÇ…ï°êîå¬èoÇÈâ¬î\ê´Ç™Ç†ÇÈÇ»ÇÁÅCunique_ptrÇ≈ÇÕÇ»Ç≠vectorÇ…Ç∑ÇÈ
+
+#if USE_IMGUI_FOR_ROTATOR
+	pRotator = std::make_unique<Rotator>( ROTATOR::generatePos, ROTATOR::lineWidth, ROTATOR::moveSpeed );
+#else
+	constexpr float GENERATE_POS = 1750.0f;
+	constexpr float LINE_WIDTH = 5.0f;
+	constexpr float MOVE_SPEED = 32.0f;
+	pRotator = std::make_unique<Rotator>( GENERATE_POS, LINE_WIDTH, MOVE_SPEED );
+#endif // USE_IMGUI_FOR_ROTATOR
+}
+void Game::RotatorUpdate()
+{
+#if USE_IMGUI_FOR_ROTATOR
+	if ( FileIO::IsShowImGuiWindow() )
+	{
+		ImGui::Begin( "Rotator" );
+
+		ImGui::SliderFloat( "GeneratePos",	&ROTATOR::generatePos,	0.0f,	1920.0f	);
+		ImGui::SliderFloat( "Line Width",	&ROTATOR::lineWidth,	0.1f,	32.0f	);
+		ImGui::DragFloat  ( "Move Speed",	&ROTATOR::moveSpeed,	0.5f	);
+
+		ImGui::End();
+	}
+#endif // USE_IMGUI_FOR_ROTATOR
+
+	if ( !pRotator ) { return; }
+	// else
+
+	pRotator->Update();
+
+	if ( pRotator->ShouldRemove() )
+	{
+		pRotator.reset();
+	}
+}
+void Game::RotatorDraw()
+{
+#if DEBUG_MODE
+
+	if ( !pRotator ) { return; }
+	// else
+
+	pRotator->DrawHitBox( 128, 128, 182 );
+
+#endif // DEBUG_MODE
+}
+#undef USE_IMGUI_FOR_ROTATOR
 
 void Game::BalloonUpdate()
 {
@@ -2392,6 +2463,10 @@ void Game::GameDraw()
 	{
 		TextDraw();
 	}
+
+#if DEBUG_MODE
+	RotatorDraw();
+#endif // DEBUG_MODE
 }
 
 void Game::ClearDraw()

@@ -10,11 +10,11 @@
 class Rotator
 {
 private:
-	Vector2	pos;
+	float	pos;				// ‚wÀ•W
 	float	width{ 1.0f };		// ”¼•ª‚Ì•
 	float	moveSpeed{ 1.0f };	// ‰¡•ûŒü
 public:
-	Rotator( const Vector2 generatePos, float halfWidth, float moveSpeed );
+	Rotator( float generatePosX, float halfWidth, float moveSpeed );
 public:
 	void Update();
 

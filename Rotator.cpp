@@ -6,8 +6,8 @@
 
 #include "Common.h"	// SCREEN_WIDTH, SCREEN_HEIGHT
 
-Rotator::Rotator( const Vector2 genPos, float halfWidth, float moveSpeed ) :
-	pos( genPos ), width( halfWidth ), moveSpeed( moveSpeed )
+Rotator::Rotator( float genPosX, float halfWidth, float moveSpeed ) :
+	pos( genPosX ), width( halfWidth ), moveSpeed( moveSpeed )
 {}
 
 void Rotator::Update()
@@ -20,14 +20,15 @@ void Rotator::DrawHitBox( int R, int G, int B )
 	const Box body = GetHitBox();
 	const unsigned int color = GetColor( R, G, B );
 
-	DrawBoxAA
+	auto result = DrawBoxAA
 	(
 		body.cx - body.w,
-		body.cy - body.h,
+		0, // body.cy - body.h,
 		body.cx + body.w,
-		body.cy + body.h,
+		1024.0f, // body.cy + body.h,
 		color, TRUE
 	);
+	result += 1;
 }
 
 bool Rotator::ShouldRemove() const
@@ -48,15 +49,15 @@ bool Rotator::ShouldRemove() const
 Box  Rotator::GetHitBox() const
 {
 	Box tmp{};
-	tmp.cx		= pos.x;
-	tmp.cy		= pos.y;
+	tmp.cx		= pos;
+	tmp.cy		= scast<float>( SCREEN_HEIGHT >> 1 );
 	tmp.w		= width;
-	tmp.h		= FLT_MAX;
+	tmp.h		= FLT_MAX * 0.5f;
 	tmp.exist	= true;
 	return tmp;
 }
 
 void Rotator::Move()
 {
-	pos.x += moveSpeed;
+	pos += moveSpeed;
 }
