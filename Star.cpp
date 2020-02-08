@@ -203,6 +203,10 @@ void Star::BeExposed()
 #if USE_IMGUI_FOR_ROTATE
 namespace ROTATE
 {
+	/*
+	0 ~ 1のイージング量と種類，最終の角度の３つで達成できるのでは。
+	*/
+
 	static float initRotSpeed	= ToRadian( 20.00f );
 	static float rotDecel		= ToRadian( 0.573f );
 	static float lowestSpeed	= ToRadian( 0.045f );
