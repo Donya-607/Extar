@@ -4,6 +4,7 @@
 
 #include "Board.h"
 
+
 namespace BoardImage
 {
 	static int hBoard;
