@@ -66,9 +66,6 @@
     <ClCompile Include="External\ImguiDx\imgui.cpp">
       <Filter>ImGuiDx</Filter>
     </ClCompile>
-    <ClCompile Include="ScreenShot.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="Camera.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
