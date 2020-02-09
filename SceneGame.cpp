@@ -1209,20 +1209,6 @@ void Game::GameUpdate()
 
 	BalloonUpdate();
 
-#if DEBUG_MODE
-
-	if ( TRG( KEY_INPUT_E ) && isOpenFade/* òAë≈ñhé~ */ )
-	{
-		PlaySE( M_E_NEXT );
-
-		nextState = State::Clear;
-		isClearMoment = true;
-
-		FadeEnd();	// ÉtÉâÉOÇÃèâä˙âªÇµÇΩÇ¢ÇΩÇﬂ
-	}
-
-#endif // DEBUG_MODE
-
 #if USE_IMGUI
 
 	FileIO::UpdateShowWIndowState();
@@ -1456,18 +1442,6 @@ void Game::ClearUpdate()
 			gotoNextPosX = SCREEN_WIDTH;
 		}
 	}
-
-#if DEBUG_MODE
-
-	if ( TRG( KEY_INPUT_E ) && isOpenFade/* òAë≈ñhé~ */ )
-	{
-		PlaySE( M_E_NEXT );
-
-		nextState = State::Select;
-		FadeBegin();
-	}
-
-#endif // DEBUG_MODE
 
 	ShakeUpdate();
 }
