@@ -7,6 +7,7 @@
 
 #include "Star.h"
 
+#include "Easing.h"
 #include "FileIO.h"
 #include "Grid.h"
 
