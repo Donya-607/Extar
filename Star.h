@@ -47,7 +47,7 @@ private:
 	Anim anim;
 private:	// ‰‰o‚Ì‰ñ“]‚Ég‚¤•Ï”ŒQ
 	float radian;
-	float rotateSpeed;
+	float easeFactor;	// 0.0f ~ 1.0f
 	bool  nowRotate;	// ‰ñ“]’†‚É‰ñ“]‚³‚¹‚ç‚ê‚é‚Ì‚ğ–h‚®‚½‚ß
 private:	// ‘¼‚o‚f‚É‚æ‚éì‹Æ
 	int val;
@@ -59,7 +59,7 @@ public:
 		angle( 0 ),
 		anim(),
 
-		radian( 0 ), rotateSpeed( 0 ), nowRotate( false ),
+		radian( 0 ), easeFactor( 0 ), nowRotate( false ),
 
 		val( 0 ),
 		val_state( 0 ),

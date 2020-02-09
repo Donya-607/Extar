@@ -204,14 +204,10 @@ void Star::BeExposed()
 #if USE_IMGUI_FOR_ROTATE
 namespace ROTATE
 {
-	/*
-	0 ~ 1‚ΜƒC[ƒWƒ“ƒO—Κ‚Ζν—ήCΕI‚Μp“x‚Μ‚R‚Β‚Ε’B¬‚Ε‚«‚ι‚Μ‚Ε‚ΝB
-	*/
-
-	static float initRotSpeed	= ToRadian( 20.00f );
-	static float rotDecel		= ToRadian( 0.573f );
-	static float lowestSpeed	= ToRadian( 0.100f );
-	static float stopThreshold	= ToRadian( 5.732f );
+	static int		easeKind	= 3;
+	static int		easeType	= 2;	// In or Out or InOut
+	static int		easeFrame	= 60;	// ƒC[ƒWƒ“ƒO‚Ι‚©‚―‚ι‘S‘ΜΤ
+	static float	lastDegree	= 720.0f;
 }
 #endif // USE_IMGUI_FOR_ROTATE
 void Star::Rotate()
@@ -219,14 +215,9 @@ void Star::Rotate()
 	if ( nowRotate ) { return; }
 	// else
 
-	radian = 0.0f;
-#if USE_IMGUI_FOR_ROTATE
-	rotateSpeed = ROTATE::initRotSpeed;
-#else
-	rotateSpeed = ToRadian( 20.00f );
-#endif // USE_IMGUI_FOR_ROTATE
-
-	nowRotate = true;
+	radian		= 0.0f;
+	easeFactor	= 0.0f;
+	nowRotate	= true;
 }
 void Star::RotateUpdate()
 {
@@ -235,10 +226,16 @@ void Star::RotateUpdate()
 	{
 		ImGui::Begin( "Star's Rotate" );
 
-		ImGui::DragFloat( "Init Rotate Speed",	&ROTATE::initRotSpeed,	ToRadian( 1.0f ) );
-		ImGui::DragFloat( "Deceleration",		&ROTATE::rotDecel,		ToRadian( 0.1f ) );
-		ImGui::DragFloat( "Lowest Speed",		&ROTATE::lowestSpeed,	ToRadian( 0.1f ) );
-		ImGui::DragFloat( "Stopping Threshold",	&ROTATE::stopThreshold,	ToRadian( 0.1f ) );
+		ImGui::SliderInt( "Easing Kind",	&ROTATE::easeKind,	0, Donya::Easing::GetKindCount() - 1 );
+		ImGui::SliderInt( "Easing Type",	&ROTATE::easeType,	0, Donya::Easing::GetTypeCount() - 1 );
+		const std::string desc =
+		std::string{ "Ease:" } + Donya::Easing::KindName( ROTATE::easeKind ) +
+		std::string{ "Type:" } + Donya::Easing::TypeName( ROTATE::easeType );
+		ImGui::Text( desc.c_str() );
+
+		ImGui::DragInt  ( "Taking Frame",	&ROTATE::easeFrame  );
+		ImGui::DragFloat( "Last Degree",	&ROTATE::lastDegree );
+		ImGui::Text( "End\n" );
 
 		ImGui::End();
 	}
@@ -247,49 +244,37 @@ void Star::RotateUpdate()
 	if ( !nowRotate ) { return; }
 	// else
 
-	float deceleration{};
-	float lowestSpeed{};
-	float threshold{};
+	Donya::Easing::Kind kind{};
+	Donya::Easing::Type type{};
+	float takeFrame{};
+	float lastRadian{};
 #if USE_IMGUI_FOR_ROTATE
-	deceleration	= ROTATE::rotDecel;
-	lowestSpeed		= ROTATE::lowestSpeed;
-	threshold		= ROTATE::stopThreshold;
+	kind			= scast<Donya::Easing::Kind>( ROTATE::easeKind );
+	type			= scast<Donya::Easing::Type>( ROTATE::easeType );
+	takeFrame		= scast<float>( ROTATE::easeFrame );
+	lastRadian		= ToRadian( ROTATE::lastDegree );
 #else
 	// ImGui‚πg‚Α‚Δ“®“I‚Ι’²®‚µ‚½’l‚Ε‚ ‚ι
-	deceleration	= ToRadian( 0.573f );
-	lowestSpeed		= ToRadian( 0.045f );
-	threshold		= ToRadian( 5.732f );
+	kind			= Donya::Easing::Kind::Circular;
+	type			= Donya::Easing::Type::InOut;
+	takeFrame		= 60.0f;
+	lastRadian		= ToRadian( 720.0f );
 #endif // USE_IMGUI_FOR_ROTATE
 
-	// ‰ρ“]‚π~‚ί‚ιθ‡’l‚ªΕ’α‘¬“x‚ζ‚θ¬‚³‚Ά‚ΖC‰ρ“]‚Ν‰i‰“‚Ι~‚ά‚η‚Θ‚­‚Θ‚Α‚Δ‚µ‚ά‚¤
-	if ( fabsf( threshold ) < fabsf( lowestSpeed ) )
+	const float onceIncrement = 1.0f / takeFrame;
+
+	easeFactor += onceIncrement;
+	if ( 1.0f  <= easeFactor )
 	{
-		threshold = lowestSpeed;
+		radian		= 0.0f;
+		easeFactor	= 0.0f;
+		nowRotate	= false;
+		return;
 	}
+	// else
 
-	constexpr float ROUND = 2.0f * PI;
-
-	if ( rotateSpeed <= threshold )
-	{
-		// ‰ρ“]‘¬“x‚ªθ‡’l‚ζ‚θ’α‚Άσ‘Τ‚ΕC–³‰ρ“]‚Ζ‚Μ·•ª‚ª‰ρ“]‘¬“xΘ‰Ί‚Ι‚Θ‚Α‚½‚ηC‰ρ“]‚π~‚ί‚ιB
-		// ‰ρ“]‚µ‚Δ³‚Μp“x‚Ι–ί‚η‚Θ‚©‚Α‚½‚ηƒwƒ“‚Ύ‚Ζl‚¦‚½‚½‚ί‚Ι‚±‚Μ‚ζ‚¤‚Θ—‚π‰Α‚¦‚½B
-		if ( ROUND - rotateSpeed < radian || radian < rotateSpeed )
-		{
-			nowRotate = false;
-
-			radian = 0.0f;
-			rotateSpeed = 0.0f;
-
-			return;
-		}
-		// else
-	}
-
-	radian += rotateSpeed;
-	radian =  std::fmodf( radian, ROUND );
-
-	rotateSpeed -= deceleration;
-	rotateSpeed =  std::max( lowestSpeed, rotateSpeed );
+	float ease = Donya::Easing::Ease( kind, type, easeFactor );
+	radian = lastRadian * ease;
 }
 #undef USE_IMGUI_FOR_ROTATE
 
