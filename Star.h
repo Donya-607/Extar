@@ -75,6 +75,7 @@ public:
 
 	void EffectRelatedUpdate();
 
+	// 描画時の星の角度をレベルにより計算する（angle変数を変更）
 	void CalcRotate();
 
 	void Draw( Vector2 shake ) const;
@@ -103,6 +104,7 @@ public:
 
 	void BeExposed();
 
+	// 星を回転させる（radian変数を変更）
 	void Rotate();
 
 	void AcquireData( int *Row, int *Column, int *Width, int *Height, int *Level ) const
@@ -123,6 +125,15 @@ public:
 	}
 private:
 	void RotateUpdate();
+
+#if DEBUG_MODE
+public:
+	void SetLevelDebug( int newLevel )
+	{
+		level = newLevel;
+		CalcRotate();
+	}
+#endif // DEBUG_MODE
 };
 
 class StarMng
@@ -224,6 +235,17 @@ public:
 	void SaveData();
 
 #endif // USE_IMGUI
+
+#if DEBUG_MODE
+public:
+	void AlignLevelsDebug( int newLevel = 1 )
+	{
+		for ( auto &it : stars )
+		{
+			it.SetLevelDebug( newLevel );
+		}
+	}
+#endif // DEBUG_MODE
 };
 
 #endif //INCLUDED_STAR_H_

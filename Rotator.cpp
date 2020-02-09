@@ -23,9 +23,9 @@ void Rotator::DrawHitBox( int R, int G, int B )
 	auto result = DrawBoxAA
 	(
 		body.cx - body.w,
-		0, // body.cy - body.h,
+		0.0f,
 		body.cx + body.w,
-		1024.0f, // body.cy + body.h,
+		scast<float>( SCREEN_HEIGHT ),
 		color, TRUE
 	);
 	result += 1;

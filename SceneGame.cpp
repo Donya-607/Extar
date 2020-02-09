@@ -1079,8 +1079,11 @@ void Game::GameUpdate()
 	// カメラの更新より先に判定し，描画後にスクショが始まるようにする
 	if ( !isDoneMoveArm && pStarMng->IsEqualLevels() )
 	{
+		// この条件の中には，クリア判定時に１度だけ入る想定
 		if ( nextState == State::Null )
 		{
+			nextState = State::Clear;
+
 			/* テキストボックスを隠す
 			{
 				mouthIndex = 0;
@@ -1107,21 +1110,26 @@ void Game::GameUpdate()
 				isOpenBalloon = true;
 			}
 
-			nextState = State::Clear;
-
 			isOpenFade = false;	// 操作不能にするため
 			isDoneMoveArm = false;
-		}	
 
-		armPos.y -= HumanBehavior::HAND_RISE_SPD_Y;
+			GenerateRotator();
+		}
 
-		if ( armPos.y < ( SCREEN_HEIGHT - HumanImage::SIZE_Y ) )
+		// 上の「クリア判定の瞬間のみ入るプロセス」内でpRotatorを生成しているので，
+		// それによる星の回転演出が終わるまでは，クリア演出が止まるようになるという算段
+		if ( !pRotator )
 		{
-			// armPos.y = scast<float>( SCREEN_HEIGHT - HumanImage::SIZE_Y );
-			armPos.y += HumanBehavior::HAND_RISE_SPD_Y;
+			armPos.y -= HumanBehavior::HAND_RISE_SPD_Y;
 
-			isClearMoment	= true;
-			isDoneMoveArm	= true;
+			if ( armPos.y < ( SCREEN_HEIGHT - HumanImage::SIZE_Y ) )
+			{
+				// armPos.y = scast<float>( SCREEN_HEIGHT - HumanImage::SIZE_Y );
+				armPos.y += HumanBehavior::HAND_RISE_SPD_Y;
+
+				isClearMoment	= true;
+				isDoneMoveArm	= true;
+			}
 		}
 	}
 
@@ -1175,6 +1183,13 @@ void Game::GameUpdate()
 				PlaySE( M_UNDO );
 			}
 		}
+
+	#if DEBUG_MODE
+		if ( TRG( KEY_INPUT_SEMICOLON ) )
+		{
+			pStarMng->AlignLevelsDebug();
+		}
+	#endif // DEBUG_MODE
 	}
 
 	if ( pNumMoves )
@@ -1473,21 +1488,22 @@ void Game::MilkyWayUpdate()
 #if USE_IMGUI_FOR_ROTATOR
 namespace ROTATOR
 {
-	static float generatePos	= 1750.0f;
-	static float lineWidth		= 5.0f;
-	static float moveSpeed		= -32.0f;
+	static float generatePos	= 2048.0f;
+	static float lineWidth		= 128.0f;
+	static float moveSpeed		= -24.0f;
 }
 #endif // USE_IMGUI_FOR_ROTATOR
 void Game::GenerateRotator()
 {
 	// HACK: もし同時に複数個出る可能性があるなら，unique_ptrではなくvectorにする
+	// 現在は存在していたものは消されて，上書きされるようになっている
 
 #if USE_IMGUI_FOR_ROTATOR
 	pRotator = std::make_unique<Rotator>( ROTATOR::generatePos, ROTATOR::lineWidth, ROTATOR::moveSpeed );
 #else
-	constexpr float GENERATE_POS = 1750.0f;
-	constexpr float LINE_WIDTH = 5.0f;
-	constexpr float MOVE_SPEED = 32.0f;
+	constexpr float GENERATE_POS	= 2048.0f;
+	constexpr float LINE_WIDTH		= 128.0f;
+	constexpr float MOVE_SPEED		= -24.0f;
 	pRotator = std::make_unique<Rotator>( GENERATE_POS, LINE_WIDTH, MOVE_SPEED );
 #endif // USE_IMGUI_FOR_ROTATOR
 }
@@ -1521,6 +1537,9 @@ void Game::RotatorDraw()
 #if DEBUG_MODE
 
 	if ( !pRotator ) { return; }
+	// else
+
+	if ( !PRESS_SHIFT ) { return; }
 	// else
 
 	pRotator->DrawHitBox( 128, 128, 182 );

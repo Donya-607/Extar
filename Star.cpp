@@ -209,7 +209,7 @@ namespace ROTATE
 
 	static float initRotSpeed	= ToRadian( 20.00f );
 	static float rotDecel		= ToRadian( 0.573f );
-	static float lowestSpeed	= ToRadian( 0.045f );
+	static float lowestSpeed	= ToRadian( 0.100f );
 	static float stopThreshold	= ToRadian( 5.732f );
 }
 #endif // USE_IMGUI_FOR_ROTATE
