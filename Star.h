@@ -45,6 +45,10 @@ private:
 	float angle;// Degree, ClockWise
 
 	Anim anim;
+private:	// ‰‰o‚Ì‰ñ“]‚Ég‚¤•Ï”ŒQ
+	float radian;
+	float easeFactor;	// 0.0f ~ 1.0f
+	bool  nowRotate;	// ‰ñ“]’†‚É‰ñ“]‚³‚¹‚ç‚ê‚é‚Ì‚ğ–h‚®‚½‚ß
 private:	// ‘¼‚o‚f‚É‚æ‚éì‹Æ
 	int val;
 	int val_state;
@@ -54,6 +58,8 @@ public:
 		level( 6 ),
 		angle( 0 ),
 		anim(),
+
+		radian( 0 ), easeFactor( 0 ), nowRotate( false ),
 
 		val( 0 ),
 		val_state( 0 ),
@@ -69,6 +75,7 @@ public:
 
 	void EffectRelatedUpdate();
 
+	// •`‰æ‚Ì¯‚ÌŠp“x‚ğƒŒƒxƒ‹‚É‚æ‚èŒvZ‚·‚éiangle•Ï”‚ğ•ÏXj
 	void CalcRotate();
 
 	void Draw( Vector2 shake ) const;
@@ -97,6 +104,9 @@ public:
 
 	void BeExposed();
 
+	// ¯‚ğ‰ñ“]‚³‚¹‚éiradian•Ï”‚ğ•ÏXj
+	void Rotate();
+
 	void AcquireData( int *Row, int *Column, int *Width, int *Height, int *Level ) const
 	{
 		if ( nullptr != Row		)	{ *Row		= row;		}
@@ -113,6 +123,17 @@ public:
 		if ( NULL != Height	) { height	= Height;	}
 		if ( NULL != Level	) { level	= Level;	}
 	}
+private:
+	void RotateUpdate();
+
+#if DEBUG_MODE
+public:
+	void SetLevelDebug( int newLevel )
+	{
+		level = newLevel;
+		CalcRotate();
+	}
+#endif // DEBUG_MODE
 };
 
 class StarMng
@@ -164,6 +185,12 @@ public:
 
 		return stars.at( index ).GetLevel();
 	}
+	void Rotate( int index )
+	{
+		assert( index < scast<int>( stars.size() ) );
+
+		stars.at( index ).Rotate();
+	}
 
 	void SaveLog();
 	bool Undo();	// ¬Œ÷‚µ‚½‚çTRUE
@@ -208,6 +235,17 @@ public:
 	void SaveData();
 
 #endif // USE_IMGUI
+
+#if DEBUG_MODE
+public:
+	void AlignLevelsDebug( int newLevel = 1 )
+	{
+		for ( auto &it : stars )
+		{
+			it.SetLevelDebug( newLevel );
+		}
+	}
+#endif // DEBUG_MODE
 };
 
 #endif //INCLUDED_STAR_H_

@@ -11,7 +11,7 @@
 
 #if DEBUG_MODE
 
-// #include "SceneGame.h"
+#include "SceneGame.h"
 #include "SceneTitle.h"
 
 #else
@@ -102,8 +102,8 @@ int WINAPI WinMain(	HINSTANCE	hCurInst/*インスタンスハンドル*/,	HINSTANCE	hPrevI
 
 #if DEBUG_MODE
 
-	// pManager->mpScene = new Game( pManager );
-	pManager->mpScene = new Title( pManager );
+	pManager->mpScene = new Game( pManager );
+	// pManager->mpScene = new Title( pManager );
 
 #else
 

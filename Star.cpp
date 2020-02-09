@@ -1,12 +1,18 @@
+#include <algorithm>	// std::max()
+
 #include "DxLib.h"
 #include "Common.h"
 #include "Music.h"
-#include "Input.h"	// アンドゥにて使用
+#include "Input.h"		// アンドゥにて使用
 
 #include "Star.h"
 
+#include "Easing.h"
 #include "FileIO.h"
 #include "Grid.h"
+
+#undef max
+#undef min
 
 namespace StarImage
 {
@@ -111,6 +117,8 @@ void Star::Update()
 {
 	anim.Update();
 
+	RotateUpdate();
+
 	// さしあたり長方形はナシになったので，とりあえず止めておく。使う可能性も残っているので，削除まではしない
 	assert( width == height );
 }
@@ -163,7 +171,7 @@ void Star::Draw( Vector2 shake ) const
 		StarImage::SIZE >> 1,	// 画像上の中心座標
 		scast<double>( width ),
 		scast<double>( height ),
-		scast<double>( ToRadian( angle ) ),
+		scast<double>( ToRadian( angle ) + radian ),
 		StarImage::GetHandle( level, anim.index ),
 		TRUE
 	);
@@ -177,7 +185,7 @@ void Star::Draw( Vector2 shake ) const
 		StarImage::SIZE >> 1,	// 画像上の中心座標
 		scast<double>( width ),
 		scast<double>( height ),
-		scast<double>( ToRadian( angle ) ),
+		scast<double>( ToRadian( angle ) + radian ),
 		StarImage::GetHandle( level, anim.index ),
 		TRUE
 	);
@@ -192,7 +200,83 @@ void Star::BeExposed()
 	CalcRotate();
 }
 
+#define USE_IMGUI_FOR_ROTATE ( true && DEBUG_MODE && USE_IMGUI )
+#if USE_IMGUI_FOR_ROTATE
+namespace ROTATE
+{
+	static int		easeKind	= 3;
+	static int		easeType	= 2;	// In or Out or InOut
+	static int		easeFrame	= 60;	// イージングにかける全体時間
+	static float	lastDegree	= 720.0f;
+}
+#endif // USE_IMGUI_FOR_ROTATE
+void Star::Rotate()
+{
+	if ( nowRotate ) { return; }
+	// else
 
+	radian		= 0.0f;
+	easeFactor	= 0.0f;
+	nowRotate	= true;
+}
+void Star::RotateUpdate()
+{
+#if USE_IMGUI_FOR_ROTATE
+	if ( FileIO::IsShowImGuiWindow() )
+	{
+		ImGui::Begin( "Star's Rotate" );
+
+		ImGui::SliderInt( "Easing Kind",	&ROTATE::easeKind,	0, Donya::Easing::GetKindCount() - 1 );
+		ImGui::SliderInt( "Easing Type",	&ROTATE::easeType,	0, Donya::Easing::GetTypeCount() - 1 );
+		const std::string desc =
+		std::string{ "Ease:" } + Donya::Easing::KindName( ROTATE::easeKind ) +
+		std::string{ "Type:" } + Donya::Easing::TypeName( ROTATE::easeType );
+		ImGui::Text( desc.c_str() );
+
+		ImGui::DragInt  ( "Taking Frame",	&ROTATE::easeFrame  );
+		ImGui::DragFloat( "Last Degree",	&ROTATE::lastDegree );
+		ImGui::Text( "End\n" );
+
+		ImGui::End();
+	}
+#endif // USE_IMGUI_FOR_ROTATE
+
+	if ( !nowRotate ) { return; }
+	// else
+
+	Donya::Easing::Kind kind{};
+	Donya::Easing::Type type{};
+	float takeFrame{};
+	float lastRadian{};
+#if USE_IMGUI_FOR_ROTATE
+	kind			= scast<Donya::Easing::Kind>( ROTATE::easeKind );
+	type			= scast<Donya::Easing::Type>( ROTATE::easeType );
+	takeFrame		= scast<float>( ROTATE::easeFrame );
+	lastRadian		= ToRadian( ROTATE::lastDegree );
+#else
+	// ImGuiを使って動的に調整した値である
+	kind			= Donya::Easing::Kind::Circular;
+	type			= Donya::Easing::Type::InOut;
+	takeFrame		= 60.0f;
+	lastRadian		= ToRadian( 720.0f );
+#endif // USE_IMGUI_FOR_ROTATE
+
+	const float onceIncrement = 1.0f / takeFrame;
+
+	easeFactor += onceIncrement;
+	if ( 1.0f  <= easeFactor )
+	{
+		radian		= 0.0f;
+		easeFactor	= 0.0f;
+		nowRotate	= false;
+		return;
+	}
+	// else
+
+	float ease = Donya::Easing::Ease( kind, type, easeFactor );
+	radian = lastRadian * ease;
+}
+#undef USE_IMGUI_FOR_ROTATE
 
 void StarMng::Init( int stageNumber )
 {

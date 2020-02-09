@@ -71,6 +71,8 @@ public:
 
 	void Draw( Vector2 shake ) const;
 private:
+	void ToggleAspectRatio();
+
 	void Move();
 	void Interpolate();
 	void ClampPos();

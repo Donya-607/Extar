@@ -79,6 +79,13 @@ void Camera::Uninit()
 
 void Camera::Update()
 {
+#if DEBUG_MODE
+	if ( TRG( KEY_INPUT_R ) )
+	{
+		ToggleAspectRatio();
+	}
+#endif // DEBUG_MODE
+
 	Move();
 	Interpolate();
 
@@ -103,15 +110,47 @@ void Camera::Update()
 
 void Camera::Draw( Vector2 shake ) const
 {
-	DrawExtendGraph
+	// 回転対応前のもの
+	//DrawExtendGraph
+	//(
+	//	FRAME_POS_X + scast<int>( pos.x - denialShake.x - shake.x ),
+	//	FRAME_POS_Y + scast<int>( pos.y - denialShake.y - shake.y ),
+	//	FRAME_POS_X + scast<int>( pos.x + size.x - denialShake.x - shake.x ),
+	//	FRAME_POS_Y + scast<int>( pos.y + size.y - denialShake.y - shake.y ),
+	//	CameraImage::GetHandle( ( isGlow ) ? 1 : 0 ),
+	//	TRUE
+	//);
+
+	bool	shouldRot	= ( width < height ) ? true : false;
+	double	radian		= ( shouldRot ) ? ToRadian( 90.0 ) : 0.0;
+	Vector2	extend
+	{
+		// 画像サイズとの比率を出す
+		// min(), max()を使っているのは，縦横比が反対になっていても元の大きさ（横がでかい）のサイズをかけるため
+		( Grid::GetSize().x * std::max( width, height ) ) / scast<float>( CameraImage::SIZE_X ),
+		( Grid::GetSize().y * std::min( width, height ) ) / scast<float>( CameraImage::SIZE_Y ),
+	};
+	Vector2 halfSize{ size.x * 0.5f, size.y * 0.5f };
+
+	DrawRotaGraph3
 	(
-		FRAME_POS_X + scast<int>( pos.x - denialShake.x - shake.x ),
-		FRAME_POS_Y + scast<int>( pos.y - denialShake.y - shake.y ),
-		FRAME_POS_X + scast<int>( pos.x + size.x - denialShake.x - shake.x ),
-		FRAME_POS_Y + scast<int>( pos.y + size.y - denialShake.y - shake.y ),
+		FRAME_POS_X + scast<int>( pos.x + ( halfSize.x ) - denialShake.x - shake.x ),
+		FRAME_POS_Y + scast<int>( pos.y + ( halfSize.y ) - denialShake.y - shake.y ),
+		CameraImage::SIZE_X >> 1,
+		CameraImage::SIZE_Y >> 1,
+		scast<double>( extend.x ),
+		scast<double>( extend.y ),
+		radian,
 		CameraImage::GetHandle( ( isGlow ) ? 1 : 0 ),
 		TRUE
 	);
+}
+
+void Camera::ToggleAspectRatio()
+{
+	std::swap( width,  height );
+	std::swap( size.x, size.y );
+	ClampMatrix(); // 位置の補正
 }
 
 void Camera::Move()
