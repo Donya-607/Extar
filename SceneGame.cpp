@@ -1911,18 +1911,21 @@ bool Game::Exposure()
 	}
 	// else
 
-	Box camera = pCamera->FetchColWorldPos();
+	const Box camera = pCamera->FetchColWorldPos();
 
-	std::vector<int> targets{};
-	std::vector<Vector2> particlePos{};
+	std::vector<int>		targets{};		// 露光の適用対象たち
+	std::vector<Vector2>	particlePos{};
 
 	// 適用番号の検査
-	int end = pStarMng->GetArraySize();
+	bool isCovered = false;	// 星が一つでもカメラの枠内に入っていれば真
+	const int end = pStarMng->GetArraySize();
 	for ( int i = 0; i < end; i++ )
 	{
 		Box star = pStarMng->FetchColWorldPos( i );
 		if ( Box::IsHitBox( camera, star ) )
 		{
+			isCovered = true;
+
 			// １が入っている場合，使えない
 			if ( pStarMng->FetchLevel( i ) <= 1 )
 			{
@@ -1937,7 +1940,7 @@ bool Game::Exposure()
 				targets.push_back( i );
 				particlePos.push_back( { star.cx, star.cy } );
 			}
-			else
+			else // カメラの枠が星に触れてはいるが，星のサイズが大きく，はみだしている場合に入る（露光は失敗する）
 			{
 				pCamera->SetShake();
 				PlaySE( M_FAILURE );
@@ -1947,7 +1950,16 @@ bool Game::Exposure()
 		}
 	}
 
-	// 適用対象がいなかったら終わる
+	// 星をまったく収めていなければ，失敗として終わる
+	if ( !isCovered )
+	{
+		pCamera->SetShake();
+		PlaySE( M_FAILURE );
+		return false;
+	}
+	// else
+
+	// 星を収めてはいるものの，失敗していたら終わる
 	if ( !scast<int>( targets.size() ) || !end )
 	{
 		return false;
@@ -1956,7 +1968,7 @@ bool Game::Exposure()
 
 	pCamera->SetGlow();
 
-	// TODO:Exposureの音を鳴らすタイミングは，成功が確定してからかどうか。
+	// 露光音は，成功が確定してから鳴らす（失敗時の音もあるため）
 	PlaySE( M_EXPOSURE );
 
 	// アンドゥ用
