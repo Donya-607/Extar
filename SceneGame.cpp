@@ -1439,7 +1439,6 @@ void Game::ClearUpdate()
 			PlaySE( M_DECISION );
 
 			isShowClearMenu = true;
-			gotoNextPosX = SCREEN_WIDTH;
 		}
 	}
 
@@ -2967,6 +2966,14 @@ void Game::ClearDraw()
 		( stageNumber == FileIO::GetMaxStageNumber() )
 		? true
 		: false;
+
+	// ‘€ì•û–@
+	DrawGraph
+	(
+		0, 0,
+		SelectImage::hUsage,
+		TRUE
+	);
 
 	// €–Ú
 	DrawGraph
