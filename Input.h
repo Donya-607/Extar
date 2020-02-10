@@ -45,6 +45,34 @@
 
 #endif // USE_DIRECT_INPUT
 
+enum class InputTrigger
+{
+	Up,
+	Down,
+	Left,
+	Right,
+	LB,
+	RB,
+	Select,		// チュートリアルのリセットに使用する
+
+	Exposure,
+	Undo,
+};
+enum class InputPress
+{
+	Up,
+	Down,
+	Left,
+	Right,
+};
+// 押された瞬間のみ真を返す
+bool IsTrigger( InputTrigger input );
+// 押されているフレーム数を返す
+int  IsPress( InputPress input );
+
 bool IsTriggerPauseButton();
+
+// XInputコントローラを使用するバージョンなら真を返す
+bool IsControllerVersion();
 
 #endif //INCLUDED_INPUT_H_
