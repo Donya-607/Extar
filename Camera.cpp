@@ -79,12 +79,11 @@ void Camera::Uninit()
 
 void Camera::Update()
 {
-#if DEBUG_MODE
-	if ( TRG( KEY_INPUT_R ) )
+	if ( IsTrigger( InputTrigger::ToggleCamera ) )
 	{
 		ToggleAspectRatio();
+		PlaySE( M_TOGGLE_CAMERA );
 	}
-#endif // DEBUG_MODE
 
 	Move();
 	Interpolate();
@@ -159,10 +158,10 @@ void Camera::Move()
 
 	bool isUp = false, isDown = false, isLeft = false, isRight = false;
 
-	if ( IS_TRG_UP		) { isUp	= true;	}
-	if ( IS_TRG_DOWN	) { isDown	= true;	}
-	if ( IS_TRG_LEFT	) { isLeft	= true;	}
-	if ( IS_TRG_RIGHT	) { isRight	= true;	}
+	if ( IsTrigger( InputTrigger::Up	) ) { isUp		= true; }
+	if ( IsTrigger( InputTrigger::Down	) ) { isDown	= true;	}
+	if ( IsTrigger( InputTrigger::Left	) ) { isLeft	= true;	}
+	if ( IsTrigger( InputTrigger::Right	) ) { isRight	= true;	}
 
 	if ( isUp		&& !isDown	)	{ pos.y -= RESPONSE_MOVE_AMOUNT * moveAmount; column	-= moveAmount; PlaySE( M_CAMERA_MOVE ); }
 	if ( isDown		&& !isUp	)	{ pos.y += RESPONSE_MOVE_AMOUNT * moveAmount; column	+= moveAmount; PlaySE( M_CAMERA_MOVE ); }
@@ -242,7 +241,7 @@ void Camera::Shake()
 
 void Camera::Exposure()
 {
-	if ( !IS_TRG_EXPOSURE )
+	if ( !IsTrigger( InputTrigger::Exposure ) )
 	{
 		isExposure = false;
 

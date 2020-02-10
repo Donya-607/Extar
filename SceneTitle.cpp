@@ -215,7 +215,7 @@ void Title::MainUpdate()
 		pSSMng->Update();
 	}
 
-	if ( IS_TRG_EXPOSURE && isOpenFade && nextState != State::GotoGame )
+	if ( IsTrigger( InputTrigger::Exposure ) && isOpenFade && nextState != State::GotoGame )
 	{
 		nextState = State::GotoGame;
 		FadeBegin();

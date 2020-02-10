@@ -500,7 +500,7 @@ void Cursor::Update( bool isAcceptInput )
 	StageSelect::SetBackGlow( isChooseBack );
 	GlowUpdate();
 	
-	if ( IS_TRG_EXPOSURE )
+	if ( IsTrigger( InputTrigger::Exposure ) )
 	{
 		isDecision = true;
 	}
@@ -512,9 +512,11 @@ void Cursor::Move()
 
 	bool isLB = false, isRB = false, isInput = false;
 
+	// キーボードではLB, RBに相当する適当なキーが無いため，ページ送りは無効とする
+	if ( IsControllerVersion() )
 	{
-		if ( IS_TRG_L ) { isLB = true; }
-		if ( IS_TRG_R ) { isRB = true; }
+		if ( IsTrigger( InputTrigger::LB ) ) { isLB = true; }
+		if ( IsTrigger( InputTrigger::RB ) ) { isRB = true; }
 		if ( !isChooseBack && isLB && !isRB ) { pos.y -= RESPONSE_MOVE_AMOUNT; isInput = true; }
 		if ( !isChooseBack && isRB && !isLB ) { pos.y -= RESPONSE_MOVE_AMOUNT; isInput = true; }
 
@@ -579,8 +581,8 @@ void Cursor::Move()
 
 	bool isUp	= false, isDown		= false;
 
-	if ( IS_TRG_UP		) { isUp	= true; }
-	if ( IS_TRG_DOWN	) { isDown	= true; }
+	if ( IsTrigger( InputTrigger::Up	) ) { isUp		= true; }
+	if ( IsTrigger( InputTrigger::Down	) ) { isDown	= true; }
 	if ( !isChooseBack	&& isUp	&& !isDown	) { pos.y -= RESPONSE_MOVE_AMOUNT; isInput = true; }
 	if (				isDown	&& !isUp	) { pos.y += RESPONSE_MOVE_AMOUNT; isInput = true; }
 
@@ -626,8 +628,8 @@ void Cursor::Move()
 	isInput = false;
 	bool isLeft = false, isRight = false;
 
-	if ( IS_TRG_LEFT	) { isLeft	= true; }
-	if ( IS_TRG_RIGHT	) { isRight	= true; }
+	if ( IsTrigger( InputTrigger::Left	) ) { isLeft	= true; }
+	if ( IsTrigger( InputTrigger::Right	) ) { isRight	= true; }
 	if ( !isChooseBack && isLeft	&& !isRight	) { pos.x -= RESPONSE_MOVE_AMOUNT; isInput = true; }
 	if ( !isChooseBack && isRight	&& !isLeft	) { pos.x += RESPONSE_MOVE_AMOUNT; isInput = true; }
 

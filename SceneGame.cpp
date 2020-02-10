@@ -1175,7 +1175,7 @@ void Game::GameUpdate()
 	{
 		pStarMng->Update();
 
-		if ( IS_TRG_UNDO && isOpenFade && nextState == State::Null )
+		if ( IsTrigger( InputTrigger::Undo ) && isOpenFade && nextState == State::Null )
 		{
 			if ( pStarMng->Undo(), pCamera->Undo()/* HAC:ちゃんと両方での成功を条件に取るべきである */ )
 			{
@@ -1352,15 +1352,15 @@ void Game::ClearUpdate()
 	}
 
 	// 項目選択
-	if ( isShowClearMenu )
+	if ( isShowClearMenu && isOpenFade/* 項目を選びフェードが始まっていたら入力を受け付けない */ )
 	{
 		// PauseUpdateのものと同一
 		constexpr int MAX_MENU = 4;
 
 		bool isUp = false, isDown = false;
 
-		if ( IS_TRG_UP ) { isUp = true; }
-		if ( IS_TRG_DOWN ) { isDown = true; }
+		if ( IsTrigger( InputTrigger::Up	) ) { isUp		= true; }
+		if ( IsTrigger( InputTrigger::Down	) ) { isDown	= true; }
 
 		int lower = ( stageNumber == FileIO::GetMaxStageNumber() ) ? 1 : 0;
 		if ( ( lower	< choice		) && isUp && !isDown ) { choice -= 1; PlaySE( M_SELECT ); }
@@ -1375,7 +1375,7 @@ void Game::ClearUpdate()
 
 		assert( lower <= choice  && choice < MAX_MENU );
 
-		if ( IS_TRG_EXPOSURE && nextState == State::Null )
+		if ( IsTrigger( InputTrigger::Exposure ) && nextState == State::Null )
 		{
 			PlaySE( M_DECISION );
 
@@ -1434,7 +1434,7 @@ void Game::ClearUpdate()
 			gotoNextPosX = DESTINATION;
 		}
 
-		if ( IS_TRG_EXPOSURE )
+		if ( IsTrigger( InputTrigger::Exposure ) )
 		{
 			PlaySE( M_DECISION );
 
@@ -1681,7 +1681,7 @@ void Game::BalloonUpdate()
 				}
 			}
 			else // else文にすると，すべて表示した後でないとリセットできないようになる
-			if ( IS_TRG_SELECT )
+			if ( IsTrigger( InputTrigger::Select ) )
 			{
 				textTimer = TUTORIAL_TEXT_START_FRAME + TextBehavior::TUTORIAL_SHOW_FRAME[0];
 
@@ -1982,9 +1982,9 @@ bool Game::Exposure()
 bool Game::IsInputPauseButton()
 {
 	if	(
-			!IsTriggerPauseButton()	||
-			state != State::Game	|| 
-			!isOpenFade				||
+			!IsTrigger( InputTrigger::Pause )	|| // 要求：ポーズボタンが押された瞬間である
+			state != State::Game				|| // 要求：ゲームシーンである
+			!isOpenFade							|| // 要求：フェード中ではない
 			nextState != State::Null
 		)
 	{
@@ -2009,14 +2009,18 @@ void Game::PauseUpdate()
 		pausePos.y += sinf( ( PI / INTERVAL ) * pauseTimer ) * AMPL;
 	}
 
+	// 項目を選びフェードが始まっていたら入力を受け付けない
+	if ( !isOpenFade ) { return; }
+	// else
+
 	// choice は 0 始まりである
 
 	constexpr int MAX_MENU = 4;
 
 	bool isUp = false, isDown = false;
 
-	if ( IS_TRG_UP	 ) { isUp	= true; }
-	if ( IS_TRG_DOWN ) { isDown	= true; }
+	if ( IsTrigger( InputTrigger::Up	) ) { isUp		= true; }
+	if ( IsTrigger( InputTrigger::Down	) ) { isDown	= true; }
 
 	int lower = ( stageNumber == FileIO::GetMaxStageNumber() ) ? 1 : 0;
 	if ( ( 0		< choice		)	&& isUp		&& !isDown	) { choice -= 1; PlaySE( M_SELECT ); }
@@ -2031,7 +2035,7 @@ void Game::PauseUpdate()
 
 	assert( 0 <= choice  && choice < MAX_MENU );
 
-	if ( IS_TRG_EXPOSURE && nextState == State::Null )
+	if ( IsTrigger( InputTrigger::Exposure ) && nextState == State::Null )
 	{
 		PlaySE( M_DECISION );
 
