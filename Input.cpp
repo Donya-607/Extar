@@ -15,7 +15,7 @@ namespace InputImpl
 
 	コントローラ（XInput，０番のみ）
 	１ページ送り	：LB, RB
-	カメラ回転	：RB
+	カメラ回転	：RB, RT
 	露光			：X, A
 	アンドゥ		：Y, B
 	*/
@@ -104,7 +104,7 @@ namespace InputImpl
 		case InputTrigger::Select:
 			return TRG_J( PAD_NUM, Input::SELECT );
 		case InputTrigger::ToggleCamera:
-			return TRG_J( PAD_NUM, Input::R1 );
+			return TRG_J( PAD_NUM, Input::R1 ) || TRG_J( PAD_NUM, Input::R2 );
 		case InputTrigger::Exposure:
 			return TRG_J( PAD_NUM, Input::A ) || TRG_J( PAD_NUM, Input::X );
 		case InputTrigger::Undo:
