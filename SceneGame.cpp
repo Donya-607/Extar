@@ -1622,11 +1622,11 @@ void Game::BalloonUpdate()
 {
 	textTimer++;
 
-	// フキダシの更新
-	if ( 0 != balloonLength )
+	// フキダシの枠部分の伸び縮み
+	auto UpdateBalloon = [&]()
 	{
-		constexpr int LOWER = 12;
-		constexpr float DIV = 0.3f;
+		constexpr float LOWER_REMAIN		= 12.0f;	// 残りがこれ以下であれば，一気に限界値にする
+		constexpr float STRETCH_RESISTANCE	= 0.3f;		// 差分に掛け算して，変化量に動きをもたせる
 
 		if ( isOpenBalloon )	// ひらく
 		{
@@ -1634,13 +1634,13 @@ void Game::BalloonUpdate()
 			{
 				float remaining = scast<float>( HumanImage::SIZE_BALLOON_X - balloonLength );
 
-				if ( remaining <= LOWER )
+				if ( remaining <= LOWER_REMAIN )
 				{
 					balloonLength = HumanImage::SIZE_BALLOON_X;
 				}
 				else
 				{
-					balloonLength += scast<int>( remaining * DIV );
+					balloonLength += scast<int>( remaining * STRETCH_RESISTANCE );
 
 					if ( HumanImage::SIZE_BALLOON_X < balloonLength )
 					{
@@ -1653,13 +1653,13 @@ void Game::BalloonUpdate()
 		{
 			float remaining = scast<float>( balloonLength );
 
-			if ( remaining <= LOWER )
+			if ( remaining <= LOWER_REMAIN )
 			{
 				balloonLength = 0;
 			}
 			else
 			{
-				balloonLength -= scast<int>( remaining * DIV );
+				balloonLength -= scast<int>( remaining * STRETCH_RESISTANCE );
 
 				if ( balloonLength < 0 )
 				{
@@ -1667,6 +1667,12 @@ void Game::BalloonUpdate()
 				}
 			}
 		}
+	};
+
+	// フキダシの更新，これは必ず通す
+	if ( 0 != balloonLength )
+	{
+		UpdateBalloon();
 	}
 
 	// クリア台詞
@@ -1803,16 +1809,20 @@ void Game::BalloonUpdate()
 	}
 	// else
 
-	constexpr int SAY_INTERVAL	= 60 * 20/* 秒数 */;
+	// それ以外のランダム発言
+
+	constexpr int INTERVAL_SECONDS	= 20;
+	constexpr int SAY_INTERVAL		= INTERVAL_SECONDS * 60;
 	int remTimer = textTimer % SAY_INTERVAL;
 	{
 		constexpr int TEXT_START_FRAME		= 80;
 		constexpr int BALLOON_START_FRAME	= TEXT_START_FRAME - 20;
+		// 何もしゃべっていないときからのランダム生成
 		if ( state == State::Game )	// クリア後は新しくは出さない
 		{
 			if ( remTimer == TEXT_START_FRAME )
 			{
-				textLength = 1;
+				textLength = 1; // 更新条件である Length != 0 を突破する最小値にする
 			}
 			if ( remTimer == BALLOON_START_FRAME )
 			{
@@ -1832,14 +1842,13 @@ void Game::BalloonUpdate()
 		// 表示時間経過確認
 		if ( 0 != textLength )
 		{
-			int showFrame = TextBehavior::RAND_SAY_SHOW_FRAME[textNumber];
-
+			int  showFrame =  TextBehavior::RAND_SAY_SHOW_FRAME[textNumber];
 			if ( showFrame <= remTimer - TEXT_START_FRAME )
 			{
 				textLength = 0;
 				textExtendInterval = 0;
 
-				textNumber++;
+				textNumber++; // HACK:これいる？
 
 				isOpenBalloon = false;
 			}
@@ -1889,7 +1898,6 @@ void Game::FadeBegin()
 
 	isOpenFade = false;
 }
-
 void Game::FadeCheck()
 {
 	if ( nextState != State::Null && Fade::GetInstance()->IsDoneFade() )
@@ -1902,7 +1910,6 @@ void Game::FadeCheck()
 		FadeEnd();
 	}
 }
-
 void Game::FadeDone()
 {
 	// シーン遷移チェックは先にしているので，これに引っかかるはずはない想定
@@ -1951,7 +1958,6 @@ void Game::FadeDone()
 	isPause = false;
 	isOpenFade = false;
 }
-
 void Game::FadeEnd()
 {
 	Fade::GetInstance()->Uninit();
@@ -3134,10 +3140,7 @@ void Game::TextDraw()
 
 		// HACK:文字列と色の違いを除けばほとんど同じ処理なので，ループ文にまとめられるかも？
 
-		if ( length <= 0 )
-		{
-			return;
-		}
+		if ( length <= 0 ) { return; }
 		// else
 
 		int charWidth = 0;
@@ -3168,10 +3171,7 @@ void Game::TextDraw()
 
 		length -= scast<int>( text.size() );
 
-		if ( length <= 0 )
-		{
-			return;
-		}
+		if ( length <= 0 ) { return; }
 		// else
 
 		// 強調文字列
@@ -3199,10 +3199,7 @@ void Game::TextDraw()
 
 		length -= scast<int>( text.size() );
 
-		if ( length <= 0 )
-		{
-			return;
-		}
+		if ( length <= 0 ) { return; }
 		// else
 
 		// その後の文字列
