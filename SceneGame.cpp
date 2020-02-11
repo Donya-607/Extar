@@ -1390,13 +1390,31 @@ void Game::ClearUpdate()
 	{
 		it.Update();
 
-		if ( pParticleMng )
+		if ( it.IsGlow() && pParticleMng )
 		{
-			constexpr int GENERATE_PARTICLE_TIME = 8;
-			bool shouldGenerate = skipPerformance || ( it.GetTimer() == GENERATE_PARTICLE_TIME );
-			if ( shouldGenerate && it.IsGlow() )
+			auto Generate = [&]()
 			{
-				pParticleMng->Generate( PARTICLE_AMOUNT, it.GetPos(), /* isBig = */ true );
+				pParticleMng->
+					Generate( PARTICLE_AMOUNT, it.GetPos(), /* isBig = */ true );
+			};
+
+			constexpr int GENERATE_PARTICLE_TIME = 8;
+
+			if ( skipPerformance )
+			{
+				// スキップするときは，まだ生成していない（生成フレームに満たない）もののみ生成
+				if ( it.GetTimer() <  GENERATE_PARTICLE_TIME )
+				{
+					Generate();
+				}
+			}
+			else
+			{
+				// スキップしないときは，生成フレームになったら生成
+				if ( it.GetTimer() == GENERATE_PARTICLE_TIME )
+				{
+					Generate();
+				}
 			}
 		}
 	}
