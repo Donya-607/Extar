@@ -63,6 +63,7 @@ void Camera::Init( int stageNumber )
 	column	= 0;
 
 	// HACK:*this = で直接代入するのはＯＫか？危険か？
+	// width, height はここで更新される
 	*this = FileIO::FetchCameraInfo( stageNumber );
 
 	// グリッドサイズは，この時点で正しいものに設定されているとする
@@ -285,8 +286,13 @@ void Camera::SaveLog()
 	}
 	// else
 
-	rowStorage.push_back( row );
-	clumStorage.push_back( column );
+	Log tmp{};
+	tmp.row		= row;
+	tmp.column	= column;
+	tmp.width	= width;
+	tmp.height	= height;
+	tmp.size	= size;
+	storage.emplace_back( tmp );
 }
 
 bool Camera::Undo()
@@ -297,12 +303,14 @@ bool Camera::Undo()
 	}
 	// else
 
-	row = rowStorage.back();
-	column = clumStorage.back();
+	Log latestLog = storage.back();
+	row		= latestLog.row;
+	column	= latestLog.column;
+	width	= latestLog.width;
+	height	= latestLog.height;
+	size	= latestLog.size;
 
-	rowStorage.pop_back();
-	clumStorage.pop_back();
-
+	storage.pop_back();
 	return true;
 }
 

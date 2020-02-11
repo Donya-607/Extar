@@ -29,6 +29,8 @@
 class RecordStar
 {
 private:
+	static constexpr int TIMER_MAX = 999; // ç≈ëÂíléØï óp
+private:
 	int   timer;
 
 	float angle;		// Degree
@@ -63,6 +65,8 @@ public:
 	void Draw(  Vector2 shake ) const;
 public:
 	bool IsGlow() const { return isGlow; }
+public:
+	void SkipPerformance();
 };
 
 class Game : public Scene

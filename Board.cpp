@@ -106,6 +106,16 @@ void Board::Draw( int hPicture, Vector2 shake ) const
 	}
 }
 
+
+void Board::SkipPerformance()
+{
+	StopInDestination();
+}
+
+namespace
+{
+	constexpr float DESTINATION_Y = 352.0f;
+}
 void Board::Move()
 {
 	constexpr float GRAVITY = 1.8f;
@@ -113,10 +123,14 @@ void Board::Move()
 
 	pos += velo;
 
-	constexpr float DESTINATION_Y = 352.0f;
 	if ( DESTINATION_Y < pos.y )
 	{
-		pos.y  = DESTINATION_Y;
-		velo.y = 0;
+		StopInDestination();
 	}
+}
+
+void Board::StopInDestination()
+{
+	pos.y = DESTINATION_Y;
+	velo.y = 0;
 }

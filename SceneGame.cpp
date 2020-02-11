@@ -352,6 +352,7 @@ namespace ClearRelated
 {
 	constexpr int FADE_WAIT			= 80;
 	constexpr int GOTO_NEXT_WAIT	= 120;
+	constexpr int GOTO_NEXT_SPACE	= 32;
 }
 
 namespace MilkyWayImage
@@ -568,6 +569,7 @@ void RecordStar::Init( Vector2 centerPos, bool isGlowStar )
 void RecordStar::Update()
 {
 	timer++;
+	timer = std::min( TIMER_MAX, timer );
 
 	if( angle < 360.0f )
 	{
@@ -617,6 +619,12 @@ void RecordStar::Draw( Vector2 shake ) const
 		ClearImage::hRecordStar[( isGlow ) ? 1 : 0],
 		TRUE
 	);
+}
+
+void RecordStar::SkipPerformance()
+{
+	scale = 1.0f;
+	timer = TIMER_MAX;
 }
 
 void Game::Wink::Init()
@@ -1242,7 +1250,24 @@ void Game::GameUpdate()
 
 void Game::ClearUpdate()
 {
+	constexpr int CLEAR_TIMER_MAX = ClearRelated::FADE_WAIT + ClearRelated::GOTO_NEXT_WAIT;
+
+	bool skipPerformance = false;
+	if ( IsTrigger( InputTrigger::Exposure ) )
+	{
+		bool nowSkippable = true; // フェードしきってから，クリア演出が終わる（「次へ」が出てくる）までの間のみスキップ可能
+		if ( clearTimer < ClearRelated::FADE_WAIT )	{ nowSkippable = false; }
+		if ( CLEAR_TIMER_MAX <= clearTimer )		{ nowSkippable = false; }
+
+		if ( nowSkippable )
+		{
+			skipPerformance = true;
+			clearTimer = CLEAR_TIMER_MAX;
+		}
+	}
+
 	clearTimer++;
+	clearTimer = std::min( CLEAR_TIMER_MAX, clearTimer );
 
 	if ( pStarMng )
 	{
@@ -1290,38 +1315,38 @@ void Game::ClearUpdate()
 		pSSMng->Update();
 	}
 
-	if ( pBoard )
+	if ( ClearRelated::FADE_WAIT <= clearTimer && pBoard )
 	{
-		if ( ClearRelated::FADE_WAIT < clearTimer )
+		if ( skipPerformance )
 		{
-			pBoard->Update();
+			pBoard->SkipPerformance();
 		}
+
+		pBoard->Update();
 	}
 
 	// RecordStarの生成管理
+	if ( ClearRelated::FADE_WAIT <= clearTimer )
 	{
-		// HACK:星の数が３つじゃないなら，ここも変える必要がある
-		const std::array<int, 3> generateFrames =
+		// HACK:星の数が３つじゃないなら，これも変える必要がある
+		constexpr int RECORD_STAR_COUNT = 3;
+
+		const std::array<int, RECORD_STAR_COUNT> generateFrames =
 		{
 			ClearRelated::FADE_WAIT + 50/* 基準 */,
 			ClearRelated::FADE_WAIT + 50 + 30/* 間隔 */,
 			ClearRelated::FADE_WAIT + 50 + ( 30 * 2 )
 		};
 
-		int nextGenerate = scast<int>( recordStars.size() );
-		if	(
-				nextGenerate < scast<int>( generateFrames.size() ) &&
-				clearTimer == generateFrames[nextGenerate]	// 短絡評価
-			)
+		auto GenerateImpl = [&]( int nextGenerateIndex )
 		{
-			Vector2 base{ 602.0f, 864.0f };
-			float interval = scast<float>( ( 160 + ClearImage::SIZE_STAR_X ) * nextGenerate );
-			base.x += interval;
+			const float   interval = scast<float>( ( 160 + ClearImage::SIZE_STAR_X ) * nextGenerateIndex );
+			const Vector2 base{ 602.0f + interval, 864.0f };
 
 			int nowRank = pNumMoves->CalcRank( numMoves );	// 0始まり
 			// 達成難易度は，右からの降順で並んでいるとする（左のほうが達成されやすい）
 			bool isGlow =
-				( nextGenerate <= scast<int>( generateFrames.size() ) - 1 - nowRank )
+				( nextGenerateIndex <= scast<int>( generateFrames.size() ) - 1 - nowRank )
 				? true
 				: false;
 
@@ -1337,18 +1362,41 @@ void Game::ClearUpdate()
 			{
 				PlaySE( M_UNRECORD_STAR );
 			}
+		};
+
+		const int nextGenerate = scast<int>( recordStars.size() ); // 生成するたびにサイズが増えていくことを利用
+		if	(
+				nextGenerate < scast<int>( generateFrames.size() ) &&
+				clearTimer == generateFrames[nextGenerate]	// 短絡評価
+			)
+		{
+			GenerateImpl( nextGenerate );
+		}
+
+		if ( skipPerformance )
+		{
+			while ( scast<int>( recordStars.size() ) < RECORD_STAR_COUNT )
+			{
+				// このラムダ式の中で recordStars のサイズが増えるため，無限ループにはならない
+				GenerateImpl( scast<int>( recordStars.size() ) );
+			}
+			for ( auto &it : recordStars )
+			{
+				it.SkipPerformance();
+			}
 		}
 	}
 	for ( RecordStar &it : recordStars )
 	{
 		it.Update();
 
-		constexpr int GENERATE_PARTICLE_TIME = 8;
-		if ( it.GetTimer() == GENERATE_PARTICLE_TIME && it.IsGlow() )
+		if ( pParticleMng )
 		{
-			if ( pParticleMng )
+			constexpr int GENERATE_PARTICLE_TIME = 8;
+			bool shouldGenerate = skipPerformance || ( it.GetTimer() == GENERATE_PARTICLE_TIME );
+			if ( shouldGenerate && it.IsGlow() )
 			{
-				pParticleMng->Generate( PARTICLE_AMOUNT, it.GetPos(), /* isBig = */true );
+				pParticleMng->Generate( PARTICLE_AMOUNT, it.GetPos(), /* isBig = */ true );
 			}
 		}
 	}
@@ -1423,20 +1471,20 @@ void Game::ClearUpdate()
 	}
 
 	// 「次へ」の移動
-	if ( !isShowClearMenu && ClearRelated::FADE_WAIT + ClearRelated::GOTO_NEXT_WAIT < clearTimer )
+	if ( !isShowClearMenu && ClearRelated::FADE_WAIT + ClearRelated::GOTO_NEXT_WAIT <= clearTimer )
 	{
-		const int   DESTINATION = SCREEN_WIDTH - ( ClearImage::SIZE_GOTO_NEXT_X + 32/* 余白 */);
+		const int   DESTINATION = SCREEN_WIDTH - ( ClearImage::SIZE_GOTO_NEXT_X + ClearRelated::GOTO_NEXT_SPACE );
 		const float RESISTANCE = 0.3f;
 
 		float dist = fabsf( scast<float>( DESTINATION - gotoNextPosX ) );
 		gotoNextPosX -= scast<int>( dist * RESISTANCE );
 
-		if ( gotoNextPosX < DESTINATION )
+		if (gotoNextPosX < DESTINATION || skipPerformance )
 		{
 			gotoNextPosX = DESTINATION;
 		}
 
-		if ( IsTrigger( InputTrigger::Exposure ) )
+		if ( IsTrigger( InputTrigger::Exposure ) && !skipPerformance/* スキップした瞬間もボタンを押していることになり，そのままこの条件にも入るが，それは意図しない */ )
 		{
 			PlaySE( M_DECISION );
 
@@ -2922,10 +2970,7 @@ void Game::ClearDraw()
 		SetDrawBlendMode( DX_BLENDMODE_NOBLEND, 255 );
 	}
 
-	if ( clearTimer < ClearRelated::FADE_WAIT )
-	{
-		return;
-	}
+	if ( clearTimer < ClearRelated::FADE_WAIT ) { return; }
 	// else
 
 	if ( pBoard )
@@ -2958,10 +3003,7 @@ void Game::ClearDraw()
 
 	SetDrawBright( 255, 255, 255 );
 
-	if ( !isShowClearMenu )
-	{
-		return;
-	}
+	if ( !isShowClearMenu ) { return; }
 	// else
 
 	bool isFinalStage =
