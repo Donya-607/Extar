@@ -66,7 +66,7 @@ namespace TextBehavior
 		"範囲内に星をおさめると、ＡかＸで露光が使えるよ",
 
 		"露光は、範囲内にある星を明るくできるよ",
-		"すべての星の明るさをそろえよう★",
+		"すべての星の明るさをそろえて撮影しよう！",
 		"セレクトボタンでもう一度教えるよ！"
 
 	#endif // STRING_FOR_MOVIE
@@ -107,6 +107,8 @@ namespace TextBehavior
 	};
 	const std::vector<std::string> EMPHASIS_STR =	// RGB( 87, 101, 255 )
 	{
+		// すべての文章にて，ここの強調文字一覧が調べられ，どれかに引っかかり次第それのみが強調されます
+
 	#if STRING_FOR_MOVIE
 
 		"星",
@@ -118,7 +120,6 @@ namespace TextBehavior
 		"水色の枠",
 		"露光",
 		"すべて",
-		"エンターキー",
 		"セレクトボタン",
 
 	#endif // STRING_FOR_MOVIE
