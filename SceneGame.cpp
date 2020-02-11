@@ -1382,7 +1382,8 @@ void Game::ClearUpdate()
 			}
 			for ( auto &it : recordStars )
 			{
-				it.SkipPerformance();
+				// ここで呼んでしまうと，二重生成防止条件の都合でパーティクル生成条件に引っかからなくなるため，あとで呼ぶ
+				// it.SkipPerformance();
 			}
 		}
 	}
@@ -1406,6 +1407,9 @@ void Game::ClearUpdate()
 				if ( it.GetTimer() <  GENERATE_PARTICLE_TIME )
 				{
 					Generate();
+
+					// ここで呼ぶと，IsGlow()が真の実体のみ呼ぶことになるため適さない
+					// it.SkipPerformance();
 				}
 			}
 			else
@@ -1416,6 +1420,12 @@ void Game::ClearUpdate()
 					Generate();
 				}
 			}
+		}
+
+		// ここなら，やりたかった二重生成の防止を達成したあとなので呼んでも大丈夫。ただし，無駄に毎フレーム入ってしまう
+		if ( skipPerformance )
+		{
+			it.SkipPerformance();
 		}
 	}
 
@@ -1497,7 +1507,7 @@ void Game::ClearUpdate()
 		float dist = fabsf( scast<float>( DESTINATION - gotoNextPosX ) );
 		gotoNextPosX -= scast<int>( dist * RESISTANCE );
 
-		if (gotoNextPosX < DESTINATION || skipPerformance )
+		if (gotoNextPosX < DESTINATION)
 		{
 			gotoNextPosX = DESTINATION;
 		}
