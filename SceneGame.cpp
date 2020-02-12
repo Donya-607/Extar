@@ -1755,7 +1755,8 @@ void Game::BalloonUpdate()
 					sumFrame += TextBehavior::TUTORIAL_SHOW_FRAME[i];
 				}
 
-				if ( sumFrame <= textTimer - TUTORIAL_TEXT_START_FRAME )
+				bool isOverCurrentShowFrame = sumFrame <= textTimer - TUTORIAL_TEXT_START_FRAME;
+				if ( isOverCurrentShowFrame )
 				{
 					textLength = 1;
 					textExtendInterval = 0;
