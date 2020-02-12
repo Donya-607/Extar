@@ -95,7 +95,7 @@ namespace TextBehavior
 
 	#else
 
-		210,
+		180,
 		180,
 		180,
 
