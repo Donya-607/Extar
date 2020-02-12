@@ -72,7 +72,7 @@ public:
 	void Init( int stageNumber );
 	void Uninit();
 
-	void Update();
+	void Update( bool isAllowMove, bool isAllowExposure, bool isAllowToggle );
 
 	bool IsExposure() const
 	{

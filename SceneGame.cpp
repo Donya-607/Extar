@@ -844,6 +844,18 @@ void Game::GameInit()
 	pNumMoves->Init( stageNumber );
 
 	pRotator.reset();
+	if ( stageNumber == 1 )
+	{
+		pProgress = std::make_unique<ProgressStorage>
+		(
+			TextBehavior::TUTORIAL_CONDITIONS,
+			TextBehavior::TUTORIAL_PERMISSIONS
+		);
+	}
+	else
+	{
+		pProgress.reset();
+	}
 
 	numMoves	= 0;
 	pauseTimer	= 0;
@@ -947,6 +959,7 @@ void Game::GameUninit()
 	if ( pCamera   ) { pCamera->Uninit();   }
 
 	pRotator.reset();
+	pProgress.reset();
 }
 void Game::ClearUninit()
 {
@@ -1215,7 +1228,17 @@ void Game::GameUpdate()
 
 	if ( pCamera && isOpenFade/* フェードイン中の操作制限のため */ )
 	{
-		pCamera->Update();
+		bool allowMove		= true;
+		bool allowExposure	= true;
+		bool allowToggle	= true;
+		if ( pProgress )
+		{
+			using Input		= ProgressStorage::BitInput;
+			allowMove		= pProgress->IsAllowInput( Input::Move		);
+			allowExposure	= pProgress->IsAllowInput( Input::Exposure	);
+			allowToggle		= pProgress->IsAllowInput( Input::Toggle	);
+		}
+		pCamera->Update( allowMove, allowExposure, allowToggle );
 
 		if ( pCamera->IsExposure() && nextState == State::Null )
 		{
@@ -1287,6 +1310,27 @@ void Game::GameUpdate()
 		RotateStars( *pRotator );
 	}
 
+	if ( pProgress )
+	{
+		using Cond = ProgressStorage::Conditions;
+
+		bool wantMove = IsTrigger( InputTrigger::Up ) || IsTrigger( InputTrigger::Down ) || IsTrigger( InputTrigger::Left ) || IsTrigger( InputTrigger::Right );
+		if ( wantMove )
+		{
+			pProgress->DoneConditions( Cond::InputMove );
+		}
+
+		if ( IsTrigger( InputTrigger::Exposure ) )
+		{
+			pProgress->DoneConditions( Cond::InputExposure );
+		}
+		
+		if ( IsTrigger( InputTrigger::ToggleCamera ) )
+		{
+			pProgress->DoneConditions( Cond::InputToggle );
+		}
+	}
+
 	BalloonUpdate();
 
 #if USE_IMGUI
@@ -1295,11 +1339,11 @@ void Game::GameUpdate()
 	FileIO::UpdateNowStageNumberByImGui();
 	if ( FileIO::IsCreateNewStage() )
 	{
-		if ( pCamera )
+		if ( pCamera   )
 		{
 			pCamera->SaveData();
 		}
-		if ( pStarMng )
+		if ( pStarMng  )
 		{
 			pStarMng->SaveData();
 		}
@@ -1751,8 +1795,7 @@ void Game::BalloonUpdate()
 		// 表示時間経過確認
 		if ( 0 != textLength )
 		{
-			int showFrame = TextBehavior::CLEAR_SAY_SHOW_FRAME[textNumber];
-
+			int  showFrame =  TextBehavior::CLEAR_SAY_SHOW_FRAME[textNumber];
 			if ( showFrame <= textTimer )
 			{
 				textLength = 0;
@@ -1797,7 +1840,7 @@ void Game::BalloonUpdate()
 	// else
 
 	// チュートリアル
-	if ( stageNumber == 1 )
+	if ( stageNumber == 1 && pProgress )
 	{
 		constexpr int TUTORIAL_TEXT_START_FRAME		= 80;
 		constexpr int TUTORIAL_BALLOON_START_FRAME	= TUTORIAL_TEXT_START_FRAME - 20;
@@ -1828,21 +1871,28 @@ void Game::BalloonUpdate()
 				bool isOverCurrentShowFrame = sumFrame <= textTimer - TUTORIAL_TEXT_START_FRAME;
 				if ( isOverCurrentShowFrame )
 				{
+					 pProgress->DoneConditions( ProgressStorage::Conditions::WaitingTime );
+				}
+				if ( pProgress->IsCompleteNowConditions() )
+				{
 					textLength = 1;
 					textExtendInterval = 0;
 
 					textNumber++;
+					pProgress->AdvanceProgress();
 				}
 			}
 			else // else文にすると，すべて表示した後でないとリセットできないようになる
 			if ( IsTrigger( InputTrigger::Select ) )
 			{
-				textTimer = TUTORIAL_TEXT_START_FRAME + TextBehavior::TUTORIAL_SHOW_FRAME[0];
+				textTimer  = TUTORIAL_TEXT_START_FRAME + TextBehavior::TUTORIAL_SHOW_FRAME[0];
 
 				textLength = 1;
 				textExtendInterval = 0;
 
 				textNumber = 1;
+
+				pProgress->ResetProgress();
 			}
 		}
 

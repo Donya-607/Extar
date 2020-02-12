@@ -78,20 +78,30 @@ void Camera::Uninit()
 
 }
 
-void Camera::Update()
+void Camera::Update( bool isAllowMove, bool isAllowExposure, bool isAllowToggle )
 {
-	if ( IsTrigger( InputTrigger::ToggleCamera ) )
+	if ( isAllowToggle && IsTrigger( InputTrigger::ToggleCamera ) )
 	{
 		ToggleAspectRatio();
 		PlaySE( M_TOGGLE_CAMERA );
 	}
 
-	Move();
+	if ( isAllowMove )
+	{
+		Move();
+	}
 	Interpolate();
 
 	Shake();
 
-	Exposure();
+	if ( isAllowExposure )
+	{
+		Exposure();
+	}
+	else
+	{
+		isExposure = false;
+	}
 
 	if ( isGlow )
 	{
