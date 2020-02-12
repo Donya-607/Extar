@@ -19,9 +19,10 @@ public:
 	// ビット演算で合体できます
 	enum BitInput
 	{
-		Move			= 0b0001,
-		Exposure		= 0b0010,
-		Toggle			= 0b0100
+		NIL				= 0b0000,		// 何も許さない
+		Move			= 0b0001,		// 移動を許す
+		Exposure		= 0b0010,		// 露光を許す
+		Toggle			= 0b0100		// カメラの回転を許す
 	};
 private:
 	int								nowProgress;		// 0始まり，テキスト番号（文章の並び順）に対応。
@@ -44,3 +45,20 @@ public:
 public:
 	void AssignConditions();
 };
+
+static constexpr ProgressStorage::Conditions operator | ( const ProgressStorage::Conditions &lhs, const ProgressStorage::Conditions &rhs )
+{
+	return static_cast<ProgressStorage::Conditions>( static_cast<int>( lhs ) | static_cast<int>( rhs ) );
+}
+static constexpr ProgressStorage::Conditions operator & ( const ProgressStorage::Conditions &lhs, const ProgressStorage::Conditions &rhs )
+{
+	return static_cast<ProgressStorage::Conditions>( static_cast<int>( lhs ) & static_cast<int>( rhs ) );
+}
+static constexpr ProgressStorage::BitInput operator | ( const ProgressStorage::BitInput &lhs, const ProgressStorage::BitInput &rhs )
+{
+	return static_cast<ProgressStorage::BitInput>( static_cast<int>( lhs ) | static_cast<int>( rhs ) );
+}
+static constexpr ProgressStorage::BitInput operator & ( const ProgressStorage::BitInput &lhs, const ProgressStorage::BitInput &rhs )
+{
+	return static_cast<ProgressStorage::BitInput>( static_cast<int>( lhs ) & static_cast<int>( rhs ) );
+}

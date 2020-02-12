@@ -18,6 +18,7 @@
 
 #include "ShootingStar.h"
 
+#include "ProgressStorage.h"
 #include "Rotator.h"
 
 //--------------------
@@ -146,6 +147,7 @@ private:
 	std::unique_ptr<StarMng>  pStarMng;
 	std::unique_ptr<NumMoves> pNumMoves;
 	std::unique_ptr<Rotator>  pRotator;
+	std::unique_ptr<ProgressStorage> pProgress;
 
 	std::unique_ptr<Board>	  pBoard;
 	std::vector<RecordStar>	  recordStars;
@@ -199,7 +201,8 @@ public:
 		pausePos(),
 		pSSMng( nullptr ), pParticleMng( nullptr ),
 		pCursor( nullptr ),
-		pCamera( nullptr ), pStarMng( nullptr ), pNumMoves( nullptr ), pRotator( nullptr ),
+		pCamera( nullptr ), pStarMng( nullptr ), pNumMoves( nullptr ),
+		pRotator( nullptr ), pProgress( nullptr ),
 		pBoard( nullptr ), recordStars(),
 		isOpenFade( false ),
 		isOpenBalloon( true ),

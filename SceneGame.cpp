@@ -105,6 +105,76 @@ namespace TextBehavior
 
 	#endif // STRING_FOR_MOVIE
 	};
+	using PSCond = ProgressStorage::Conditions;
+	const std::vector<PSCond> TUTORIAL_CONDITIONS =
+	{
+	#if STRING_FOR_MOVIE
+
+		PSCond::WaitingTime,
+
+		PSCond::WaitingTime,
+		PSCond::WaitingTime,
+		PSCond::WaitingTime,
+
+		PSCond::WaitingTime,
+		PSCond::WaitingTime,
+
+		PSCond::WaitingTime,
+		PSCond::WaitingTime,
+		PSCond::WaitingTime,
+
+		PSCond::WaitingTime,
+
+		PSCond::WaitingTime,
+		PSCond::IMPOSSIBLE,
+
+	#else
+
+		PSCond::WaitingTime,
+		PSCond::InputMove		| PSCond::WaitingTime,
+		PSCond::InputExposure	| PSCond::WaitingTime,
+
+		PSCond::WaitingTime,
+		PSCond::WaitingTime,
+		PSCond::IMPOSSIBLE
+
+	#endif // STRING_FOR_MOVIE
+	};
+	using PSInput = ProgressStorage::BitInput;
+	const std::vector<PSInput> TUTORIAL_PERMISSIONS =
+	{
+	#if STRING_FOR_MOVIE
+
+		PSInput::ALL_OK,
+
+		PSInput::ALL_OK,
+		PSInput::ALL_OK,
+		PSInput::ALL_OK,
+
+		PSInput::ALL_OK,
+		PSInput::ALL_OK,
+
+		PSInput::ALL_OK,
+		PSInput::ALL_OK,
+		PSInput::ALL_OK,
+
+		PSInput::ALL_OK,
+
+		PSInput::ALL_OK,
+		PSInput::ALL_OK,
+
+	#else
+
+		PSInput::NIL,
+		PSInput::Move,
+		PSInput::Move | PSInput::Exposure,
+
+		PSInput::Move | PSInput::Exposure,
+		PSInput::Move | PSInput::Exposure,
+		PSInput::Move | PSInput::Exposure
+
+	#endif // STRING_FOR_MOVIE
+	};
 	const std::vector<std::string> EMPHASIS_STR =	// RGB( 87, 101, 255 )
 	{
 		// Ç∑Ç◊ÇƒÇÃï∂èÕÇ…ÇƒÅCÇ±Ç±ÇÃã≠í≤ï∂éöàÍóóÇ™í≤Ç◊ÇÁÇÍÅCÇ«ÇÍÇ©Ç…à¯Ç¡Ç©Ç©ÇËéüëÊÇªÇÍÇÃÇ›Ç™ã≠í≤Ç≥ÇÍÇ‹Ç∑
