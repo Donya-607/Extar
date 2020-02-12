@@ -198,11 +198,11 @@ namespace TextBehavior
 	const std::vector<std::string> RAND_SAY =
 	{
 		"ファイトォ！",
-		"んー悩むねー",
-		"難しいなぁ・・・",
-
-		"その調子　その調子！",
 		"がんばれー！",
+		"んー悩むねー",
+
+		"難しいなぁ・・・",
+		"その調子　その調子！",
 		"んー、どうするんだろう・・・",
 
 		"迷うなぁ・・・",
@@ -1245,10 +1245,16 @@ void Game::GameUpdate()
 			if ( Exposure() )
 			{
 				numMoves++;
+
+				if ( pProgress )
+				{
+					pProgress->DoneConditions( ProgressStorage::Conditions::InputExposure );
+				}
 			}
 		}
 	}
 
+	// 流れ星
 	if ( pSSMng )
 	{
 		// 発生
@@ -1274,18 +1280,10 @@ void Game::GameUpdate()
 		pSSMng->Update();
 	}
 
+	// 盤面
 	if ( pStarMng )
 	{
 		pStarMng->Update();
-
-		if ( IsTrigger( InputTrigger::Undo ) && isOpenFade && nextState == State::Null )
-		{
-			if ( pStarMng->Undo(), pCamera->Undo()/* HAC:ちゃんと両方での成功を条件に取るべきである */ )
-			{
-				numMoves--;
-				PlaySE( M_UNDO );
-			}
-		}
 
 	#if DEBUG_MODE
 		if ( TRG( KEY_INPUT_SEMICOLON ) )
@@ -1293,6 +1291,26 @@ void Game::GameUpdate()
 			pStarMng->AlignLevelsDebug();
 		}
 	#endif // DEBUG_MODE
+	}
+
+	// アンドゥ
+	if ( pStarMng && pCamera )
+	{
+		bool canUndo = isOpenFade && nextState == State::Null;
+		if ( pProgress && canUndo ) // すでに使えない状態ならば通す意味はない
+		{
+			// 露光が使える == アンドゥも使える，とみなす
+			canUndo = pProgress->IsAllowInput( ProgressStorage::BitInput::Exposure );
+		}
+
+		if ( IsTrigger( InputTrigger::Undo ) && canUndo )
+		{
+			if ( pStarMng->Undo(), pCamera->Undo()/* HAC:ちゃんと両方での成功を条件に取るべきである */ )
+			{
+				numMoves--;
+				PlaySE( M_UNDO );
+			}
+		}
 	}
 
 	if ( pNumMoves )
@@ -1320,11 +1338,8 @@ void Game::GameUpdate()
 			pProgress->DoneConditions( Cond::InputMove );
 		}
 
-		if ( IsTrigger( InputTrigger::Exposure ) )
-		{
-			pProgress->DoneConditions( Cond::InputExposure );
-		}
-		
+		// 露光の条件は，露光成功時のみにしたいため，カメラの更新箇所にて見ている
+
 		if ( IsTrigger( InputTrigger::ToggleCamera ) )
 		{
 			pProgress->DoneConditions( Cond::InputToggle );
@@ -1842,8 +1857,8 @@ void Game::BalloonUpdate()
 	// チュートリアル
 	if ( stageNumber == 1 && pProgress )
 	{
-		constexpr int TUTORIAL_TEXT_START_FRAME		= 80;
-		constexpr int TUTORIAL_BALLOON_START_FRAME	= TUTORIAL_TEXT_START_FRAME - 20;
+		constexpr int TUTORIAL_TEXT_START_FRAME		= 80; // フェードのための待ち時間
+		constexpr int TUTORIAL_BALLOON_START_FRAME	= TUTORIAL_TEXT_START_FRAME - 20; // フキダシが出てからテキストを表示するための差分
 		if ( state == State::Game )	// クリア後は新しくは出さない
 		{
 			if ( textTimer == TUTORIAL_TEXT_START_FRAME )
@@ -1873,8 +1888,12 @@ void Game::BalloonUpdate()
 				{
 					 pProgress->DoneConditions( ProgressStorage::Conditions::WaitingTime );
 				}
+
 				if ( pProgress->IsCompleteNowConditions() )
 				{
+					// 時間条件は満たしているが他を満たしていない場合に増えすぎてしまうため，正しいタイマーに補正する
+					textTimer = sumFrame + TUTORIAL_TEXT_START_FRAME;
+
 					textLength = 1;
 					textExtendInterval = 0;
 
@@ -1893,6 +1912,7 @@ void Game::BalloonUpdate()
 				textNumber = 1;
 
 				pProgress->ResetProgress();
+				pProgress->AdvanceProgress(); // リセット関数ではゼロになるが，戻したいのは１のため，ひとつ進める
 			}
 		}
 
