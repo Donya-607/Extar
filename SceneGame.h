@@ -131,6 +131,7 @@ private:
 	int  timeSinceSucceed;	// 露光が成功してからの経過フレーム（失敗か一定時間経過でリセット，成功ではそのまま）
 	int  failedCounter;		// 露光が連続で失敗した回数
 	int  timeSinceFailed;	// 露光が失敗してからの経過フレーム（成功か一定時間経過でリセット，失敗ではそのまま）
+	bool lastResult;		// 最後の露光の結果を格納（上の４つの変数では判断がしづらかったため）
 	int  timeSinceOperated;	// 最後の操作（移動除く）からの経過フレーム（移動以外の操作をするか一定時間経過でリセット）
 
 	int  gotoNextPosX;	// LeftTop, リザルト画面で使用
@@ -204,6 +205,7 @@ public:
 		textLength( 0 ), textExtendInterval( 0 ), textNumber( 0 ),
 		succeedCounter( 0 ), timeSinceSucceed( 0 ),
 		failedCounter( 0 ), timeSinceFailed( 0 ),
+		lastResult( false ),
 		timeSinceOperated( 0 ),
 		gotoNextPosX( SCREEN_WIDTH ),
 		state( State::Select ), nextState( State::Null ),

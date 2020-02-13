@@ -2132,6 +2132,10 @@ void Game::BalloonUpdate()
 
 void Game::TalkReaction( int textIndex )
 {
+	// チュートリアル中は出さない
+	if ( stageNumber == 1 ) { return; }
+	// else
+
 	assert( 0 <= textIndex && textIndex < TextBehavior::Reactions::REACTION_END );
 
 	// クリア時の台詞表示処理を参照。
@@ -2177,7 +2181,7 @@ void Game::ReactionUpdate()
 	{
 		timeSinceOperated	= 0;
 
-		constexpr TextBehavior::Reactions UHHH_TEXTS[]
+		constexpr std::array<TextBehavior::Reactions, 5> UHHH_TEXTS
 		{
 			TextBehavior::Reactions::WhyDontYouUndo,
 			TextBehavior::Reactions::Uhhh_1,
@@ -2185,7 +2189,7 @@ void Game::ReactionUpdate()
 			TextBehavior::Reactions::Uhhh_3,
 			TextBehavior::Reactions::Uhhh_4,
 		};
-		int textIndex = rand() % ArraySize( UHHH_TEXTS );
+		int textIndex = rand() % UHHH_TEXTS.size();
 		TalkReaction( UHHH_TEXTS[textIndex] );
 	}
 }
@@ -2193,62 +2197,61 @@ void Game::UsedExposure( bool succeeded )
 {
 	using Reactions = TextBehavior::Reactions;
 
-	// 最後に成功していたかどうか
-	const bool wasSucceeded = ( 0 < succeedCounter ) ? true : false;
-
-	// もし最後に行っていたら，インクリメントし条件判断を行い，
-	// 最後に行っていなかったら，タイマとカウンタをリセットする
+	// 最後に行った動作と違っていたら，タイマとカウンタをリセットする
+	auto ResetStatus = [&]()
+	{
+		failedCounter		= 0;
+		timeSinceFailed		= 0;
+		succeedCounter		= 0;
+		timeSinceSucceed	= 0;
+	};
 
 	if ( succeeded )
 	{
-		if ( wasSucceeded )
+		if ( !lastResult )
 		{
-			succeedCounter++;
-
-			bool isOverBorder = Reaction::sayBorderCountSucceed <= succeedCounter;
-			bool isOverFastly = timeSinceSucceed < Reaction::sayBorderFrameSucceed;
-			if ( isOverBorder && isOverFastly )
-			{
-				succeedCounter   = 0;
-				timeSinceSucceed = 0;
-
-				constexpr Reactions GOOD_TEXTS[]
-				{
-					Reactions::GoodVibes_1,
-					Reactions::GoodVibes_2,
-				};
-				int textIndex = rand() % ArraySize( GOOD_TEXTS );
-				TalkReaction( GOOD_TEXTS[textIndex] );
-			}
+			ResetStatus();
 		}
-		else
+
+		succeedCounter++;
+
+		bool isOverBorder = Reaction::sayBorderCountSucceed <= succeedCounter;
+		bool isOverFastly = timeSinceSucceed < Reaction::sayBorderFrameSucceed;
+		if ( isOverBorder && isOverFastly )
 		{
-			succeedCounter   = 1;
+			succeedCounter   = 0;
 			timeSinceSucceed = 0;
+
+			constexpr std::array<Reactions, 2> GOOD_TEXTS
+			{
+				Reactions::GoodVibes_1,
+				Reactions::GoodVibes_2,
+			};
+			int textIndex = rand() % GOOD_TEXTS.size();
+			TalkReaction( GOOD_TEXTS[textIndex] );
 		}
 	}
 	else
 	{
-		if ( wasSucceeded )
+		if ( lastResult )
 		{
-			failedCounter   = 1;
-			timeSinceFailed = 0;
+			ResetStatus();
 		}
-		else
+
+		failedCounter++;
+
+		bool isOverBorder = Reaction::sayBorderCountFailed <= failedCounter;
+		bool isOverFastly = timeSinceFailed < Reaction::sayBorderFrameFailed;
+		if ( isOverBorder && isOverFastly )
 		{
-			failedCounter++;
+			failedCounter   = 0;
+			timeSinceFailed = 0;
 
-			bool isOverBorder = Reaction::sayBorderCountFailed <= failedCounter;
-			bool isOverFastly = timeSinceFailed < Reaction::sayBorderFrameFailed;
-			if ( isOverBorder && isOverFastly )
-			{
-				failedCounter   = 0;
-				timeSinceFailed = 0;
-
-				TalkReaction( Reactions::CantExposure );
-			}
+			TalkReaction( Reactions::CantExposure );
 		}
 	}
+
+	lastResult = succeeded;
 }
 void Game::UsedOperate()
 {
@@ -2382,6 +2385,7 @@ bool Game::Exposure()
 			if ( pStarMng->FetchLevel( i ) <= 1 )
 			{
 				pCamera->SetShake();
+				UsedExposure( /* succeeded = */ false );
 				PlaySE( M_FAILURE );
 
 				return false;
@@ -2395,6 +2399,7 @@ bool Game::Exposure()
 			else // カメラの枠が星に触れてはいるが，星のサイズが大きく，はみだしている場合に入る（露光は失敗する）
 			{
 				pCamera->SetShake();
+				UsedExposure( /* succeeded = */ false );
 				PlaySE( M_FAILURE );
 
 				return false;
@@ -2412,6 +2417,7 @@ bool Game::Exposure()
 	}
 	// else
 
+	// HACK:上のfor文内でreturnを使っているので，この条件には入ることがない？
 	// 星を収めてはいるものの，失敗していたら終わる
 	if ( !scast<int>( targets.size() ) || !end )
 	{
