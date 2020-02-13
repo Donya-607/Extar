@@ -122,7 +122,7 @@ private:
 	int  balloonLength;	// 0 のときは更新しない
 	int  textTimer;		// テキスト関連で使用
 	int  textLength;	// 0 のときは更新しない
-	int  textExtendInterval;
+	int  textExtendInterval; // １文字増やすのに使う間隔ようのタイマ
 	int  textNumber;	// 0始まり
 
 	int  gotoNextPosX;	// LeftTop, リザルト画面で使用
@@ -155,6 +155,7 @@ private:
 	bool isOpenFade;	// FadeBegin ~ FadeEnd までFALSE
 
 	bool isOpenBalloon;	// テキストボックスの更新挙動 TRUE:開く, FALSE:閉じる
+	bool isTalkReaction;// 反応関連のセリフをしゃべっている間はTRUE
 
 	bool isClearMoment;	// これがオンならスクショを取り，オフにしてクリアへ遷移させる
 	bool isTakeScreenShot;
@@ -205,7 +206,7 @@ public:
 		pRotator( nullptr ), pProgress( nullptr ),
 		pBoard( nullptr ), recordStars(),
 		isOpenFade( false ),
-		isOpenBalloon( true ),
+		isOpenBalloon( true ), isTalkReaction( false ),
 		isClearMoment( false ), isTakeScreenShot( false ),
 		isDoneMoveArm( false ),
 		isShowClearMenu( false ),
@@ -253,6 +254,8 @@ public:
 	void RotateStars( const Rotator &rotator );
 
 	void BalloonUpdate();
+
+	void TalkReaction( int textIndex );
 
 	void FadeBegin();
 	void FadeCheck();

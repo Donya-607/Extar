@@ -230,6 +230,8 @@ namespace TextBehavior
 		Uhhh_4,
 		GoodVibes_1,
 		GoodVibes_2,
+
+		REACTION_END
 	};
 	const std::vector<std::string> REACTION_SAY =
 	{
@@ -903,8 +905,9 @@ void Game::GameInit()
 	armPos		= { 0, scast<float>( ( SCREEN_HEIGHT - HumanImage::SIZE_Y ) + HumanBehavior::HAND_LET_DOWN_PLUS_Y ) };
 	pausePos	= { 704.0f, 64.0f };
 
-	isOpenBalloon = true;
-	isDoneMoveArm = false;
+	isOpenBalloon  = true;
+	isTalkReaction = false;
+	isDoneMoveArm  = false;
 
 	// 他のＰＧの作業
 	{
@@ -990,6 +993,8 @@ void Game::GameUninit()
 
 	pRotator.reset();
 	pProgress.reset();
+
+	isTalkReaction = false;
 }
 void Game::ClearUninit()
 {
@@ -1376,6 +1381,17 @@ void Game::GameUpdate()
 			pProgress->DoneConditions( Cond::InputToggle );
 		}
 	}
+
+#if DEBUG_MODE
+	// 反応間連の台詞の条件の確認
+	if ( nextState == State::Null && state == State::Game ) // ゲーム中のみ判断する
+	{
+		if ( TRG( KEY_INPUT_1 ) )
+		{
+			TalkReaction( TextBehavior::Reactions::CantExposure );
+		}
+	}
+#endif // DEBUG_MODE
 
 	BalloonUpdate();
 
@@ -1885,7 +1901,7 @@ void Game::BalloonUpdate()
 	}
 	// else
 
-	// チュートリアル
+	// チュートリアル台詞
 	if ( stageNumber == 1 && pProgress )
 	{
 		constexpr int TUTORIAL_TEXT_START_FRAME		= 80; // フェードのための待ち時間
@@ -1960,6 +1976,59 @@ void Game::BalloonUpdate()
 				// 口変化
 				{
 					if ( scast<int>( TextBehavior::TUTORIAL[textNumber].size() ) <= ( textLength * 2 ) )
+					{
+						mouthIndex = 0;
+					}
+					else
+					{
+						int oldIndex = mouthIndex;
+						while ( oldIndex == mouthIndex )
+						{
+							mouthIndex = rand() % HumanImage::NUM_MOUTH_ROW;
+						}
+					}
+				}
+
+				PlaySE( M_VOICE );
+			}
+		}
+
+		return;
+	}
+	// else
+
+	// 反応関連の台詞
+	if ( isTalkReaction )
+	{
+		// 発言トリガーは別の場所で行い，ここではその更新のみ行う
+
+		// 表示時間経過確認
+		if ( 0 != textLength )
+		{
+			int  showFrame =  TextBehavior::REACTION_SAY_SHOW_FRAME[textNumber];
+			if ( showFrame <= textTimer )
+			{
+				textLength = 0;
+				textExtendInterval = 0;
+
+				isOpenBalloon  = false;
+				isTalkReaction = false;
+			}
+		}
+
+		// 文字数増加確認
+		if ( 0 != textLength && ( textLength * 2 ) <= scast<int>( TextBehavior::REACTION_SAY[textNumber].size() ) )
+		{
+			constexpr int INTERVAL = 3;
+			textExtendInterval++;
+			if ( INTERVAL <= textExtendInterval )
+			{
+				textExtendInterval = 0;
+				textLength++;
+
+				// 口変化
+				{
+					if ( scast<int>( TextBehavior::REACTION_SAY[textNumber].size() ) <= ( textLength * 2 ) )
 					{
 						mouthIndex = 0;
 					}
@@ -2056,6 +2125,27 @@ void Game::BalloonUpdate()
 			}
 		}
 	}
+}
+
+void Game::TalkReaction( int textIndex )
+{
+	assert( 0 <= textIndex && textIndex < TextBehavior::Reactions::REACTION_END );
+
+	// クリア時の台詞表示処理を参照
+
+	if ( !balloonLength )
+	{
+		constexpr int INIT_LENGTH = 64;
+		balloonLength = INIT_LENGTH;
+	}
+
+	textTimer			= 0; // すでにしゃべっている最中でも，表示時間を設定通りに動作させるため。textTimerをいじること自体は問題ないと判断
+	textLength			= 1;
+	textExtendInterval	= 0;
+	textNumber			= textIndex;
+
+	isOpenBalloon		= true;
+	isTalkReaction		= true;
 }
 
 void Game::FadeBegin()
@@ -3245,6 +3335,8 @@ void Game::ClearDraw()
 
 void Game::TextDraw()
 {
+	// 現在 textLength があるかどうかは呼び出し側で判断している
+
 	// クリア台詞
 	if ( nextState == State::Clear )
 	{
@@ -3396,13 +3488,21 @@ void Game::TextDraw()
 	}
 	// else
 
-	// ランダム発言
+	// ランダムまたは反応関連の台詞
 
-	int index  = textNumber % scast<int>( TextBehavior::RAND_SAY.size() );
-	int length = textLength * 2/* 日本語で２バイト文字なので，倍にして対応 */;
-	if ( scast<int>( TextBehavior::RAND_SAY[index].size() ) <= textLength )
+	// 使用する台詞配列のポインタ
+	const std::vector<std::string> *pTexts = &TextBehavior::RAND_SAY;
+	if ( isTalkReaction )
 	{
-		length = scast<int>( TextBehavior::RAND_SAY[index].size() );
+		pTexts = &TextBehavior::REACTION_SAY;
+	}
+
+	int index  = textNumber % scast<int>( pTexts->size() );
+	int length = textLength * 2/* 日本語で２バイト文字なので，倍にして対応 */;
+	const std::string &useText = pTexts->at( index );
+	if ( scast<int>( useText.size() ) <= textLength )
+	{
+		length = scast<int>( useText.size() );
 	}
 
 	constexpr int DIST_X = 80;
@@ -3413,7 +3513,7 @@ void Game::TextDraw()
 		HumanBehavior::BALLOON_POS_X + DIST_X,
 		HumanBehavior::BALLOON_POS_Y + DIST_Y,
 		2.0, 2.0,
-		( TextBehavior::RAND_SAY[index].substr( 0, length ) ).c_str(),
+		( useText.substr( 0, length ) ).c_str(),
 		GetColor( 42, 97, 110 ),
 		hFont
 	);
