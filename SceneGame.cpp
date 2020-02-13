@@ -2001,7 +2001,7 @@ void Game::BalloonUpdate()
 	if ( isTalkReaction )
 	{
 		// 発言トリガーは別の場所で行い，ここではその更新のみ行う
-
+		
 		// 表示時間経過確認
 		if ( 0 != textLength )
 		{
@@ -2131,7 +2131,8 @@ void Game::TalkReaction( int textIndex )
 {
 	assert( 0 <= textIndex && textIndex < TextBehavior::Reactions::REACTION_END );
 
-	// クリア時の台詞表示処理を参照
+	// クリア時の台詞表示処理を参照。
+	// フキダシが伸び切るのを待っていないという問題があるが，今回は見過ごす
 
 	if ( !balloonLength )
 	{
