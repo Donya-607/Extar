@@ -219,6 +219,44 @@ namespace TextBehavior
 		180,
 		180,
 	};
+	
+	enum Reactions
+	{
+		CantExposure,
+		WhyDontYouUndo,
+		Uhhh_1,
+		Uhhh_2,
+		Uhhh_3,
+		Uhhh_4,
+		GoodVibes_1,
+		GoodVibes_2,
+	};
+	const std::vector<std::string> REACTION_SAY =
+	{
+		"それ以上は露光できないよ！",
+		"一度明るさをＢかＹで戻してみる？",
+
+		"迷うなぁ",
+		"ん～悩むねぇ",
+		"ん～どうするんだろう・・・",
+		"難しいなぁ・・・",
+
+		"その調子その調子！",
+		"いい感じかも♪",
+	};
+	const std::vector<int> REACTION_SAY_SHOW_FRAME =
+	{
+		180,
+		180,
+
+		180,
+		180,
+		180,
+		180,
+
+		180,
+		180,
+	};
 
 	const std::vector<std::string> CLEAR_SAY =
 	{
@@ -1320,6 +1358,7 @@ void Game::GameUpdate()
 		RotateStars( *pRotator );
 	}
 
+	// 進める条件の確認
 	if ( pProgress )
 	{
 		using Cond = ProgressStorage::Conditions;
@@ -3206,7 +3245,8 @@ void Game::ClearDraw()
 
 void Game::TextDraw()
 {
-	if ( nextState == State::Clear )	// クリア
+	// クリア台詞
+	if ( nextState == State::Clear )
 	{
 		int index = textNumber % scast<int>( TextBehavior::CLEAR_SAY.size() );
 		int length = textLength * 2/* 日本語で２バイト文字なので，倍にして対応 */;
@@ -3232,7 +3272,8 @@ void Game::TextDraw()
 	}
 	// else
 
-	if ( stageNumber == 1 )	// チュートリアル
+	// チュートリアル台詞
+	if ( stageNumber == 1 )
 	{
 		int index = textNumber % scast<int>( TextBehavior::TUTORIAL.size() );
 		int length = textLength * 2/* 日本語で２バイト文字なので，倍にして対応 */;
@@ -3357,7 +3398,7 @@ void Game::TextDraw()
 
 	// ランダム発言
 
-	int index = textNumber % scast<int>( TextBehavior::RAND_SAY.size() );
+	int index  = textNumber % scast<int>( TextBehavior::RAND_SAY.size() );
 	int length = textLength * 2/* 日本語で２バイト文字なので，倍にして対応 */;
 	if ( scast<int>( TextBehavior::RAND_SAY[index].size() ) <= textLength )
 	{
