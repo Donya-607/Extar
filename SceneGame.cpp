@@ -35,7 +35,7 @@ namespace
 
 namespace TextBehavior
 {
-	// 文の数とフレームの数は揃えてください
+	// 文の要素数と表示フレームの要素数は揃えてください
 
 	const std::vector<std::string> TUTORIAL =
 	{
@@ -165,7 +165,7 @@ namespace TextBehavior
 
 	#else
 
-		PSInput::NIL,
+		PSInput::Move,
 		PSInput::Move,
 		PSInput::Move | PSInput::Exposure,
 
@@ -195,37 +195,29 @@ namespace TextBehavior
 	#endif // STRING_FOR_MOVIE
 	};
 
+	// 三点リーダは「・・・」とする（３文字）
+
 	const std::vector<std::string> RAND_SAY =
 	{
+		"がんばれ～！",
+		"キラッ★",
 		"ファイトォ！",
-		"がんばれー！",
-		"んー悩むねー",
 
-		"難しいなぁ・・・",
-		"その調子　その調子！",
-		"んー、どうするんだろう・・・",
-
-		"迷うなぁ・・・",
-		"いい感じかも♪",
+		"綺麗に撮ってね！",
+		"写真楽しみにしてる♪",
+		"上手に撮れるかなぁ",
 		"星がきれいだねー",
-
-		"キラッ★"
 	};
 	const std::vector<int> RAND_SAY_SHOW_FRAME =
 	{
 		180,
-		180,
-		180,
-
-		180,
-		180,
+		90,
 		180,
 
 		180,
 		180,
 		180,
-
-		90
+		180,
 	};
 
 	const std::vector<std::string> CLEAR_SAY =
