@@ -122,8 +122,16 @@ private:
 	int  balloonLength;	// 0 のときは更新しない
 	int  textTimer;		// テキスト関連で使用
 	int  textLength;	// 0 のときは更新しない
-	int  textExtendInterval; // １文字増やすのに使う間隔ようのタイマ
+	int  textExtendInterval; // １文字増やすのに使う間隔用のタイマ
 	int  textNumber;	// 0始まり
+
+	// 反応関連の台詞用の変数群
+	// ここでの「失敗」は「明るさ最大の星に対して露光を使った」場合のことを指す
+	int  succeedCounter;	// 露光が連続で成功した回数
+	int  timeSinceSucceed;	// 露光が成功してからの経過フレーム（失敗か一定時間経過でリセット，成功ではそのまま）
+	int  failedCounter;		// 露光が連続で失敗した回数
+	int  timeSinceFailed;	// 露光が失敗してからの経過フレーム（成功か一定時間経過でリセット，失敗ではそのまま）
+	int  timeSinceOperated;	// 最後の操作（移動除く）からの経過フレーム（移動以外の操作をするか一定時間経過でリセット）
 
 	int  gotoNextPosX;	// LeftTop, リザルト画面で使用
 
@@ -194,6 +202,9 @@ public:
 		balloonLength( 0 ),
 		textTimer( 0 ),
 		textLength( 0 ), textExtendInterval( 0 ), textNumber( 0 ),
+		succeedCounter( 0 ), timeSinceSucceed( 0 ),
+		failedCounter( 0 ), timeSinceFailed( 0 ),
+		timeSinceOperated( 0 ),
 		gotoNextPosX( SCREEN_WIDTH ),
 		state( State::Select ), nextState( State::Null ),
 		wink(),
@@ -256,6 +267,9 @@ public:
 	void BalloonUpdate();
 
 	void TalkReaction( int textIndex );
+	void ReactionUpdate();
+	void UsedExposure( bool succeeded );
+	void UsedOperate();
 
 	void FadeBegin();
 	void FadeCheck();

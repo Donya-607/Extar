@@ -1285,6 +1285,10 @@ void Game::GameUpdate()
 				{
 					pProgress->DoneConditions( ProgressStorage::Conditions::InputExposure );
 				}
+				else
+				{
+					UsedOperate();
+				}
 			}
 		}
 	}
@@ -1343,6 +1347,7 @@ void Game::GameUpdate()
 			if ( pStarMng->Undo(), pCamera->Undo()/* HAC:ちゃんと両方での成功を条件に取るべきである */ )
 			{
 				numMoves--;
+				UsedOperate();
 				PlaySE( M_UNDO );
 			}
 		}
@@ -1382,16 +1387,14 @@ void Game::GameUpdate()
 		}
 	}
 
-#if DEBUG_MODE
 	// 反応間連の台詞の条件の確認
 	if ( nextState == State::Null && state == State::Game ) // ゲーム中のみ判断する
 	{
-		if ( TRG( KEY_INPUT_1 ) )
+		if ( !pProgress ) // チュートリアル時は出さない
 		{
-			TalkReaction( TextBehavior::Reactions::CantExposure );
+			ReactionUpdate();
 		}
 	}
-#endif // DEBUG_MODE
 
 	BalloonUpdate();
 
@@ -2148,6 +2151,109 @@ void Game::TalkReaction( int textIndex )
 	isOpenBalloon		= true;
 	isTalkReaction		= true;
 }
+namespace Reaction
+{
+	static constexpr int sayBorderCountSucceed	= 8;
+	static constexpr int sayBorderCountFailed	= 3;
+	static constexpr int sayBorderFrameSucceed	= 5 * 60;
+	static constexpr int sayBorderFrameFailed	= 5 * 60;
+	static constexpr int sayBorderFrameOperated	= 10 * 60;
+}
+void Game::ReactionUpdate()
+{
+	timeSinceSucceed++;
+	timeSinceFailed++;
+	timeSinceOperated++;
+
+	if ( Reaction::sayBorderFrameSucceed <= timeSinceSucceed )
+	{
+		timeSinceSucceed	= 0;
+	}
+	if ( Reaction::sayBorderFrameFailed <= timeSinceFailed )
+	{
+		timeSinceFailed		= 0;
+	}
+	if ( Reaction::sayBorderFrameOperated <= timeSinceOperated )
+	{
+		timeSinceOperated	= 0;
+
+		constexpr TextBehavior::Reactions UHHH_TEXTS[]
+		{
+			TextBehavior::Reactions::WhyDontYouUndo,
+			TextBehavior::Reactions::Uhhh_1,
+			TextBehavior::Reactions::Uhhh_2,
+			TextBehavior::Reactions::Uhhh_3,
+			TextBehavior::Reactions::Uhhh_4,
+		};
+		int textIndex = rand() % ArraySize( UHHH_TEXTS );
+		TalkReaction( UHHH_TEXTS[textIndex] );
+	}
+}
+void Game::UsedExposure( bool succeeded )
+{
+	using Reactions = TextBehavior::Reactions;
+
+	// 最後に成功していたかどうか
+	const bool wasSucceeded = ( 0 < succeedCounter ) ? true : false;
+
+	// もし最後に行っていたら，インクリメントし条件判断を行い，
+	// 最後に行っていなかったら，タイマとカウンタをリセットする
+
+	if ( succeeded )
+	{
+		if ( wasSucceeded )
+		{
+			succeedCounter++;
+
+			bool isOverBorder = Reaction::sayBorderCountSucceed <= succeedCounter;
+			bool isOverFastly = timeSinceSucceed < Reaction::sayBorderFrameSucceed;
+			if ( isOverBorder && isOverFastly )
+			{
+				succeedCounter   = 0;
+				timeSinceSucceed = 0;
+
+				constexpr Reactions GOOD_TEXTS[]
+				{
+					Reactions::GoodVibes_1,
+					Reactions::GoodVibes_2,
+				};
+				int textIndex = rand() % ArraySize( GOOD_TEXTS );
+				TalkReaction( GOOD_TEXTS[textIndex] );
+			}
+		}
+		else
+		{
+			succeedCounter   = 1;
+			timeSinceSucceed = 0;
+		}
+	}
+	else
+	{
+		if ( wasSucceeded )
+		{
+			failedCounter   = 1;
+			timeSinceFailed = 0;
+		}
+		else
+		{
+			failedCounter++;
+
+			bool isOverBorder = Reaction::sayBorderCountFailed <= failedCounter;
+			bool isOverFastly = timeSinceFailed < Reaction::sayBorderFrameFailed;
+			if ( isOverBorder && isOverFastly )
+			{
+				failedCounter   = 0;
+				timeSinceFailed = 0;
+
+				TalkReaction( Reactions::CantExposure );
+			}
+		}
+	}
+}
+void Game::UsedOperate()
+{
+	timeSinceOperated = 0;
+}
 
 void Game::FadeBegin()
 {
@@ -2300,6 +2406,7 @@ bool Game::Exposure()
 	if ( !isCovered )
 	{
 		pCamera->SetShake();
+		UsedExposure( /* succeeded = */ false );
 		PlaySE( M_FAILURE );
 		return false;
 	}
@@ -2308,11 +2415,15 @@ bool Game::Exposure()
 	// 星を収めてはいるものの，失敗していたら終わる
 	if ( !scast<int>( targets.size() ) || !end )
 	{
+		UsedExposure( /* succeeded = */ false );
 		return false;
 	}
 	// else
 
+	// 以下，成功
+
 	pCamera->SetGlow();
+	UsedExposure( /* succeeded = */ true );
 
 	// 露光音は，成功が確定してから鳴らす（失敗時の音もあるため）
 	PlaySE( M_EXPOSURE );
