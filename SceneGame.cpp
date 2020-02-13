@@ -902,6 +902,13 @@ void Game::GameInit()
 	textExtendInterval = 0;
 	textNumber		= 0;
 
+	succeedCounter		= 0;
+	timeSinceSucceed	= 0;
+	failedCounter		= 0;
+	timeSinceFailed		= 0;
+	lastResult			= false;
+	timeSinceOperated	= 0;
+
 	armPos		= { 0, scast<float>( ( SCREEN_HEIGHT - HumanImage::SIZE_Y ) + HumanBehavior::HAND_LET_DOWN_PLUS_Y ) };
 	pausePos	= { 704.0f, 64.0f };
 
@@ -994,7 +1001,14 @@ void Game::GameUninit()
 	pRotator.reset();
 	pProgress.reset();
 
-	isTalkReaction = false;
+	succeedCounter		= 0;
+	timeSinceSucceed	= 0;
+	failedCounter		= 0;
+	timeSinceFailed		= 0;
+	lastResult			= false;
+	timeSinceOperated	= 0;
+
+	isTalkReaction		= false;
 }
 void Game::ClearUninit()
 {
