@@ -63,6 +63,7 @@ void Camera::Init( int stageNumber )
 	column	= 0;
 
 	// HACK:*this = で直接代入するのはＯＫか？危険か？
+	// width, height はここで更新される
 	*this = FileIO::FetchCameraInfo( stageNumber );
 
 	// グリッドサイズは，この時点で正しいものに設定されているとする
@@ -77,21 +78,30 @@ void Camera::Uninit()
 
 }
 
-void Camera::Update()
+void Camera::Update( bool isAllowMove, bool isAllowExposure, bool isAllowToggle )
 {
-#if DEBUG_MODE
-	if ( TRG( KEY_INPUT_R ) )
+	if ( isAllowToggle && IsTrigger( InputTrigger::ToggleCamera ) )
 	{
 		ToggleAspectRatio();
+		PlaySE( M_TOGGLE_CAMERA );
 	}
-#endif // DEBUG_MODE
 
-	Move();
+	if ( isAllowMove )
+	{
+		Move();
+	}
 	Interpolate();
 
 	Shake();
 
-	Exposure();
+	if ( isAllowExposure )
+	{
+		Exposure();
+	}
+	else
+	{
+		isExposure = false;
+	}
 
 	if ( isGlow )
 	{
@@ -159,10 +169,10 @@ void Camera::Move()
 
 	bool isUp = false, isDown = false, isLeft = false, isRight = false;
 
-	if ( IS_TRG_UP		) { isUp	= true;	}
-	if ( IS_TRG_DOWN	) { isDown	= true;	}
-	if ( IS_TRG_LEFT	) { isLeft	= true;	}
-	if ( IS_TRG_RIGHT	) { isRight	= true;	}
+	if ( IsTrigger( InputTrigger::Up	) ) { isUp		= true; }
+	if ( IsTrigger( InputTrigger::Down	) ) { isDown	= true;	}
+	if ( IsTrigger( InputTrigger::Left	) ) { isLeft	= true;	}
+	if ( IsTrigger( InputTrigger::Right	) ) { isRight	= true;	}
 
 	if ( isUp		&& !isDown	)	{ pos.y -= RESPONSE_MOVE_AMOUNT * moveAmount; column	-= moveAmount; PlaySE( M_CAMERA_MOVE ); }
 	if ( isDown		&& !isUp	)	{ pos.y += RESPONSE_MOVE_AMOUNT * moveAmount; column	+= moveAmount; PlaySE( M_CAMERA_MOVE ); }
@@ -242,7 +252,7 @@ void Camera::Shake()
 
 void Camera::Exposure()
 {
-	if ( !IS_TRG_EXPOSURE )
+	if ( !IsTrigger( InputTrigger::Exposure ) )
 	{
 		isExposure = false;
 
@@ -286,8 +296,13 @@ void Camera::SaveLog()
 	}
 	// else
 
-	rowStorage.push_back( row );
-	clumStorage.push_back( column );
+	Log tmp{};
+	tmp.row		= row;
+	tmp.column	= column;
+	tmp.width	= width;
+	tmp.height	= height;
+	tmp.size	= size;
+	storage.emplace_back( tmp );
 }
 
 bool Camera::Undo()
@@ -298,12 +313,14 @@ bool Camera::Undo()
 	}
 	// else
 
-	row = rowStorage.back();
-	column = clumStorage.back();
+	Log latestLog = storage.back();
+	row		= latestLog.row;
+	column	= latestLog.column;
+	width	= latestLog.width;
+	height	= latestLog.height;
+	size	= latestLog.size;
 
-	rowStorage.pop_back();
-	clumStorage.pop_back();
-
+	storage.pop_back();
 	return true;
 }
 

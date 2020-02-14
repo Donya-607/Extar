@@ -35,7 +35,7 @@ namespace
 
 namespace TextBehavior
 {
-	// 文の数とフレームの数は揃えてください
+	// 文の要素数と表示フレームの要素数は揃えてください
 
 	const std::vector<std::string> TUTORIAL =
 	{
@@ -61,12 +61,12 @@ namespace TextBehavior
 
 	#else
 
-		"やっほー、初心者さん？　やり方教えるね♪",
+		"やっほー！初心者さんかな？　やり方教えるね♪",
 		"水色の枠がカメラの範囲だよ！",
-		"範囲内に星をおさめると、Ａボタンで露光が使えるよ",
+		"範囲内に星をおさめると、ＡかＸで露光が使えるよ",
 
 		"露光は、範囲内にある星を明るくできるよ",
-		"すべての星の明るさをそろえよう★",
+		"すべての星の明るさをそろえて撮影しよう！",
 		"セレクトボタンでもう一度教えるよ！"
 
 	#endif // STRING_FOR_MOVIE
@@ -95,7 +95,7 @@ namespace TextBehavior
 
 	#else
 
-		210,
+		180,
 		180,
 		180,
 
@@ -105,8 +105,80 @@ namespace TextBehavior
 
 	#endif // STRING_FOR_MOVIE
 	};
+	using PSCond = ProgressStorage::Conditions;
+	const std::vector<PSCond> TUTORIAL_CONDITIONS =
+	{
+	#if STRING_FOR_MOVIE
+
+		PSCond::WaitingTime,
+
+		PSCond::WaitingTime,
+		PSCond::WaitingTime,
+		PSCond::WaitingTime,
+
+		PSCond::WaitingTime,
+		PSCond::WaitingTime,
+
+		PSCond::WaitingTime,
+		PSCond::WaitingTime,
+		PSCond::WaitingTime,
+
+		PSCond::WaitingTime,
+
+		PSCond::WaitingTime,
+		PSCond::IMPOSSIBLE,
+
+	#else
+
+		PSCond::WaitingTime,
+		PSCond::InputMove		| PSCond::WaitingTime,
+		PSCond::InputExposure	| PSCond::WaitingTime,
+
+		PSCond::WaitingTime,
+		PSCond::WaitingTime,
+		PSCond::IMPOSSIBLE
+
+	#endif // STRING_FOR_MOVIE
+	};
+	using PSInput = ProgressStorage::BitInput;
+	const std::vector<PSInput> TUTORIAL_PERMISSIONS =
+	{
+	#if STRING_FOR_MOVIE
+
+		PSInput::ALL_OK,
+
+		PSInput::ALL_OK,
+		PSInput::ALL_OK,
+		PSInput::ALL_OK,
+
+		PSInput::ALL_OK,
+		PSInput::ALL_OK,
+
+		PSInput::ALL_OK,
+		PSInput::ALL_OK,
+		PSInput::ALL_OK,
+
+		PSInput::ALL_OK,
+
+		PSInput::ALL_OK,
+		PSInput::ALL_OK,
+
+	#else
+
+		PSInput::Move,
+		PSInput::Move,
+		PSInput::Move | PSInput::Exposure,
+
+		PSInput::Move | PSInput::Exposure,
+		PSInput::Move | PSInput::Exposure,
+		PSInput::Move | PSInput::Exposure
+
+	#endif // STRING_FOR_MOVIE
+	};
 	const std::vector<std::string> EMPHASIS_STR =	// RGB( 87, 101, 255 )
 	{
+		// すべての文章にて，ここの強調文字一覧が調べられ，どれかに引っかかり次第それのみが強調されます
+
 	#if STRING_FOR_MOVIE
 
 		"星",
@@ -118,42 +190,74 @@ namespace TextBehavior
 		"水色の枠",
 		"露光",
 		"すべて",
-		"エンターキー"
+		"セレクトボタン",
 
 	#endif // STRING_FOR_MOVIE
 	};
 
+	// 三点リーダは「・・・」とする（３文字）
+
 	const std::vector<std::string> RAND_SAY =
 	{
+		"がんばれ～！",
+		"キラッ★",
 		"ファイトォ！",
-		"んー悩むねー",
-		"難しいなぁ・・・",
 
-		"その調子　その調子！",
-		"がんばれー！",
-		"んー、どうするんだろう・・・",
-
-		"迷うなぁ・・・",
-		"いい感じかも♪",
+		"綺麗に撮ってね！",
+		"写真楽しみにしてる♪",
+		"上手に撮れるかなぁ",
 		"星がきれいだねー",
-
-		"キラッ★"
 	};
 	const std::vector<int> RAND_SAY_SHOW_FRAME =
 	{
 		180,
+		90,
+		180,
+
+		180,
+		180,
+		180,
+		180,
+	};
+	
+	enum Reactions
+	{
+		CantExposure,
+		WhyDontYouUndo,
+		Uhhh_1,
+		Uhhh_2,
+		Uhhh_3,
+		Uhhh_4,
+		GoodVibes_1,
+		GoodVibes_2,
+
+		REACTION_END
+	};
+	const std::vector<std::string> REACTION_SAY =
+	{
+		"それ以上は露光できないよ！",
+		"一度明るさをＢかＹで戻してみる？",
+
+		"迷うなぁ",
+		"ん～悩むねぇ",
+		"ん～どうするんだろう・・・",
+		"難しいなぁ・・・",
+
+		"その調子その調子！",
+		"いい感じかも♪",
+	};
+	const std::vector<int> REACTION_SAY_SHOW_FRAME =
+	{
 		180,
 		180,
 
 		180,
 		180,
 		180,
-
-		180,
-		180,
 		180,
 
-		90
+		180,
+		180,
 	};
 
 	const std::vector<std::string> CLEAR_SAY =
@@ -350,6 +454,7 @@ namespace ClearRelated
 {
 	constexpr int FADE_WAIT			= 80;
 	constexpr int GOTO_NEXT_WAIT	= 120;
+	constexpr int GOTO_NEXT_SPACE	= 32;
 }
 
 namespace MilkyWayImage
@@ -566,6 +671,7 @@ void RecordStar::Init( Vector2 centerPos, bool isGlowStar )
 void RecordStar::Update()
 {
 	timer++;
+	timer = std::min( TIMER_MAX, timer );
 
 	if( angle < 360.0f )
 	{
@@ -615,6 +721,12 @@ void RecordStar::Draw( Vector2 shake ) const
 		ClearImage::hRecordStar[( isGlow ) ? 1 : 0],
 		TRUE
 	);
+}
+
+void RecordStar::SkipPerformance()
+{
+	scale = 1.0f;
+	timer = TIMER_MAX;
 }
 
 void Game::Wink::Init()
@@ -764,6 +876,18 @@ void Game::GameInit()
 	pNumMoves->Init( stageNumber );
 
 	pRotator.reset();
+	if ( stageNumber == 1 )
+	{
+		pProgress = std::make_unique<ProgressStorage>
+		(
+			TextBehavior::TUTORIAL_CONDITIONS,
+			TextBehavior::TUTORIAL_PERMISSIONS
+		);
+	}
+	else
+	{
+		pProgress.reset();
+	}
 
 	numMoves	= 0;
 	pauseTimer	= 0;
@@ -778,11 +902,19 @@ void Game::GameInit()
 	textExtendInterval = 0;
 	textNumber		= 0;
 
+	succeedCounter		= 0;
+	timeSinceSucceed	= 0;
+	failedCounter		= 0;
+	timeSinceFailed		= 0;
+	lastResult			= false;
+	timeSinceOperated	= 0;
+
 	armPos		= { 0, scast<float>( ( SCREEN_HEIGHT - HumanImage::SIZE_Y ) + HumanBehavior::HAND_LET_DOWN_PLUS_Y ) };
 	pausePos	= { 704.0f, 64.0f };
 
-	isOpenBalloon = true;
-	isDoneMoveArm = false;
+	isOpenBalloon  = true;
+	isTalkReaction = false;
+	isDoneMoveArm  = false;
 
 	// 他のＰＧの作業
 	{
@@ -867,6 +999,16 @@ void Game::GameUninit()
 	if ( pCamera   ) { pCamera->Uninit();   }
 
 	pRotator.reset();
+	pProgress.reset();
+
+	succeedCounter		= 0;
+	timeSinceSucceed	= 0;
+	failedCounter		= 0;
+	timeSinceFailed		= 0;
+	lastResult			= false;
+	timeSinceOperated	= 0;
+
+	isTalkReaction		= false;
 }
 void Game::ClearUninit()
 {
@@ -1135,17 +1277,37 @@ void Game::GameUpdate()
 
 	if ( pCamera && isOpenFade/* フェードイン中の操作制限のため */ )
 	{
-		pCamera->Update();
+		bool allowMove		= true;
+		bool allowExposure	= true;
+		bool allowToggle	= true;
+		if ( pProgress )
+		{
+			using Input		= ProgressStorage::BitInput;
+			allowMove		= pProgress->IsAllowInput( Input::Move		);
+			allowExposure	= pProgress->IsAllowInput( Input::Exposure	);
+			allowToggle		= pProgress->IsAllowInput( Input::Toggle	);
+		}
+		pCamera->Update( allowMove, allowExposure, allowToggle );
 
 		if ( pCamera->IsExposure() && nextState == State::Null )
 		{
 			if ( Exposure() )
 			{
 				numMoves++;
+
+				if ( pProgress )
+				{
+					pProgress->DoneConditions( ProgressStorage::Conditions::InputExposure );
+				}
+				else
+				{
+					UsedOperate();
+				}
 			}
 		}
 	}
 
+	// 流れ星
 	if ( pSSMng )
 	{
 		// 発生
@@ -1171,18 +1333,10 @@ void Game::GameUpdate()
 		pSSMng->Update();
 	}
 
+	// 盤面
 	if ( pStarMng )
 	{
 		pStarMng->Update();
-
-		if ( IS_TRG_UNDO && isOpenFade && nextState == State::Null )
-		{
-			if ( pStarMng->Undo(), pCamera->Undo()/* HAC:ちゃんと両方での成功を条件に取るべきである */ )
-			{
-				numMoves--;
-				PlaySE( M_UNDO );
-			}
-		}
 
 	#if DEBUG_MODE
 		if ( TRG( KEY_INPUT_SEMICOLON ) )
@@ -1190,6 +1344,27 @@ void Game::GameUpdate()
 			pStarMng->AlignLevelsDebug();
 		}
 	#endif // DEBUG_MODE
+	}
+
+	// アンドゥ
+	if ( pStarMng && pCamera )
+	{
+		bool canUndo = isOpenFade && nextState == State::Null;
+		if ( pProgress && canUndo ) // すでに使えない状態ならば通す意味はない
+		{
+			// 露光が使える == アンドゥも使える，とみなす
+			canUndo = pProgress->IsAllowInput( ProgressStorage::BitInput::Exposure );
+		}
+
+		if ( IsTrigger( InputTrigger::Undo ) && canUndo )
+		{
+			if ( pStarMng->Undo(), pCamera->Undo()/* HAC:ちゃんと両方での成功を条件に取るべきである */ )
+			{
+				numMoves--;
+				UsedOperate();
+				PlaySE( M_UNDO );
+			}
+		}
 	}
 
 	if ( pNumMoves )
@@ -1207,6 +1382,34 @@ void Game::GameUpdate()
 		RotateStars( *pRotator );
 	}
 
+	// 進める条件の確認
+	if ( pProgress )
+	{
+		using Cond = ProgressStorage::Conditions;
+
+		bool wantMove = IsTrigger( InputTrigger::Up ) || IsTrigger( InputTrigger::Down ) || IsTrigger( InputTrigger::Left ) || IsTrigger( InputTrigger::Right );
+		if ( wantMove )
+		{
+			pProgress->DoneConditions( Cond::InputMove );
+		}
+
+		// 露光の条件は，露光成功時のみにしたいため，カメラの更新箇所にて見ている
+
+		if ( IsTrigger( InputTrigger::ToggleCamera ) )
+		{
+			pProgress->DoneConditions( Cond::InputToggle );
+		}
+	}
+
+	// 反応間連の台詞の条件の確認
+	if ( nextState == State::Null && state == State::Game ) // ゲーム中のみ判断する
+	{
+		if ( !pProgress ) // チュートリアル時は出さない
+		{
+			ReactionUpdate();
+		}
+	}
+
 	BalloonUpdate();
 
 #if USE_IMGUI
@@ -1215,11 +1418,11 @@ void Game::GameUpdate()
 	FileIO::UpdateNowStageNumberByImGui();
 	if ( FileIO::IsCreateNewStage() )
 	{
-		if ( pCamera )
+		if ( pCamera   )
 		{
 			pCamera->SaveData();
 		}
-		if ( pStarMng )
+		if ( pStarMng  )
 		{
 			pStarMng->SaveData();
 		}
@@ -1240,7 +1443,24 @@ void Game::GameUpdate()
 
 void Game::ClearUpdate()
 {
+	constexpr int CLEAR_TIMER_MAX = ClearRelated::FADE_WAIT + ClearRelated::GOTO_NEXT_WAIT;
+
+	bool skipPerformance = false;
+	if ( IsTrigger( InputTrigger::Exposure ) )
+	{
+		bool nowSkippable = true; // フェードしきってから，クリア演出が終わる（「次へ」が出てくる）までの間のみスキップ可能
+		if ( clearTimer < ClearRelated::FADE_WAIT )	{ nowSkippable = false; }
+		if ( CLEAR_TIMER_MAX <= clearTimer )		{ nowSkippable = false; }
+
+		if ( nowSkippable )
+		{
+			skipPerformance = true;
+			clearTimer = CLEAR_TIMER_MAX;
+		}
+	}
+
 	clearTimer++;
+	clearTimer = std::min( CLEAR_TIMER_MAX, clearTimer );
 
 	if ( pStarMng )
 	{
@@ -1288,38 +1508,38 @@ void Game::ClearUpdate()
 		pSSMng->Update();
 	}
 
-	if ( pBoard )
+	if ( ClearRelated::FADE_WAIT <= clearTimer && pBoard )
 	{
-		if ( ClearRelated::FADE_WAIT < clearTimer )
+		if ( skipPerformance )
 		{
-			pBoard->Update();
+			pBoard->SkipPerformance();
 		}
+
+		pBoard->Update();
 	}
 
 	// RecordStarの生成管理
+	if ( ClearRelated::FADE_WAIT <= clearTimer )
 	{
-		// HACK:星の数が３つじゃないなら，ここも変える必要がある
-		const std::array<int, 3> generateFrames =
+		// HACK:星の数が３つじゃないなら，これも変える必要がある
+		constexpr int RECORD_STAR_COUNT = 3;
+
+		const std::array<int, RECORD_STAR_COUNT> generateFrames =
 		{
 			ClearRelated::FADE_WAIT + 50/* 基準 */,
 			ClearRelated::FADE_WAIT + 50 + 30/* 間隔 */,
 			ClearRelated::FADE_WAIT + 50 + ( 30 * 2 )
 		};
 
-		int nextGenerate = scast<int>( recordStars.size() );
-		if	(
-				nextGenerate < scast<int>( generateFrames.size() ) &&
-				clearTimer == generateFrames[nextGenerate]	// 短絡評価
-			)
+		auto GenerateImpl = [&]( int nextGenerateIndex )
 		{
-			Vector2 base{ 602.0f, 864.0f };
-			float interval = scast<float>( ( 160 + ClearImage::SIZE_STAR_X ) * nextGenerate );
-			base.x += interval;
+			const float   interval = scast<float>( ( 160 + ClearImage::SIZE_STAR_X ) * nextGenerateIndex );
+			const Vector2 base{ 602.0f + interval, 864.0f };
 
 			int nowRank = pNumMoves->CalcRank( numMoves );	// 0始まり
 			// 達成難易度は，右からの降順で並んでいるとする（左のほうが達成されやすい）
 			bool isGlow =
-				( nextGenerate <= scast<int>( generateFrames.size() ) - 1 - nowRank )
+				( nextGenerateIndex <= scast<int>( generateFrames.size() ) - 1 - nowRank )
 				? true
 				: false;
 
@@ -1335,32 +1555,83 @@ void Game::ClearUpdate()
 			{
 				PlaySE( M_UNRECORD_STAR );
 			}
+		};
+
+		const int nextGenerate = scast<int>( recordStars.size() ); // 生成するたびにサイズが増えていくことを利用
+		if	(
+				nextGenerate < scast<int>( generateFrames.size() ) &&
+				clearTimer == generateFrames[nextGenerate]	// 短絡評価
+			)
+		{
+			GenerateImpl( nextGenerate );
+		}
+
+		if ( skipPerformance )
+		{
+			while ( scast<int>( recordStars.size() ) < RECORD_STAR_COUNT )
+			{
+				// このラムダ式の中で recordStars のサイズが増えるため，無限ループにはならない
+				GenerateImpl( scast<int>( recordStars.size() ) );
+			}
+			for ( auto &it : recordStars )
+			{
+				// ここで呼んでしまうと，二重生成防止条件の都合でパーティクル生成条件に引っかからなくなるため，あとで呼ぶ
+				// it.SkipPerformance();
+			}
 		}
 	}
 	for ( RecordStar &it : recordStars )
 	{
 		it.Update();
 
-		constexpr int GENERATE_PARTICLE_TIME = 8;
-		if ( it.GetTimer() == GENERATE_PARTICLE_TIME && it.IsGlow() )
+		if ( it.IsGlow() && pParticleMng )
 		{
-			if ( pParticleMng )
+			auto Generate = [&]()
 			{
-				pParticleMng->Generate( PARTICLE_AMOUNT, it.GetPos(), /* isBig = */true );
+				pParticleMng->
+					Generate( PARTICLE_AMOUNT, it.GetPos(), /* isBig = */ true );
+			};
+
+			constexpr int GENERATE_PARTICLE_TIME = 8;
+
+			if ( skipPerformance )
+			{
+				// スキップするときは，まだ生成していない（生成フレームに満たない）もののみ生成
+				if ( it.GetTimer() <  GENERATE_PARTICLE_TIME )
+				{
+					Generate();
+
+					// ここで呼ぶと，IsGlow()が真の実体のみ呼ぶことになるため適さない
+					// it.SkipPerformance();
+				}
 			}
+			else
+			{
+				// スキップしないときは，生成フレームになったら生成
+				if ( it.GetTimer() == GENERATE_PARTICLE_TIME )
+				{
+					Generate();
+				}
+			}
+		}
+
+		// ここなら，やりたかった二重生成の防止を達成したあとなので呼んでも大丈夫。ただし，無駄に毎フレーム入ってしまう
+		if ( skipPerformance )
+		{
+			it.SkipPerformance();
 		}
 	}
 
 	// 項目選択
-	if ( isShowClearMenu )
+	if ( isShowClearMenu && isOpenFade/* 項目を選びフェードが始まっていたら入力を受け付けない */ )
 	{
 		// PauseUpdateのものと同一
 		constexpr int MAX_MENU = 4;
 
 		bool isUp = false, isDown = false;
 
-		if ( IS_TRG_UP ) { isUp = true; }
-		if ( IS_TRG_DOWN ) { isDown = true; }
+		if ( IsTrigger( InputTrigger::Up	) ) { isUp		= true; }
+		if ( IsTrigger( InputTrigger::Down	) ) { isDown	= true; }
 
 		int lower = ( stageNumber == FileIO::GetMaxStageNumber() ) ? 1 : 0;
 		if ( ( lower	< choice		) && isUp && !isDown ) { choice -= 1; PlaySE( M_SELECT ); }
@@ -1375,7 +1646,7 @@ void Game::ClearUpdate()
 
 		assert( lower <= choice  && choice < MAX_MENU );
 
-		if ( IS_TRG_EXPOSURE && nextState == State::Null )
+		if ( IsTrigger( InputTrigger::Exposure ) && nextState == State::Null )
 		{
 			PlaySE( M_DECISION );
 
@@ -1421,25 +1692,24 @@ void Game::ClearUpdate()
 	}
 
 	// 「次へ」の移動
-	if ( !isShowClearMenu && ClearRelated::FADE_WAIT + ClearRelated::GOTO_NEXT_WAIT < clearTimer )
+	if ( !isShowClearMenu && ClearRelated::FADE_WAIT + ClearRelated::GOTO_NEXT_WAIT <= clearTimer )
 	{
-		const int   DESTINATION = SCREEN_WIDTH - ( ClearImage::SIZE_GOTO_NEXT_X + 32/* 余白 */);
+		const int   DESTINATION = SCREEN_WIDTH - ( ClearImage::SIZE_GOTO_NEXT_X + ClearRelated::GOTO_NEXT_SPACE );
 		const float RESISTANCE = 0.3f;
 
 		float dist = fabsf( scast<float>( DESTINATION - gotoNextPosX ) );
 		gotoNextPosX -= scast<int>( dist * RESISTANCE );
 
-		if ( gotoNextPosX < DESTINATION )
+		if (gotoNextPosX < DESTINATION)
 		{
 			gotoNextPosX = DESTINATION;
 		}
 
-		if ( IS_TRG_EXPOSURE )
+		if ( IsTrigger( InputTrigger::Exposure ) && !skipPerformance/* スキップした瞬間もボタンを押していることになり，そのままこの条件にも入るが，それは意図しない */ )
 		{
 			PlaySE( M_DECISION );
 
 			isShowClearMenu = true;
-			gotoNextPosX = SCREEN_WIDTH;
 		}
 	}
 
@@ -1545,11 +1815,11 @@ void Game::BalloonUpdate()
 {
 	textTimer++;
 
-	// フキダシの更新
-	if ( 0 != balloonLength )
+	// フキダシの枠部分の伸び縮み
+	auto UpdateBalloon = [&]()
 	{
-		constexpr int LOWER = 12;
-		constexpr float DIV = 0.3f;
+		constexpr float LOWER_REMAIN		= 12.0f;	// 残りがこれ以下であれば，一気に限界値にする
+		constexpr float STRETCH_RESISTANCE	= 0.3f;		// 差分に掛け算して，変化量に動きをもたせる
 
 		if ( isOpenBalloon )	// ひらく
 		{
@@ -1557,13 +1827,13 @@ void Game::BalloonUpdate()
 			{
 				float remaining = scast<float>( HumanImage::SIZE_BALLOON_X - balloonLength );
 
-				if ( remaining <= LOWER )
+				if ( remaining <= LOWER_REMAIN )
 				{
 					balloonLength = HumanImage::SIZE_BALLOON_X;
 				}
 				else
 				{
-					balloonLength += scast<int>( remaining * DIV );
+					balloonLength += scast<int>( remaining * STRETCH_RESISTANCE );
 
 					if ( HumanImage::SIZE_BALLOON_X < balloonLength )
 					{
@@ -1576,13 +1846,13 @@ void Game::BalloonUpdate()
 		{
 			float remaining = scast<float>( balloonLength );
 
-			if ( remaining <= LOWER )
+			if ( remaining <= LOWER_REMAIN )
 			{
 				balloonLength = 0;
 			}
 			else
 			{
-				balloonLength -= scast<int>( remaining * DIV );
+				balloonLength -= scast<int>( remaining * STRETCH_RESISTANCE );
 
 				if ( balloonLength < 0 )
 				{
@@ -1590,6 +1860,12 @@ void Game::BalloonUpdate()
 				}
 			}
 		}
+	};
+
+	// フキダシの更新，これは必ず通す
+	if ( 0 != balloonLength )
+	{
+		UpdateBalloon();
 	}
 
 	// クリア台詞
@@ -1598,8 +1874,7 @@ void Game::BalloonUpdate()
 		// 表示時間経過確認
 		if ( 0 != textLength )
 		{
-			int showFrame = TextBehavior::CLEAR_SAY_SHOW_FRAME[textNumber];
-
+			int  showFrame =  TextBehavior::CLEAR_SAY_SHOW_FRAME[textNumber];
 			if ( showFrame <= textTimer )
 			{
 				textLength = 0;
@@ -1643,11 +1918,11 @@ void Game::BalloonUpdate()
 	}
 	// else
 
-	// チュートリアル
-	if ( stageNumber == 1 )
+	// チュートリアル台詞
+	if ( stageNumber == 1 && pProgress )
 	{
-		constexpr int TUTORIAL_TEXT_START_FRAME		= 80;
-		constexpr int TUTORIAL_BALLOON_START_FRAME	= TUTORIAL_TEXT_START_FRAME - 20;
+		constexpr int TUTORIAL_TEXT_START_FRAME		= 80; // フェードのための待ち時間
+		constexpr int TUTORIAL_BALLOON_START_FRAME	= TUTORIAL_TEXT_START_FRAME - 20; // フキダシが出てからテキストを表示するための差分
 		if ( state == State::Game )	// クリア後は新しくは出さない
 		{
 			if ( textTimer == TUTORIAL_TEXT_START_FRAME )
@@ -1672,23 +1947,36 @@ void Game::BalloonUpdate()
 					sumFrame += TextBehavior::TUTORIAL_SHOW_FRAME[i];
 				}
 
-				if ( sumFrame <= textTimer - TUTORIAL_TEXT_START_FRAME )
+				bool isOverCurrentShowFrame = sumFrame <= textTimer - TUTORIAL_TEXT_START_FRAME;
+				if ( isOverCurrentShowFrame )
 				{
+					 pProgress->DoneConditions( ProgressStorage::Conditions::WaitingTime );
+				}
+
+				if ( pProgress->IsCompleteNowConditions() )
+				{
+					// 時間条件は満たしているが他を満たしていない場合に増えすぎてしまうため，正しいタイマーに補正する
+					textTimer = sumFrame + TUTORIAL_TEXT_START_FRAME;
+
 					textLength = 1;
 					textExtendInterval = 0;
 
 					textNumber++;
+					pProgress->AdvanceProgress();
 				}
 			}
 			else // else文にすると，すべて表示した後でないとリセットできないようになる
-			if ( IS_TRG_SELECT )
+			if ( IsTrigger( InputTrigger::Select ) )
 			{
-				textTimer = TUTORIAL_TEXT_START_FRAME + TextBehavior::TUTORIAL_SHOW_FRAME[0];
+				textTimer  = TUTORIAL_TEXT_START_FRAME + TextBehavior::TUTORIAL_SHOW_FRAME[0];
 
 				textLength = 1;
 				textExtendInterval = 0;
 
 				textNumber = 1;
+
+				pProgress->ResetProgress();
+				pProgress->AdvanceProgress(); // リセット関数ではゼロになるが，戻したいのは１のため，ひとつ進める
 			}
 		}
 
@@ -1726,16 +2014,73 @@ void Game::BalloonUpdate()
 	}
 	// else
 
-	constexpr int SAY_INTERVAL	= 60 * 20/* 秒数 */;
+	// 反応関連の台詞
+	if ( isTalkReaction )
+	{
+		// 発言トリガーは別の場所で行い，ここではその更新のみ行う
+		
+		// 表示時間経過確認
+		if ( 0 != textLength )
+		{
+			int  showFrame =  TextBehavior::REACTION_SAY_SHOW_FRAME[textNumber];
+			if ( showFrame <= textTimer )
+			{
+				textLength = 0;
+				textExtendInterval = 0;
+
+				isOpenBalloon  = false;
+				isTalkReaction = false;
+			}
+		}
+
+		// 文字数増加確認
+		if ( 0 != textLength && ( textLength * 2 ) <= scast<int>( TextBehavior::REACTION_SAY[textNumber].size() ) )
+		{
+			constexpr int INTERVAL = 3;
+			textExtendInterval++;
+			if ( INTERVAL <= textExtendInterval )
+			{
+				textExtendInterval = 0;
+				textLength++;
+
+				// 口変化
+				{
+					if ( scast<int>( TextBehavior::REACTION_SAY[textNumber].size() ) <= ( textLength * 2 ) )
+					{
+						mouthIndex = 0;
+					}
+					else
+					{
+						int oldIndex = mouthIndex;
+						while ( oldIndex == mouthIndex )
+						{
+							mouthIndex = rand() % HumanImage::NUM_MOUTH_ROW;
+						}
+					}
+				}
+
+				PlaySE( M_VOICE );
+			}
+		}
+
+		return;
+	}
+	// else
+
+	// それ以外のランダム発言
+
+	constexpr int INTERVAL_SECONDS	= 20;
+	constexpr int SAY_INTERVAL		= INTERVAL_SECONDS * 60;
 	int remTimer = textTimer % SAY_INTERVAL;
 	{
 		constexpr int TEXT_START_FRAME		= 80;
 		constexpr int BALLOON_START_FRAME	= TEXT_START_FRAME - 20;
+		// 何もしゃべっていないときからのランダム生成
 		if ( state == State::Game )	// クリア後は新しくは出さない
 		{
 			if ( remTimer == TEXT_START_FRAME )
 			{
-				textLength = 1;
+				textLength = 1; // 更新条件である Length != 0 を突破する最小値にする
 			}
 			if ( remTimer == BALLOON_START_FRAME )
 			{
@@ -1755,14 +2100,13 @@ void Game::BalloonUpdate()
 		// 表示時間経過確認
 		if ( 0 != textLength )
 		{
-			int showFrame = TextBehavior::RAND_SAY_SHOW_FRAME[textNumber];
-
+			int  showFrame =  TextBehavior::RAND_SAY_SHOW_FRAME[textNumber];
 			if ( showFrame <= remTimer - TEXT_START_FRAME )
 			{
 				textLength = 0;
 				textExtendInterval = 0;
 
-				textNumber++;
+				textNumber++; // HACK:これいる？
 
 				isOpenBalloon = false;
 			}
@@ -1800,6 +2144,134 @@ void Game::BalloonUpdate()
 	}
 }
 
+void Game::TalkReaction( int textIndex )
+{
+	// チュートリアル中は出さない
+	if ( stageNumber == 1 ) { return; }
+	// else
+
+	assert( 0 <= textIndex && textIndex < TextBehavior::Reactions::REACTION_END );
+
+	// クリア時の台詞表示処理を参照。
+	// フキダシが伸び切るのを待っていないという問題があるが，今回は見過ごす
+
+	if ( !balloonLength )
+	{
+		constexpr int INIT_LENGTH = 64;
+		balloonLength = INIT_LENGTH;
+	}
+
+	textTimer			= 0; // すでにしゃべっている最中でも，表示時間を設定通りに動作させるため。textTimerをいじること自体は問題ないと判断
+	textLength			= 1;
+	textExtendInterval	= 0;
+	textNumber			= textIndex;
+
+	isOpenBalloon		= true;
+	isTalkReaction		= true;
+}
+namespace Reaction
+{
+	static constexpr int sayBorderCountSucceed	= 8;
+	static constexpr int sayBorderCountFailed	= 3;
+	static constexpr int sayBorderFrameSucceed	= 5 * 60;
+	static constexpr int sayBorderFrameFailed	= 5 * 60;
+	static constexpr int sayBorderFrameOperated	= 10 * 60;
+}
+void Game::ReactionUpdate()
+{
+	timeSinceSucceed++;
+	timeSinceFailed++;
+	timeSinceOperated++;
+
+	if ( Reaction::sayBorderFrameSucceed <= timeSinceSucceed )
+	{
+		timeSinceSucceed	= 0;
+	}
+	if ( Reaction::sayBorderFrameFailed <= timeSinceFailed )
+	{
+		timeSinceFailed		= 0;
+	}
+	if ( Reaction::sayBorderFrameOperated <= timeSinceOperated )
+	{
+		timeSinceOperated	= 0;
+
+		constexpr std::array<TextBehavior::Reactions, 5> UHHH_TEXTS
+		{
+			TextBehavior::Reactions::WhyDontYouUndo,
+			TextBehavior::Reactions::Uhhh_1,
+			TextBehavior::Reactions::Uhhh_2,
+			TextBehavior::Reactions::Uhhh_3,
+			TextBehavior::Reactions::Uhhh_4,
+		};
+		int textIndex = rand() % UHHH_TEXTS.size();
+		TalkReaction( UHHH_TEXTS[textIndex] );
+	}
+}
+void Game::UsedExposure( bool succeeded )
+{
+	using Reactions = TextBehavior::Reactions;
+
+	// 最後に行った動作と違っていたら，タイマとカウンタをリセットする
+	auto ResetStatus = [&]()
+	{
+		failedCounter		= 0;
+		timeSinceFailed		= 0;
+		succeedCounter		= 0;
+		timeSinceSucceed	= 0;
+	};
+
+	if ( succeeded )
+	{
+		if ( !lastResult )
+		{
+			ResetStatus();
+		}
+
+		succeedCounter++;
+
+		bool isOverBorder = Reaction::sayBorderCountSucceed <= succeedCounter;
+		bool isOverFastly = timeSinceSucceed < Reaction::sayBorderFrameSucceed;
+		if ( isOverBorder && isOverFastly )
+		{
+			succeedCounter   = 0;
+			timeSinceSucceed = 0;
+
+			constexpr std::array<Reactions, 2> GOOD_TEXTS
+			{
+				Reactions::GoodVibes_1,
+				Reactions::GoodVibes_2,
+			};
+			int textIndex = rand() % GOOD_TEXTS.size();
+			TalkReaction( GOOD_TEXTS[textIndex] );
+		}
+	}
+	else
+	{
+		if ( lastResult )
+		{
+			ResetStatus();
+		}
+
+		failedCounter++;
+
+		bool isOverBorder = Reaction::sayBorderCountFailed <= failedCounter;
+		bool isOverFastly = timeSinceFailed < Reaction::sayBorderFrameFailed;
+		if ( isOverBorder && isOverFastly )
+		{
+			failedCounter   = 0;
+			timeSinceFailed = 0;
+
+			TalkReaction( Reactions::CantExposure );
+		}
+	}
+
+	lastResult = succeeded;
+}
+void Game::UsedOperate()
+{
+	timeSinceOperated = 0;
+}
+
 void Game::FadeBegin()
 {
 	constexpr int MOVE_INTERVAL = 1;
@@ -1812,7 +2284,6 @@ void Game::FadeBegin()
 
 	isOpenFade = false;
 }
-
 void Game::FadeCheck()
 {
 	if ( nextState != State::Null && Fade::GetInstance()->IsDoneFade() )
@@ -1825,7 +2296,6 @@ void Game::FadeCheck()
 		FadeEnd();
 	}
 }
-
 void Game::FadeDone()
 {
 	// シーン遷移チェックは先にしているので，これに引っかかるはずはない想定
@@ -1874,7 +2344,6 @@ void Game::FadeDone()
 	isPause = false;
 	isOpenFade = false;
 }
-
 void Game::FadeEnd()
 {
 	Fade::GetInstance()->Uninit();
@@ -1911,22 +2380,26 @@ bool Game::Exposure()
 	}
 	// else
 
-	Box camera = pCamera->FetchColWorldPos();
+	const Box camera = pCamera->FetchColWorldPos();
 
-	std::vector<int> targets{};
-	std::vector<Vector2> particlePos{};
+	std::vector<int>		targets{};		// 露光の適用対象たち
+	std::vector<Vector2>	particlePos{};
 
 	// 適用番号の検査
-	int end = pStarMng->GetArraySize();
+	bool isCovered = false;	// 星が一つでもカメラの枠内に入っていれば真
+	const int end = pStarMng->GetArraySize();
 	for ( int i = 0; i < end; i++ )
 	{
 		Box star = pStarMng->FetchColWorldPos( i );
 		if ( Box::IsHitBox( camera, star ) )
 		{
+			isCovered = true;
+
 			// １が入っている場合，使えない
 			if ( pStarMng->FetchLevel( i ) <= 1 )
 			{
 				pCamera->SetShake();
+				UsedExposure( /* succeeded = */ false );
 				PlaySE( M_FAILURE );
 
 				return false;
@@ -1937,9 +2410,10 @@ bool Game::Exposure()
 				targets.push_back( i );
 				particlePos.push_back( { star.cx, star.cy } );
 			}
-			else
+			else // カメラの枠が星に触れてはいるが，星のサイズが大きく，はみだしている場合に入る（露光は失敗する）
 			{
 				pCamera->SetShake();
+				UsedExposure( /* succeeded = */ false );
 				PlaySE( M_FAILURE );
 
 				return false;
@@ -1947,16 +2421,31 @@ bool Game::Exposure()
 		}
 	}
 
-	// 適用対象がいなかったら終わる
-	if ( !scast<int>( targets.size() ) || !end )
+	// 星をまったく収めていなければ，失敗として終わる
+	if ( !isCovered )
 	{
+		pCamera->SetShake();
+		UsedExposure( /* succeeded = */ false );
+		PlaySE( M_FAILURE );
 		return false;
 	}
 	// else
 
-	pCamera->SetGlow();
+	// HACK:上のfor文内でreturnを使っているので，この条件には入ることがない？
+	// 星を収めてはいるものの，失敗していたら終わる
+	if ( !scast<int>( targets.size() ) || !end )
+	{
+		UsedExposure( /* succeeded = */ false );
+		return false;
+	}
+	// else
 
-	// TODO:Exposureの音を鳴らすタイミングは，成功が確定してからかどうか。
+	// 以下，成功
+
+	pCamera->SetGlow();
+	UsedExposure( /* succeeded = */ true );
+
+	// 露光音は，成功が確定してから鳴らす（失敗時の音もあるため）
 	PlaySE( M_EXPOSURE );
 
 	// アンドゥ用
@@ -1982,9 +2471,9 @@ bool Game::Exposure()
 bool Game::IsInputPauseButton()
 {
 	if	(
-			!IsTriggerPauseButton()	||
-			state != State::Game	|| 
-			!isOpenFade				||
+			!IsTrigger( InputTrigger::Pause )	|| // 要求：ポーズボタンが押された瞬間である
+			state != State::Game				|| // 要求：ゲームシーンである
+			!isOpenFade							|| // 要求：フェード中ではない
 			nextState != State::Null
 		)
 	{
@@ -2009,14 +2498,18 @@ void Game::PauseUpdate()
 		pausePos.y += sinf( ( PI / INTERVAL ) * pauseTimer ) * AMPL;
 	}
 
+	// 項目を選びフェードが始まっていたら入力を受け付けない
+	if ( !isOpenFade ) { return; }
+	// else
+
 	// choice は 0 始まりである
 
 	constexpr int MAX_MENU = 4;
 
 	bool isUp = false, isDown = false;
 
-	if ( IS_TRG_UP	 ) { isUp	= true; }
-	if ( IS_TRG_DOWN ) { isDown	= true; }
+	if ( IsTrigger( InputTrigger::Up	) ) { isUp		= true; }
+	if ( IsTrigger( InputTrigger::Down	) ) { isDown	= true; }
 
 	int lower = ( stageNumber == FileIO::GetMaxStageNumber() ) ? 1 : 0;
 	if ( ( 0		< choice		)	&& isUp		&& !isDown	) { choice -= 1; PlaySE( M_SELECT ); }
@@ -2031,7 +2524,7 @@ void Game::PauseUpdate()
 
 	assert( 0 <= choice  && choice < MAX_MENU );
 
-	if ( IS_TRG_EXPOSURE && nextState == State::Null )
+	if ( IsTrigger( InputTrigger::Exposure ) && nextState == State::Null )
 	{
 		PlaySE( M_DECISION );
 
@@ -2905,10 +3398,7 @@ void Game::ClearDraw()
 		SetDrawBlendMode( DX_BLENDMODE_NOBLEND, 255 );
 	}
 
-	if ( clearTimer < ClearRelated::FADE_WAIT )
-	{
-		return;
-	}
+	if ( clearTimer < ClearRelated::FADE_WAIT ) { return; }
 	// else
 
 	if ( pBoard )
@@ -2941,16 +3431,21 @@ void Game::ClearDraw()
 
 	SetDrawBright( 255, 255, 255 );
 
-	if ( !isShowClearMenu )
-	{
-		return;
-	}
+	if ( !isShowClearMenu ) { return; }
 	// else
 
 	bool isFinalStage =
 		( stageNumber == FileIO::GetMaxStageNumber() )
 		? true
 		: false;
+
+	// 操作方法
+	DrawGraph
+	(
+		0, 0,
+		SelectImage::hUsage,
+		TRUE
+	);
 
 	// 項目
 	DrawGraph
@@ -2972,7 +3467,10 @@ void Game::ClearDraw()
 
 void Game::TextDraw()
 {
-	if ( nextState == State::Clear )	// クリア
+	// 現在 textLength があるかどうかは呼び出し側で判断している
+
+	// クリア台詞
+	if ( nextState == State::Clear )
 	{
 		int index = textNumber % scast<int>( TextBehavior::CLEAR_SAY.size() );
 		int length = textLength * 2/* 日本語で２バイト文字なので，倍にして対応 */;
@@ -2998,7 +3496,8 @@ void Game::TextDraw()
 	}
 	// else
 
-	if ( stageNumber == 1 )	// チュートリアル
+	// チュートリアル台詞
+	if ( stageNumber == 1 )
 	{
 		int index = textNumber % scast<int>( TextBehavior::TUTORIAL.size() );
 		int length = textLength * 2/* 日本語で２バイト文字なので，倍にして対応 */;
@@ -3039,10 +3538,7 @@ void Game::TextDraw()
 
 		// HACK:文字列と色の違いを除けばほとんど同じ処理なので，ループ文にまとめられるかも？
 
-		if ( length <= 0 )
-		{
-			return;
-		}
+		if ( length <= 0 ) { return; }
 		// else
 
 		int charWidth = 0;
@@ -3073,10 +3569,7 @@ void Game::TextDraw()
 
 		length -= scast<int>( text.size() );
 
-		if ( length <= 0 )
-		{
-			return;
-		}
+		if ( length <= 0 ) { return; }
 		// else
 
 		// 強調文字列
@@ -3104,10 +3597,7 @@ void Game::TextDraw()
 
 		length -= scast<int>( text.size() );
 
-		if ( length <= 0 )
-		{
-			return;
-		}
+		if ( length <= 0 ) { return; }
 		// else
 
 		// その後の文字列
@@ -3130,13 +3620,21 @@ void Game::TextDraw()
 	}
 	// else
 
-	// ランダム発言
+	// ランダムまたは反応関連の台詞
 
-	int index = textNumber % scast<int>( TextBehavior::RAND_SAY.size() );
-	int length = textLength * 2/* 日本語で２バイト文字なので，倍にして対応 */;
-	if ( scast<int>( TextBehavior::RAND_SAY[index].size() ) <= textLength )
+	// 使用する台詞配列のポインタ
+	const std::vector<std::string> *pTexts = &TextBehavior::RAND_SAY;
+	if ( isTalkReaction )
 	{
-		length = scast<int>( TextBehavior::RAND_SAY[index].size() );
+		pTexts = &TextBehavior::REACTION_SAY;
+	}
+
+	int index  = textNumber % scast<int>( pTexts->size() );
+	int length = textLength * 2/* 日本語で２バイト文字なので，倍にして対応 */;
+	const std::string &useText = pTexts->at( index );
+	if ( scast<int>( useText.size() ) <= textLength )
+	{
+		length = scast<int>( useText.size() );
 	}
 
 	constexpr int DIST_X = 80;
@@ -3147,7 +3645,7 @@ void Game::TextDraw()
 		HumanBehavior::BALLOON_POS_X + DIST_X,
 		HumanBehavior::BALLOON_POS_Y + DIST_Y,
 		2.0, 2.0,
-		( TextBehavior::RAND_SAY[index].substr( 0, length ) ).c_str(),
+		( useText.substr( 0, length ) ).c_str(),
 		GetColor( 42, 97, 110 ),
 		hFont
 	);

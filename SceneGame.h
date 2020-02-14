@@ -18,6 +18,7 @@
 
 #include "ShootingStar.h"
 
+#include "ProgressStorage.h"
 #include "Rotator.h"
 
 //--------------------
@@ -28,6 +29,8 @@
 
 class RecordStar
 {
+private:
+	static constexpr int TIMER_MAX = 999; // 最大値識別用
 private:
 	int   timer;
 
@@ -63,6 +66,8 @@ public:
 	void Draw(  Vector2 shake ) const;
 public:
 	bool IsGlow() const { return isGlow; }
+public:
+	void SkipPerformance();
 };
 
 class Game : public Scene
@@ -117,8 +122,17 @@ private:
 	int  balloonLength;	// 0 のときは更新しない
 	int  textTimer;		// テキスト関連で使用
 	int  textLength;	// 0 のときは更新しない
-	int  textExtendInterval;
+	int  textExtendInterval; // １文字増やすのに使う間隔用のタイマ
 	int  textNumber;	// 0始まり
+
+	// 反応関連の台詞用の変数群
+	// ここでの「失敗」は「明るさ最大の星に対して露光を使った」場合のことを指す
+	int  succeedCounter;	// 露光が連続で成功した回数
+	int  timeSinceSucceed;	// 露光が成功してからの経過フレーム（失敗か一定時間経過でリセット，成功ではそのまま）
+	int  failedCounter;		// 露光が連続で失敗した回数
+	int  timeSinceFailed;	// 露光が失敗してからの経過フレーム（成功か一定時間経過でリセット，失敗ではそのまま）
+	bool lastResult;		// 最後の露光の結果を格納（上の４つの変数では判断がしづらかったため）
+	int  timeSinceOperated;	// 最後の操作（移動除く）からの経過フレーム（移動以外の操作をするか一定時間経過でリセット）
 
 	int  gotoNextPosX;	// LeftTop, リザルト画面で使用
 
@@ -142,6 +156,7 @@ private:
 	std::unique_ptr<StarMng>  pStarMng;
 	std::unique_ptr<NumMoves> pNumMoves;
 	std::unique_ptr<Rotator>  pRotator;
+	std::unique_ptr<ProgressStorage> pProgress;
 
 	std::unique_ptr<Board>	  pBoard;
 	std::vector<RecordStar>	  recordStars;
@@ -149,6 +164,7 @@ private:
 	bool isOpenFade;	// FadeBegin ~ FadeEnd までFALSE
 
 	bool isOpenBalloon;	// テキストボックスの更新挙動 TRUE:開く, FALSE:閉じる
+	bool isTalkReaction;// 反応関連のセリフをしゃべっている間はTRUE
 
 	bool isClearMoment;	// これがオンならスクショを取り，オフにしてクリアへ遷移させる
 	bool isTakeScreenShot;
@@ -187,6 +203,10 @@ public:
 		balloonLength( 0 ),
 		textTimer( 0 ),
 		textLength( 0 ), textExtendInterval( 0 ), textNumber( 0 ),
+		succeedCounter( 0 ), timeSinceSucceed( 0 ),
+		failedCounter( 0 ), timeSinceFailed( 0 ),
+		lastResult( false ),
+		timeSinceOperated( 0 ),
 		gotoNextPosX( SCREEN_WIDTH ),
 		state( State::Select ), nextState( State::Null ),
 		wink(),
@@ -195,10 +215,11 @@ public:
 		pausePos(),
 		pSSMng( nullptr ), pParticleMng( nullptr ),
 		pCursor( nullptr ),
-		pCamera( nullptr ), pStarMng( nullptr ), pNumMoves( nullptr ), pRotator( nullptr ),
+		pCamera( nullptr ), pStarMng( nullptr ), pNumMoves( nullptr ),
+		pRotator( nullptr ), pProgress( nullptr ),
 		pBoard( nullptr ), recordStars(),
 		isOpenFade( false ),
-		isOpenBalloon( true ),
+		isOpenBalloon( true ), isTalkReaction( false ),
 		isClearMoment( false ), isTakeScreenShot( false ),
 		isDoneMoveArm( false ),
 		isShowClearMenu( false ),
@@ -246,6 +267,11 @@ public:
 	void RotateStars( const Rotator &rotator );
 
 	void BalloonUpdate();
+
+	void TalkReaction( int textIndex );
+	void ReactionUpdate();
+	void UsedExposure( bool succeeded );
+	void UsedOperate();
 
 	void FadeBegin();
 	void FadeCheck();

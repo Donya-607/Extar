@@ -60,8 +60,12 @@ public:
 	void Update();
 
 	void Draw( int hPicture, Vector2 shake ) const;
+public:
+	void SkipPerformance();
 private:
 	void Move();
+
+	void StopInDestination();
 };
 
 #endif //INCLUDED_BOARD_H_

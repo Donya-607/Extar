@@ -40,8 +40,18 @@ private:
 	Vector2 denialShake;
 	Vector2 size;		// 全体サイズ
 
-	std::vector<int> rowStorage;
-	std::vector<int> clumStorage;
+	struct Log
+	{
+		int		row;		// 今いる行, 0始まり
+		int		column;		// 今いる列, 0始まり
+
+		// 回転を考慮に入れるため必要
+
+		int		width;		// 覆うマスのサイズ, 1始まり
+		int		height;		// 覆うマスのサイズ, 1始まり
+		Vector2 size;		// 全体サイズ
+	};
+	std::vector<Log> storage; // アンドゥ用
 
 	bool	isGlow;
 	bool	isExposure;	// 露光した瞬間のみTRUE
@@ -52,7 +62,7 @@ public:
 		moveAmount( 1 ),
 		glowTimer( 0 ),
 		pos(), denialShake(), size(),
-		rowStorage(), clumStorage(),
+		storage(),
 		isGlow( false ),
 		isExposure( false ),
 		isShake( false )
@@ -62,7 +72,7 @@ public:
 	void Init( int stageNumber );
 	void Uninit();
 
-	void Update();
+	void Update( bool isAllowMove, bool isAllowExposure, bool isAllowToggle );
 
 	bool IsExposure() const
 	{
@@ -111,15 +121,12 @@ private:
 	}
 	bool CanUndo() const
 	{
-		if	(
-			scast<int>( rowStorage.size() ) &&
-			scast<int>( clumStorage.size() )
-			)
+		if ( storage.empty() )
 		{
-			return true;
+			return false;
 		}
 		// else
-		return false;
+		return true;
 	}
 #if USE_IMGUI
 private:

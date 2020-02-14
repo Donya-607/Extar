@@ -21,30 +21,60 @@
 
 #else
 
-#define IS_TRG_SELECT		( TRG( KEY_INPUT_SPACE ) )
-
-#define IS_TRG_EXPOSURE		( TRG( KEY_INPUT_Z ) )
-#define IS_TRG_UNDO			( TRG( KEY_INPUT_X ) )
-
-#define IS_TRG_L			( PRESS( KEY_INPUT_LSHIFT ) && TRG( KEY_INPUT_LEFT  ) )
-#define IS_TRG_R			( PRESS( KEY_INPUT_LSHIFT ) && TRG( KEY_INPUT_RIGHT ) )
-
-#define IS_TRG_UP			( TRG( KEY_INPUT_UP			) )
-#define IS_TRG_DOWN			( TRG( KEY_INPUT_DOWN		) )
-#define IS_TRG_LEFT			( TRG( KEY_INPUT_LEFT		) )
-#define IS_TRG_RIGHT		( TRG( KEY_INPUT_RIGHT		) )
-
-#define IS_PRESS_UP			( PRESS( KEY_INPUT_UP		) )
-#define IS_PRESS_DOWN		( PRESS( KEY_INPUT_DOWN		) )
-#define IS_PRESS_LEFT		( PRESS( KEY_INPUT_LEFT		) )
-#define IS_PRESS_RIGHT		( PRESS( KEY_INPUT_RIGHT	) )
-
-#define IS_TRG_J_X_EXPOSURE	( TRG( KEY_INPUT_Z ) )
+// #define IS_TRG_SELECT		( TRG( KEY_INPUT_SPACE ) )
+// 
+// #define IS_TRG_EXPOSURE		( TRG( KEY_INPUT_Z ) )
+// #define IS_TRG_UNDO			( TRG( KEY_INPUT_X ) )
+// 
+// #define IS_TRG_L			( PRESS( KEY_INPUT_LSHIFT ) && TRG( KEY_INPUT_LEFT  ) )
+// #define IS_TRG_R			( PRESS( KEY_INPUT_LSHIFT ) && TRG( KEY_INPUT_RIGHT ) )
+// 
+// #define IS_TRG_UP			( TRG( KEY_INPUT_UP			) )
+// #define IS_TRG_DOWN			( TRG( KEY_INPUT_DOWN		) )
+// #define IS_TRG_LEFT			( TRG( KEY_INPUT_LEFT		) )
+// #define IS_TRG_RIGHT		( TRG( KEY_INPUT_RIGHT		) )
+// 
+// #define IS_PRESS_UP			( PRESS( KEY_INPUT_UP		) )
+// #define IS_PRESS_DOWN		( PRESS( KEY_INPUT_DOWN		) )
+// #define IS_PRESS_LEFT		( PRESS( KEY_INPUT_LEFT		) )
+// #define IS_PRESS_RIGHT		( PRESS( KEY_INPUT_RIGHT	) )
+// 
+// #define IS_TRG_J_X_EXPOSURE	( TRG( KEY_INPUT_Z ) )
 
 #define CHANGE_SHOW_IMGUI_KEY ( KEY_INPUT_V )
 
 #endif // USE_DIRECT_INPUT
 
-bool IsTriggerPauseButton();
+enum class InputTrigger
+{
+	Up,
+	Down,
+	Left,
+	Right,
+	LB,
+	RB,
+	Select,		// チュートリアルのリセットに使用する
+
+	ToggleCamera,
+	Exposure,
+	Undo,
+	Pause,
+};
+enum class InputPress
+{
+	Up,
+	Down,
+	Left,
+	Right,
+};
+// 押された瞬間のみ真を返す
+bool IsTrigger( InputTrigger input );
+// 押されているフレーム数を返す
+int  IsPress( InputPress input );
+
+// bool IsTriggerPauseButton();
+
+// XInputコントローラを使用するバージョンなら真を返す
+bool IsControllerVersion();
 
 #endif //INCLUDED_INPUT_H_

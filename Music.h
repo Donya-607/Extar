@@ -1,4 +1,4 @@
-#ifndef INCLUDED_MUSIC_H_
+ #ifndef INCLUDED_MUSIC_H_
 #define INCLUDED_MUSIC_H_
 
 //--------------------
@@ -21,6 +21,7 @@ enum SE
 	M_DECISION = 0,
 	M_EXPOSURE,
 	M_FAILURE,
+	M_TOGGLE_CAMERA,
 	M_GOTO_TITLE,
 	M_PAUSE,
 	M_RECORD_STAR,
