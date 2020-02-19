@@ -1358,10 +1358,11 @@ void Game::GameUpdate()
 
 		if ( IsTrigger( InputTrigger::Undo ) && canUndo )
 		{
-			if ( pStarMng->Undo(), pCamera->Undo()/* HAC:ちゃんと両方での成功を条件に取るべきである */ )
+			if ( pStarMng->Undo(), pCamera->Undo()/* HACK:ちゃんと両方での成功を条件に取るべきである */ )
 			{
 				numMoves--;
 				UsedOperate();
+				ResetExposureCount();
 				PlaySE( M_UNDO );
 			}
 		}
@@ -2271,6 +2272,11 @@ void Game::UsedOperate()
 {
 	timeSinceOperated = 0;
 }
+void Game::ResetExposureCount()
+{
+	succeedCounter   = 0;
+	timeSinceSucceed = 0;
+}
 
 void Game::FadeBegin()
 {
@@ -2425,7 +2431,8 @@ bool Game::Exposure()
 	if ( !isCovered )
 	{
 		pCamera->SetShake();
-		UsedExposure( /* succeeded = */ false );
+		// 「それ以上は露光できない」とは言えないためはぶく
+		// UsedExposure( /* succeeded = */ false );
 		PlaySE( M_FAILURE );
 		return false;
 	}
@@ -3132,6 +3139,7 @@ void Game::ClearDraw()
 		}
 
 		// 人
+		if ( 0 ) // フェードアウトさせないようにした
 		{
 			int animIndex = 0;
 
@@ -3202,19 +3210,24 @@ void Game::ClearDraw()
 		GameDrawUI();
 	}
 
+	constexpr int NOT_USE_BLEND = -1;
+	int blendAlpha = NOT_USE_BLEND;
 	if ( isShowClearMenu )
 	{
 		SetDrawBright( 64, 64, 64 );
 	}
 	else if ( clearTimer < 255 )
 	{
-		int alpha = ( 255 / ClearRelated::FADE_WAIT )/* AMPL */ * clearTimer;
-
-		SetDrawBlendMode( DX_BLENDMODE_ALPHA, alpha );
+		blendAlpha = ( 255 / ClearRelated::FADE_WAIT )/* AMPL */ * clearTimer;
 	}
 	else
 	{
-		SetDrawBlendMode( DX_BLENDMODE_ALPHA, 255 );
+		blendAlpha = 255;
+	}
+
+	if ( blendAlpha != NOT_USE_BLEND )
+	{
+		SetDrawBlendMode( DX_BLENDMODE_ALPHA, blendAlpha );
 	}
 
 	// BG
@@ -3362,6 +3375,40 @@ void Game::ClearDraw()
 				data.at( 2 - i )
 			);
 		}
+	}
+
+	// 人（フェードとは無関係にするため，内部でブレンドモードをいったんいじっている）
+	{
+		SetDrawBlendMode( DX_BLENDMODE_ALPHA, 255 );
+
+		// 体
+		DrawGraph
+		(
+			0,
+			SCREEN_HEIGHT - HumanImage::SIZE_Y,
+			HumanImage::GetBodyHandle( wink.GetAnimeIndex() ),
+			TRUE
+		);
+
+		// 口
+		DrawGraph
+		(
+			0,
+			SCREEN_HEIGHT - HumanImage::SIZE_Y,
+			HumanImage::GetMouthHandle( mouthIndex ),
+			TRUE
+		);
+
+		// 腕
+		DrawGraph
+		(
+			scast<int>( armPos.x ),
+			scast<int>( armPos.y ),
+			HumanImage::GetArmHandle( NULL ),
+			TRUE
+		);
+
+		SetDrawBlendMode( DX_BLENDMODE_ALPHA, blendAlpha );
 	}
 
 	// 背景としての，暗い星

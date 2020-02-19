@@ -272,6 +272,7 @@ public:
 	void ReactionUpdate();
 	void UsedExposure( bool succeeded );
 	void UsedOperate();
+	void ResetExposureCount();
 
 	void FadeBegin();
 	void FadeCheck();
