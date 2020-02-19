@@ -2354,7 +2354,7 @@ void Game::BalloonUpdate()
 void Game::TalkReaction( int textIndex )
 {
 	// チュートリアル中は出さない
-	if ( stageNumber == 1 || stageNumber == LIMIT_STAGE_NUMBER ) { return; }
+	if ( stageNumber == 1 || ( stageNumber == LIMIT_STAGE_NUMBER && !isUnlockedStage ) ) { return; }
 	// else
 
 	assert( 0 <= textIndex && textIndex < TextBehavior::Reactions::REACTION_END );
@@ -3800,7 +3800,7 @@ void Game::TextDraw()
 	// else
 
 	// チュートリアル台詞
-	if ( stageNumber == 1 || stageNumber == LIMIT_STAGE_NUMBER )
+	if ( stageNumber == 1 || ( stageNumber == LIMIT_STAGE_NUMBER && !isUnlockedStage ) )
 	{
 		const bool isFirstVer = ( stageNumber == 1 );
 
