@@ -38,6 +38,8 @@ namespace
 namespace TextBehavior
 {
 	// 文の要素数と表示フレームの要素数は揃えてください
+	// TUTORIAL_XXXは初めのステージのもの，
+	// TUROAIL_TOGGLE_XXXはカメラの回転のものです
 
 	const std::vector<std::string> TUTORIAL =
 	{
@@ -185,9 +187,52 @@ namespace TextBehavior
 
 	#endif // STRING_FOR_MOVIE
 	};
+
+	const std::vector<std::string> TUROAIL_TOGGLE =
+	{
+		"おっ！なかなか難しそうな空だね",
+		"Ｒでカメラを縦にすることができるよ！",
+
+		"その調子！",
+		"ここからはもっといい写真を撮っていこう♪",
+
+		"セレクトボタンでもう一度教えるよ！"
+	};
+	const std::vector<int> TUROAIL_TOGGLE_SHOW_FRAME =
+	{
+		180,
+		120,
+
+		120,
+		180,
+
+		-1
+	};
+	const std::vector<PSCond> TTUROAIL_TOGGLE_CONDITIONS =
+	{
+		PSCond::WaitingTime,
+		PSCond::WaitingTime | PSCond::InputToggle,
+
+		PSCond::WaitingTime,
+		PSCond::WaitingTime,
+
+		PSCond::IMPOSSIBLE
+	};
+	const std::vector<PSInput> TUROAIL_TOGGLE_PERMISSIONS =
+	{
+		PSInput::Move,
+		PSInput::Move | PSInput::Toggle,
+
+		PSInput::Move | PSInput::Exposure | PSInput::Toggle,
+		PSInput::Move | PSInput::Exposure | PSInput::Toggle,
+
+		PSInput::Move | PSInput::Exposure | PSInput::Toggle
+	};
+
 	const std::vector<std::string> EMPHASIS_STR =	// RGB( 87, 101, 255 )
 	{
-		// すべての文章にて，ここの強調文字一覧が調べられ，どれかに引っかかり次第それのみが強調されます
+		// チュートリアル時のみ，すべての文章にて，
+		// ここの強調文字一覧が調べられ，どれかに引っかかり次第，それのみが強調されます
 
 	#if STRING_FOR_MOVIE
 
@@ -201,6 +246,8 @@ namespace TextBehavior
 		"露光",
 		"すべて",
 		"セレクトボタン",
+
+		"Ｒ",
 
 	#endif // STRING_FOR_MOVIE
 	};
