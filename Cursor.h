@@ -82,7 +82,7 @@ public:
 	void Init();
 	void Uninit();
 
-	void Update( bool isAcceptInput );
+	void Update( bool isAcceptInput, bool canDecision );
 
 	void Draw( Vector2 shake ) const;
 public:

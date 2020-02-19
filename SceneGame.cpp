@@ -1324,7 +1324,8 @@ void Game::SelectUpdate()
 
 	if ( pCursor )
 	{
-		pCursor->Update( isOpenFade/* フェードイン中の操作制限のため */ );
+		bool canDecision = ( pUnlockAnnouncer ) ? false : true;
+		pCursor->Update( isOpenFade/* フェードイン中の操作制限のため */, canDecision );
 
 		stageNumber = pCursor->GetNowStageNumber();
 

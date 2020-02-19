@@ -469,7 +469,7 @@ void Cursor::Uninit()
 
 }
 
-void Cursor::Update( bool isAcceptInput )
+void Cursor::Update( bool isAcceptInput, bool canDecision )
 {
 	if ( !isAcceptInput )
 	{
@@ -500,7 +500,7 @@ void Cursor::Update( bool isAcceptInput )
 	StageSelect::SetBackGlow( isChooseBack );
 	GlowUpdate();
 	
-	if ( IsTrigger( InputTrigger::Exposure ) )
+	if ( IsTrigger( InputTrigger::Exposure ) && canDecision )
 	{
 		isDecision = true;
 	}
