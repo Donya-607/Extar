@@ -188,7 +188,7 @@ namespace TextBehavior
 	#endif // STRING_FOR_MOVIE
 	};
 
-	const std::vector<std::string> TUROAIL_TOGGLE =
+	const std::vector<std::string> TUTORIAL_TOGGLE =
 	{
 		"おっ！なかなか難しそうな空だね",
 		"Ｒでカメラを縦にすることができるよ！",
@@ -198,7 +198,7 @@ namespace TextBehavior
 
 		"セレクトボタンでもう一度教えるよ！"
 	};
-	const std::vector<int> TUROAIL_TOGGLE_SHOW_FRAME =
+	const std::vector<int> TUTORIAL_TOGGLE_SHOW_FRAME =
 	{
 		180,
 		120,
@@ -208,7 +208,7 @@ namespace TextBehavior
 
 		-1
 	};
-	const std::vector<PSCond> TTUROAIL_TOGGLE_CONDITIONS =
+	const std::vector<PSCond> TUTORIAL_TOGGLE_CONDITIONS =
 	{
 		PSCond::WaitingTime,
 		PSCond::WaitingTime | PSCond::InputToggle,
@@ -218,12 +218,12 @@ namespace TextBehavior
 
 		PSCond::IMPOSSIBLE
 	};
-	const std::vector<PSInput> TUROAIL_TOGGLE_PERMISSIONS =
+	const std::vector<PSInput> TUTORIAL_TOGGLE_PERMISSIONS =
 	{
 		PSInput::Move,
 		PSInput::Move | PSInput::Toggle,
 
-		PSInput::Move | PSInput::Exposure | PSInput::Toggle,
+		PSInput::Move | PSInput::Toggle,
 		PSInput::Move | PSInput::Exposure | PSInput::Toggle,
 
 		PSInput::Move | PSInput::Exposure | PSInput::Toggle
@@ -947,6 +947,15 @@ void Game::GameInit()
 		);
 	}
 	else
+	if ( stageNumber == LIMIT_STAGE_NUMBER && !isUnlockedStage )
+	{
+		pProgress = std::make_unique<ProgressStorage>
+		(
+			TextBehavior::TUTORIAL_TOGGLE_CONDITIONS,
+			TextBehavior::TUTORIAL_TOGGLE_PERMISSIONS
+		);
+	}
+	else
 	{
 		pProgress.reset();
 	}
@@ -1269,11 +1278,10 @@ void Game::SelectUpdate()
 		pUnlockAnnouncer->Update();
 		if ( pUnlockAnnouncer->ShouldRemove() )
 		{
-			//pUnlockAnnouncer.reset();
+			pUnlockAnnouncer.reset();
 		}
 	}
 }
-
 void Game::GameUpdate()
 {
 	if ( isTakeScreenShot )
@@ -1355,6 +1363,10 @@ void Game::GameUpdate()
 			allowMove		= pProgress->IsAllowInput( Input::Move		);
 			allowExposure	= pProgress->IsAllowInput( Input::Exposure	);
 			allowToggle		= pProgress->IsAllowInput( Input::Toggle	);
+		}
+		if ( stageNumber < LIMIT_STAGE_NUMBER )
+		{
+			allowToggle		= false;
 		}
 		pCamera->Update( allowMove, allowExposure, allowToggle );
 
@@ -1509,7 +1521,6 @@ void Game::GameUpdate()
 
 	ShakeUpdate();
 }
-
 void Game::ClearUpdate()
 {
 	constexpr int CLEAR_TIMER_MAX = ClearRelated::FADE_WAIT + ClearRelated::GOTO_NEXT_WAIT;
@@ -1997,8 +2008,17 @@ void Game::BalloonUpdate()
 	// else
 
 	// チュートリアル台詞
-	if ( stageNumber == 1 && pProgress )
+	if ( pProgress )
 	{
+		const bool isFirstVer = ( stageNumber == 1 );
+
+		const std::vector<std::string>	&baseTexts = ( isFirstVer )
+			? TextBehavior::TUTORIAL
+			: TextBehavior::TUTORIAL_TOGGLE;
+		const std::vector<int>			&showFrames = ( isFirstVer )
+			? TextBehavior::TUTORIAL_SHOW_FRAME
+			: TextBehavior::TUTORIAL_TOGGLE_SHOW_FRAME;
+
 		constexpr int TUTORIAL_TEXT_START_FRAME		= 80; // フェードのための待ち時間
 		constexpr int TUTORIAL_BALLOON_START_FRAME	= TUTORIAL_TEXT_START_FRAME - 20; // フキダシが出てからテキストを表示するための差分
 		if ( state == State::Game )	// クリア後は新しくは出さない
@@ -2017,12 +2037,12 @@ void Game::BalloonUpdate()
 		// 表示時間経過確認
 		if ( state == State::Game )
 		{
-			if ( textNumber < scast<int>( TextBehavior::TUTORIAL.size() ) - 1 )
+			if ( textNumber < scast<int>( baseTexts.size() ) - 1 )
 			{
 				int sumFrame = 0;
 				for ( int i = 0; i <= textNumber; i++ )
 				{
-					sumFrame += TextBehavior::TUTORIAL_SHOW_FRAME[i];
+					sumFrame += showFrames[i];
 				}
 
 				bool isOverCurrentShowFrame = sumFrame <= textTimer - TUTORIAL_TEXT_START_FRAME;
@@ -2046,7 +2066,7 @@ void Game::BalloonUpdate()
 			else // else文にすると，すべて表示した後でないとリセットできないようになる
 			if ( IsTrigger( InputTrigger::Select ) )
 			{
-				textTimer  = TUTORIAL_TEXT_START_FRAME + TextBehavior::TUTORIAL_SHOW_FRAME[0];
+				textTimer  = TUTORIAL_TEXT_START_FRAME + showFrames[0];
 
 				textLength = 1;
 				textExtendInterval = 0;
@@ -2059,7 +2079,7 @@ void Game::BalloonUpdate()
 		}
 
 		// 文字数増加確認
-		if ( 0 != textLength && ( textLength * 2 ) <= scast<int>( TextBehavior::TUTORIAL[textNumber].size() ) )
+		if ( 0 != textLength && ( textLength * 2 ) <= scast<int>( baseTexts[textNumber].size() ) )
 		{
 			constexpr int INTERVAL = 3;
 			textExtendInterval++;
@@ -2070,7 +2090,7 @@ void Game::BalloonUpdate()
 
 				// 口変化
 				{
-					if ( scast<int>( TextBehavior::TUTORIAL[textNumber].size() ) <= ( textLength * 2 ) )
+					if ( scast<int>( baseTexts[textNumber].size() ) <= ( textLength * 2 ) )
 					{
 						mouthIndex = 0;
 					}
@@ -2225,7 +2245,7 @@ void Game::BalloonUpdate()
 void Game::TalkReaction( int textIndex )
 {
 	// チュートリアル中は出さない
-	if ( stageNumber == 1 ) { return; }
+	if ( stageNumber == 1 || stageNumber == LIMIT_STAGE_NUMBER ) { return; }
 	// else
 
 	assert( 0 <= textIndex && textIndex < TextBehavior::Reactions::REACTION_END );
@@ -3643,13 +3663,22 @@ void Game::TextDraw()
 	// else
 
 	// チュートリアル台詞
-	if ( stageNumber == 1 )
+	if ( stageNumber == 1 || stageNumber == LIMIT_STAGE_NUMBER )
 	{
-		int index = textNumber % scast<int>( TextBehavior::TUTORIAL.size() );
+		const bool isFirstVer = ( stageNumber == 1 );
+
+		const std::vector<std::string>	&baseTexts = ( isFirstVer )
+			? TextBehavior::TUTORIAL
+			: TextBehavior::TUTORIAL_TOGGLE;
+		const std::vector<int>			&showFrames = ( isFirstVer )
+			? TextBehavior::TUTORIAL_SHOW_FRAME
+			: TextBehavior::TUTORIAL_TOGGLE_SHOW_FRAME;
+
+		int index = textNumber % scast<int>( baseTexts.size() );
 		int length = textLength * 2/* 日本語で２バイト文字なので，倍にして対応 */;
-		if ( scast<int>( TextBehavior::TUTORIAL[index].size() ) <= textLength )
+		if ( scast<int>( baseTexts[index].size() ) <= textLength )
 		{
-			length = scast<int>( TextBehavior::TUTORIAL[index].size() );
+			length = scast<int>( baseTexts[index].size() );
 		}
 
 		constexpr int DIST_X	= 80;
@@ -3659,21 +3688,22 @@ void Game::TextDraw()
 		int emphasisPos = 0, i = 0;
 		for ( ; i < scast<int>( TextBehavior::EMPHASIS_STR.size() ); i++ )
 		{
-			emphasisPos = TextBehavior::TUTORIAL[index].find( TextBehavior::EMPHASIS_STR[i] );
+			emphasisPos = baseTexts[index].find( TextBehavior::EMPHASIS_STR[i] );
 			if ( emphasisPos != std::string::npos )
 			{
 				break;
 			}
 		}
 
-		if ( i == scast<int>( TextBehavior::EMPHASIS_STR.size() ) )	// ループが終わったら，見つからなかったということになる
+		// ループが終わったら，見つからなかったということになる
+		if ( i == scast<int>( TextBehavior::EMPHASIS_STR.size() ) )
 		{
 			DrawExtendStringToHandle
 			(
 				HumanBehavior::BALLOON_POS_X + DIST_X,
 				HumanBehavior::BALLOON_POS_Y + DIST_Y,
 				MAGNI, MAGNI,
-				( TextBehavior::TUTORIAL[index].substr( 0, length ) ).c_str(),
+				( baseTexts[index].substr( 0, length ) ).c_str(),
 				GetColor( 42, 97, 110 ),
 				hFont
 			);
@@ -3691,7 +3721,7 @@ void Game::TextDraw()
 		std::string text = "";
 
 		// 強調する文字列まで
-		text = TextBehavior::TUTORIAL[index].substr( 0, std::min( length, emphasisPos ) );
+		text = baseTexts[index].substr( 0, std::min( length, emphasisPos ) );
 
 		// Draw
 		{
@@ -3719,7 +3749,7 @@ void Game::TextDraw()
 		// else
 
 		// 強調文字列
-		text = TextBehavior::TUTORIAL[index].substr( emphasisPos, std::min( length, scast<int>( TextBehavior::EMPHASIS_STR[i].size() ) ) );
+		text = baseTexts[index].substr( emphasisPos, std::min( length, scast<int>( TextBehavior::EMPHASIS_STR[i].size() ) ) );
 
 		// Draw
 		{
@@ -3747,7 +3777,7 @@ void Game::TextDraw()
 		// else
 
 		// その後の文字列
-		text = TextBehavior::TUTORIAL[index].substr( emphasisPos + TextBehavior::EMPHASIS_STR[i].size(), length );
+		text = baseTexts[index].substr( emphasisPos + TextBehavior::EMPHASIS_STR[i].size(), length );
 
 		// Draw
 		{
