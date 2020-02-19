@@ -14,7 +14,7 @@ void MusicInit()
 	BGMhandles[M_Title_Select]	= LoadSoundMem( "./Data/Sounds/BGM/Title_Select.wav" );
 	//BGMhandles[]				= LoadSoundMem( "./Data/Sounds/BGM/.wav" );
 
-	SEhandles[M_ALIGN_STAR]		= LoadSoundMem( "./Data/Sounds/SE/Game/Align.wav" );
+	SEhandles[M_ALIGN_STARS]	= LoadSoundMem( "./Data/Sounds/SE/Game/Align.wav" );
 	SEhandles[M_CAMERA_MOVE]	= LoadSoundMem( "./Data/Sounds/SE/Camera/CameraFrameMove.wav" );
 	SEhandles[M_CANT_PUSH]		= LoadSoundMem( "./Data/Sounds/SE/CantPush.wav" );
 	SEhandles[M_DECISION]		= LoadSoundMem( "./Data/Sounds/SE/Decision.wav" );

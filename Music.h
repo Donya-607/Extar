@@ -17,7 +17,7 @@ enum BGM
 };
 enum SE
 {
-	M_ALIGN_STAR,
+	M_ALIGN_STARS,
 	M_CAMERA_MOVE,
 	M_CANT_PUSH,
 	M_DECISION,

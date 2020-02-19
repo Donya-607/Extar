@@ -1334,9 +1334,7 @@ void Game::SelectUpdate()
 			// 演出中は選択できない
 			if ( pUnlockAnnouncer )
 			{
-
-
-				// PlaySE
+				PlaySE( M_CANT_PUSH );
 			}
 			else
 			{
@@ -1407,6 +1405,8 @@ void Game::GameUpdate()
 			isDoneMoveArm = false;
 
 			GenerateRotator();
+
+			PlaySE( M_ALIGN_STARS );
 		}
 
 		// 上の「クリア判定の瞬間のみ入るプロセス」内でpRotatorを生成しているので，

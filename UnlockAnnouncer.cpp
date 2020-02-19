@@ -5,6 +5,7 @@
 #include "DxLib.h"
 #include "Common.h"
 #include "FileIO.h"
+#include "Music.h"
 
 #if USE_IMGUI
 
@@ -63,6 +64,10 @@ void UnlockAnnouncer::Update()
 	UseImGui();
 
 	timer++;
+	if ( timer == beginShowImageTime )
+	{
+		PlaySE( M_UNLOCK_STAGE );
+	}
 
 	AssignAlpha();
 	AssignBright();
