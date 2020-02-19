@@ -2526,6 +2526,15 @@ void Game::FadeDone()
 		return;
 	}
 
+	// 制限を解放するステージだった場合。これは下のif文より先にみないといけない（下のif文によりステージ番号がインクリメントされると，そのままこちらも通ってしまう）
+	if ( !isUnlockedStage && stageNumber == LIMIT_STAGE_NUMBER && state == State::Clear )
+	{
+		isUnlockedStage  = true;
+		pUnlockAnnouncer = std::make_unique<UnlockAnnouncer>();
+		stageNumber += 1; // 次のステージにカーソルを合わせておくため
+		FileIO::ResetStageLimit();
+	}
+
 	// 「次のステージ」を選んだ場合
 	if ( isShowClearMenu && state == State::Clear && nextState == State::Game )
 	{
@@ -2533,15 +2542,6 @@ void Game::FadeDone()
 		{
 			stageNumber++;
 		}
-	}
-
-	// 制限を解放するステージだった場合
-	if ( !isUnlockedStage && stageNumber == LIMIT_STAGE_NUMBER && state == State::Clear )
-	{
-		isUnlockedStage  = true;
-		pUnlockAnnouncer = std::make_unique<UnlockAnnouncer>();
-		stageNumber += 1; // 次のステージにカーソルを合わせておくため
-		FileIO::ResetStageLimit();
 	}
 
 	state		= nextState;
@@ -3294,12 +3294,24 @@ void Game::ClearDraw()
 		}
 
 		// 枠のUI
-		DrawGraph
-		(
-			0, 0,
-			GameImage::hFrameUI,
-			TRUE
-		);
+		{
+			DrawGraph
+			(
+				0, 0,
+				GameImage::hFrameUI,
+				TRUE
+			);
+			if ( LIMIT_STAGE_NUMBER <= stageNumber )
+			{
+				DrawGraph
+				(
+					SCREEN_WIDTH  - GameImage::WIDTH_USAGE_R,
+					SCREEN_HEIGHT - GameImage::HEIGHT_USAGE_R,
+					GameImage::hUsageR,
+					TRUE
+				);
+			}
+		}
 
 		// 手数目標
 		if ( pNumMoves )
