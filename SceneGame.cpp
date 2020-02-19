@@ -65,7 +65,9 @@ namespace TextBehavior
 
 		"やっほー！初心者さんかな？　やり方教えるね♪",
 		"水色の枠がカメラの範囲だよ！",
+
 		"範囲内に星をおさめると、ＡかＸで露光が使えるよ",
+		"そうそう！いい感じ♪",
 
 		"露光は、範囲内にある星を明るくできるよ",
 		"すべての星の明るさをそろえて撮影しよう！",
@@ -99,7 +101,9 @@ namespace TextBehavior
 
 		180,
 		180,
-		180,
+
+		120,
+		120,
 
 		180,
 		180,
@@ -133,8 +137,10 @@ namespace TextBehavior
 	#else
 
 		PSCond::WaitingTime,
-		PSCond::InputMove		| PSCond::WaitingTime,
+		PSCond::WaitingTime,
+
 		PSCond::InputExposure	| PSCond::WaitingTime,
+		PSCond::WaitingTime,
 
 		PSCond::WaitingTime,
 		PSCond::WaitingTime,
@@ -169,6 +175,8 @@ namespace TextBehavior
 
 		PSInput::Move,
 		PSInput::Move,
+
+		PSInput::Move | PSInput::Exposure,
 		PSInput::Move | PSInput::Exposure,
 
 		PSInput::Move | PSInput::Exposure,
