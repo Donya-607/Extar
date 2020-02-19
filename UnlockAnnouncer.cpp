@@ -136,7 +136,7 @@ void UnlockAnnouncer::AssignBright()
 	}
 	// else
 
-	bright = 255 - scast<int>( scast<float>( timer ) * amplBright );
+	bright = 255 - scast<int>( scast<float>( std::max( 0, timer - waitForTransition ) ) * amplBright );
 	bright = std::max( borderBright, std::min( 255, bright ) );
 }
 
