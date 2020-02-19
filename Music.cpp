@@ -24,7 +24,7 @@ void MusicInit()
 	SEhandles[M_PAUSE]			= LoadSoundMem( "./Data/Sounds/SE/Pause/Pause.wav" );
 	SEhandles[M_RECORD_STAR]	= LoadSoundMem( "./Data/Sounds/SE/Result/Reward.wav" );
 	SEhandles[M_UNDO]			= LoadSoundMem( "./Data/Sounds/SE/Game/Undo.wav" );
-	SEhandles[M_UNLOCK_STAGE]	= LoadSoundMem( "./Data/Sounds/SE/Game/Select/UnlockStage.wav" );
+	SEhandles[M_UNLOCK_STAGE]	= LoadSoundMem( "./Data/Sounds/SE/Select/UnlockStage.wav" );
 	SEhandles[M_UNRECORD_STAR]	= LoadSoundMem( "./Data/Sounds/SE/Result/FailureReward.wav" );
 	SEhandles[M_SELECT]			= LoadSoundMem( "./Data/Sounds/SE/Select/Move.wav" );
 	SEhandles[M_SHUTTER]		= LoadSoundMem( "./Data/Sounds/SE/Camera/Shutter.wav" );
