@@ -182,6 +182,7 @@
     <ClCompile Include="ScreenShot.cpp" />
     <ClCompile Include="ShootingStar.cpp" />
     <ClCompile Include="Star.cpp" />
+    <ClCompile Include="UnlockAnnouncer.cpp" />
     <ClCompile Include="Vector2.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -219,6 +220,7 @@
     <ClInclude Include="ScreenShot.h" />
     <ClInclude Include="ShootingStar.h" />
     <ClInclude Include="Star.h" />
+    <ClInclude Include="UnlockAnnouncer.h" />
     <ClInclude Include="Vector2.h" />
   </ItemGroup>
   <ItemGroup>

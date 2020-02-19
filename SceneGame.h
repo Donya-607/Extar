@@ -20,6 +20,7 @@
 
 #include "ProgressStorage.h"
 #include "Rotator.h"
+#include "UnlockAnnouncer.h"
 
 //--------------------
 //
@@ -151,6 +152,7 @@ private:
 	std::unique_ptr<ParticleMng> pParticleMng;
 
 	std::unique_ptr<Cursor>   pCursor;
+	std::unique_ptr<UnlockAnnouncer> pUnlockAnnouncer;
 
 	std::unique_ptr<Camera>   pCamera;
 	std::unique_ptr<StarMng>  pStarMng;
@@ -215,7 +217,7 @@ public:
 		armPos( { scast<float>( SCREEN_WIDTH ), scast<float>( SCREEN_HEIGHT ) } ),
 		pausePos(),
 		pSSMng( nullptr ), pParticleMng( nullptr ),
-		pCursor( nullptr ),
+		pCursor( nullptr ), pUnlockAnnouncer( nullptr ),
 		pCamera( nullptr ), pStarMng( nullptr ), pNumMoves( nullptr ),
 		pRotator( nullptr ), pProgress( nullptr ),
 		pBoard( nullptr ), recordStars(),

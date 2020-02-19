@@ -817,6 +817,7 @@ void Game::Init()
 	StageImage::Load();
 	CursorImage::Load();
 	BoardImage::Load();
+	UnlockAnnouncer::LoadImages();
 
 	hFont = CreateFontToHandle
 	(
@@ -832,6 +833,8 @@ void Game::Init()
 
 	pParticleMng.reset( new ParticleMng() );
 	pParticleMng->Init();
+
+	pUnlockAnnouncer.reset();
 
 	switch ( state )
 	{
@@ -983,6 +986,7 @@ void Game::Uninit()
 	StageImage::Release();
 	CursorImage::Release();
 	BoardImage::Release();
+	UnlockAnnouncer::ReleaseImages();
 
 	DeleteFontToHandle( hFont );
 	hFont = 0;
@@ -1046,6 +1050,15 @@ void Game::Update()
 	{
 		GenerateRotator();
 	}
+	
+	if ( TRG( KEY_INPUT_F ) && state == State::Select )
+	{
+		pUnlockAnnouncer = std::make_unique<UnlockAnnouncer>();
+	}
+
+#if USE_IMGUI
+	FileIO::UpdateShowWindowState();
+#endif // USE_IMGUI
 
 #endif // DEBUG_MODE
 
@@ -1127,18 +1140,6 @@ void Game::Update()
 			}
 		}
 	}
-
-#if DEBUG_MODE
-
-	if ( 0 && TRG( KEY_INPUT_RETURN ) )
-	{
-		nextState = State::GotoTitle;
-		FadeBegin();
-
-		PlaySE( M_E_NEXT );
-	}
-
-#endif // DEBUG_MODE
 }
 
 void Game::SelectUpdate()
@@ -1205,6 +1206,15 @@ void Game::SelectUpdate()
 			}
 
 			FadeBegin();
+		}
+	}
+
+	if ( pUnlockAnnouncer )
+	{
+		pUnlockAnnouncer->Update();
+		if ( pUnlockAnnouncer->ShouldRemove() )
+		{
+			//pUnlockAnnouncer.reset();
 		}
 	}
 }
@@ -1419,7 +1429,6 @@ void Game::GameUpdate()
 
 #if USE_IMGUI
 
-	FileIO::UpdateShowWIndowState();
 	FileIO::UpdateNowStageNumberByImGui();
 	if ( FileIO::IsCreateNewStage() )
 	{
@@ -2346,7 +2355,8 @@ void Game::FadeDone()
 	// 制限を解放するステージだった場合
 	if ( !isUnlockedStage && stageNumber == LIMIT_STAGE_NUMBER && state == State::Clear )
 	{
-		isUnlockedStage = true;
+		isUnlockedStage  = true;
+		pUnlockAnnouncer = std::make_unique<UnlockAnnouncer>();
 		stageNumber += 1; // 次のステージにカーソルを合わせておくため
 		FileIO::ResetStageLimit();
 	}
@@ -2684,6 +2694,12 @@ void Game::SelectDraw()
 {
 	Vector2 shake = GetShakeAmount();
 
+	if ( pUnlockAnnouncer )
+	{
+		int bright = pUnlockAnnouncer->GetDrawBright();
+		SetDrawBright( bright, bright, bright );
+	}
+
 	// 背景
 	{
 		// 仮置きなので，ExtendGraph
@@ -2733,6 +2749,13 @@ void Game::SelectDraw()
 	if ( pCursor )
 	{
 		pCursor->Draw( shake );
+	}
+
+	if ( pUnlockAnnouncer )
+	{
+		SetDrawBright( 255, 255, 255 );
+
+		pUnlockAnnouncer->Draw();
 	}
 }
 

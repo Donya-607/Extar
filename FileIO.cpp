@@ -349,7 +349,7 @@ namespace FileIO
 #if USE_IMGUI
 
 	static bool isShowWindows = false;
-	void UpdateShowWIndowState()
+	void UpdateShowWindowState()
 	{
 		if ( TRG( CHANGE_SHOW_IMGUI_KEY ) )
 		{
