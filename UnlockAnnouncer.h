@@ -12,7 +12,6 @@ private:
 	int		alpha  = 0; // 0 ~ 255
 	int		bright = 0; // 0 ~ 255
 	Vector2	pos{};		// Left-Top.
-	bool	doIncrement = true;
 public:
 	void Update();
 
