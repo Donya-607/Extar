@@ -174,6 +174,7 @@ private:
 
 	bool isPause;
 	bool isDrawCollision;
+	bool isUnlockedStage;// 制限している最大のステージをクリアしたら真。
 private:	// 他ＰＧによる作業
 	Vector2 str_up_pos;
 	Vector2 str_down_pos;
@@ -224,6 +225,7 @@ public:
 		isDoneMoveArm( false ),
 		isShowClearMenu( false ),
 		isPause( false ), isDrawCollision( false ),
+		isUnlockedStage( false ),
 
 		str_up_pos( { 0, 0 } ),
 		str_down_pos( { 192.0f, 64.0f } ),

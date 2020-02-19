@@ -37,6 +37,12 @@ namespace FileIO
 	void ReleaseStarsData();
 	void ReleaseNumMovesData();
 
+	/// <summary>
+	/// İ’èˆÈŒãCGetMaxStageNumber()‚ª•Ô‚·’l‚Í‚±‚ê‚É‚È‚è‚Ü‚·
+	/// </summary>
+	void SetStageLimit( int upperLimitNumber );
+	void ResetStageLimit();
+
 	int  GetMaxStageNumber();
 
 #if USE_IMGUI

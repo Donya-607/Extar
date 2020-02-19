@@ -27,6 +27,8 @@
 
 namespace
 {
+	constexpr int LIMIT_STAGE_NUMBER = 12;
+
 	constexpr int PARTICLE_AMOUNT = 6;
 	constexpr int SS_PROBABILITY  = 128;
 }
@@ -794,6 +796,8 @@ void Game::Init()
 	FileIO::ReadAllCamera();
 	FileIO::ReadAllStars();
 	FileIO::ReadAllNumMoves();
+	FileIO::SetStageLimit( LIMIT_STAGE_NUMBER );
+	isUnlockedStage = false;
 
 	Number::Load();
 
@@ -1256,6 +1260,12 @@ void Game::GameUpdate()
 			isDoneMoveArm = false;
 
 			GenerateRotator();
+
+			if ( !isUnlockedStage && stageNumber == LIMIT_STAGE_NUMBER )
+			{
+				isUnlockedStage = true;
+				FileIO::ResetStageLimit();
+			}
 		}
 
 		// 上の「クリア判定の瞬間のみ入るプロセス」内でpRotatorを生成しているので，
