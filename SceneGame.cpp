@@ -853,7 +853,7 @@ void Game::SelectInit()
 {
 	PlayBGM( M_Title_Select );
 
-	numMoves = 0;
+	numMoves	= 0;
 
 	selectTimer	= 0;
 	selectPos	= { 710.0f, 40.0f };
@@ -1260,12 +1260,6 @@ void Game::GameUpdate()
 			isDoneMoveArm = false;
 
 			GenerateRotator();
-
-			if ( !isUnlockedStage && stageNumber == LIMIT_STAGE_NUMBER )
-			{
-				isUnlockedStage = true;
-				FileIO::ResetStageLimit();
-			}
 		}
 
 		// 上の「クリア判定の瞬間のみ入るプロセス」内でpRotatorを生成しているので，
@@ -1716,11 +1710,20 @@ void Game::ClearUpdate()
 			gotoNextPosX = DESTINATION;
 		}
 
-		if ( IsTrigger( InputTrigger::Exposure ) && !skipPerformance/* スキップした瞬間もボタンを押していることになり，そのままこの条件にも入るが，それは意図しない */ )
+		if ( IsTrigger( InputTrigger::Exposure ) && !skipPerformance/* スキップした瞬間もボタンを押していることになり，そのままこの条件にも入るが，それは意図しない */ && isOpenFade/* 強制的にセレクト画面へ戻す際の連打防止 */ )
 		{
 			PlaySE( M_DECISION );
 
-			isShowClearMenu = true;
+			// 制限を解放するステージの場合，必ずセレクト画面にもどす
+			if ( !isUnlockedStage && stageNumber == LIMIT_STAGE_NUMBER )
+			{
+				nextState = State::Select;
+				FadeBegin();
+			}
+			else
+			{
+				isShowClearMenu = true;
+			}
 		}
 	}
 
@@ -2340,8 +2343,16 @@ void Game::FadeDone()
 		}
 	}
 
-	state = nextState;
-	nextState = State::Null;
+	// 制限を解放するステージだった場合
+	if ( !isUnlockedStage && stageNumber == LIMIT_STAGE_NUMBER && state == State::Clear )
+	{
+		isUnlockedStage = true;
+		stageNumber += 1; // 次のステージにカーソルを合わせておくため
+		FileIO::ResetStageLimit();
+	}
+
+	state		= nextState;
+	nextState	= State::Null;
 
 	switch ( state )
 	{
@@ -2357,8 +2368,8 @@ void Game::FadeDone()
 		return;
 	}
 
-	isPause = false;
-	isOpenFade = false;
+	isPause		= false;
+	isOpenFade	= false;
 }
 void Game::FadeEnd()
 {
