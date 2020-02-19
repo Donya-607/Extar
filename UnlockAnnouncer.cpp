@@ -31,8 +31,8 @@ namespace
 	static int		beginFadeoutTime	= 160 + waitForTransition;
 	static int		takeFadeoutTime		= 20;
 
-	static Vector2	imagePosStart{ 704.0f, 572.0f }; // ScreenSize/2 - ImageSize/2
-	static Vector2	imagePosDest { 704.0f, 508.0f }; // ScreenSize/2 - ImageSize/2
+	static Vector2	imagePosStart{ 560.0f, 572.0f }; // ScreenSize/2 - ImageSize/2
+	static Vector2	imagePosDest { 560.0f, 508.0f }; // ScreenSize/2 - ImageSize/2
 
 	static int hImage = 0;
 	void Load()

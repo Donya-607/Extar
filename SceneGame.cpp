@@ -188,6 +188,8 @@ namespace TextBehavior
 	#endif // STRING_FOR_MOVIE
 	};
 
+	// 矢印を生成するテキスト番号（０始まり）
+	constexpr int TUTORIAL_TOGGLE_GENERATE_ARROW_TIMING = 1;
 	const std::vector<std::string> TUTORIAL_TOGGLE =
 	{
 		"おっ！なかなか難しそうな空だね",
@@ -367,11 +369,15 @@ namespace GameImage
 	static int hGameBG;
 	static int hFrameBG;
 	static int hFrameUI;
+	static int hUsageR;
 	//static int hMovesUI;
+	static int hArrow;
 
 
 	static int hshutter;
 
+	constexpr int WIDTH_USAGE_R  = 280;
+	constexpr int HEIGHT_USAGE_R = 190;
 
 	void Load()
 	{
@@ -385,7 +391,9 @@ namespace GameImage
 		hGameBG		= LoadGraph( "./Data/Images/BG/Game.png"  );
 		hFrameBG	= LoadGraph( "./Data/Images/BG/Frame.png" );
 		hFrameUI	= LoadGraph( "./Data/Images/UI/FrameUI.png" );
+		hUsageR		= LoadGraph( "./Data/Images/UI/UsageR.png" );
 		//hMovesUI	= LoadGraph( "./Data/Images/UI/NumberOfMoves.png" );
+		hArrow		= LoadGraph( "./Data/Images/UI/Arrow.png" );
 
 
 		hshutter	= LoadGraph( "./Data/Images/Camera/Shutter.png" );
@@ -397,10 +405,14 @@ namespace GameImage
 		DeleteGraph( hGameBG	);
 		DeleteGraph( hFrameBG	);
 		DeleteGraph( hFrameUI	);
+		DeleteGraph( hUsageR	);
+		DeleteGraph( hArrow		);
 		//DeleteGraph( hMovesUI );
 		hGameBG		= 0;
 		hFrameBG	= 0;
 		hFrameUI	= 0;
+		hUsageR		= 0;
+		hArrow		= 0;
 		//hMovesUI	= 0;
 
 
@@ -704,6 +716,53 @@ namespace HumanBehavior
 	constexpr float	HAND_RISE_SPD_Y = scast<float>( RISE_REQUIRED_TIME ) / 6;
 }
 
+// 横着な名前空間。別のヘッダやソースファイルなど作ってそちらで管理すべきである
+namespace
+{
+	static float   arrowShakeSpeed  = 16.0f;
+	static float   arrowShakeAmount = 16.0f;
+	static Vector2 arrowBasePos{ 1700.0f, 800.0f };
+
+	class HorizontalArrow
+	{
+	private:
+		float   radian = 0.0f;
+		Vector2 pos{};
+		Vector2 shake{};
+	public:
+		void Reset()
+		{
+			radian  = 0.0f;
+			pos     = { 0.0f, 0.0f };
+			shake.x = 0.0f;
+			shake.y = 0.0f;
+		}
+		void SetPosition( const Vector2 &initPos )
+		{
+			pos = initPos;
+		}
+
+		void Update()
+		{
+			radian += ToRadian( arrowShakeSpeed );
+
+			shake.y = sinf( radian ) * arrowShakeAmount;
+		}
+
+		void Draw( int handle )
+		{
+			DrawGraphF
+			(
+				( pos + shake ).x,
+				( pos + shake ).y,
+				handle, TRUE
+			);
+		}
+	};
+
+	static std::unique_ptr<HorizontalArrow> pArrow{ nullptr };
+}
+
 void RecordStar::Init( Vector2 centerPos, bool isGlowStar )
 {
 	pos		= centerPos;
@@ -874,6 +933,8 @@ void Game::Init()
 	BoardImage::Load();
 	UnlockAnnouncer::LoadImages();
 
+	pArrow.reset();
+
 	hFont = CreateFontToHandle
 	(
 		"メイリオ",
@@ -927,6 +988,8 @@ void Game::GameInit()
 	const float GRID_SIZE = scast<float>( StarImage::SIZE );
 	Vector2 gridSize{ GRID_SIZE, GRID_SIZE };
 	Grid::SetSize( gridSize );
+
+	pArrow.reset();
 
 	pCamera.reset( new Camera() );
 	pCamera->Init( stageNumber );
@@ -1250,6 +1313,15 @@ void Game::SelectUpdate()
 		pSSMng->Update();
 	}
 
+	if ( pUnlockAnnouncer )
+	{
+		pUnlockAnnouncer->Update();
+		if ( pUnlockAnnouncer->ShouldRemove() )
+		{
+			pUnlockAnnouncer.reset();
+		}
+	}
+
 	if ( pCursor )
 	{
 		pCursor->Update( isOpenFade/* フェードイン中の操作制限のため */ );
@@ -1258,27 +1330,28 @@ void Game::SelectUpdate()
 
 		if ( nextState == State::Null && pCursor->IsDecision() )
 		{
-			if ( pCursor->IsChoiceBack() )
+			// 演出中は選択できない
+			if ( pUnlockAnnouncer )
 			{
-				nextState = State::GotoTitle;
-				PlaySE( M_GOTO_TITLE );
+
+
+				// PlaySE
 			}
 			else
 			{
-				nextState = State::Game;
-				PlaySE( M_DECISION );
+				if ( pCursor->IsChoiceBack() )
+				{
+					nextState = State::GotoTitle;
+					PlaySE( M_GOTO_TITLE );
+				}
+				else
+				{
+					nextState = State::Game;
+					PlaySE( M_DECISION );
+				}
+
+				FadeBegin();
 			}
-
-			FadeBegin();
-		}
-	}
-
-	if ( pUnlockAnnouncer )
-	{
-		pUnlockAnnouncer->Update();
-		if ( pUnlockAnnouncer->ShouldRemove() )
-		{
-			pUnlockAnnouncer.reset();
 		}
 	}
 }
@@ -1490,6 +1563,41 @@ void Game::GameUpdate()
 		{
 			ReactionUpdate();
 		}
+	}
+
+	// Ｒボタンへの矢印の，生成・削除条件の確認
+	if ( stageNumber == LIMIT_STAGE_NUMBER )
+	{
+		if ( textNumber == TextBehavior::TUTORIAL_TOGGLE_GENERATE_ARROW_TIMING )
+		{
+			if ( !pArrow )
+			{
+				pArrow = std::make_unique<HorizontalArrow>();
+				pArrow->Reset();
+				pArrow->SetPosition( arrowBasePos );
+			}
+		}
+		else
+		{
+			pArrow.reset();
+		}
+	}
+
+	if ( pArrow )
+	{
+		pArrow->Update();
+
+	#if USE_IMGUI
+		if ( FileIO::IsShowImGuiWindow() && ImGui::Begin( "Arrow to R" ) )
+		{
+			ImGui::DragFloat ( "Shaking Speed",  &arrowShakeSpeed,  0.1f );
+			ImGui::DragFloat ( "Shaking Amount", &arrowShakeAmount );
+			ImGui::DragFloat2( "Arrow Pos",      &arrowBasePos.x );
+			pArrow->SetPosition( arrowBasePos );
+			
+			ImGui::End();
+		}
+	#endif // USE_IMGUI
 	}
 
 	BalloonUpdate();
@@ -2911,6 +3019,17 @@ void Game::GameDraw()
 			GameImage::hFrameUI,
 			TRUE
 		);
+
+		if ( LIMIT_STAGE_NUMBER <= stageNumber )
+		{
+			DrawGraph
+			(
+				SCREEN_WIDTH  - GameImage::WIDTH_USAGE_R,
+				SCREEN_HEIGHT - GameImage::HEIGHT_USAGE_R,
+				GameImage::hUsageR,
+				TRUE
+			);
+		}
 	}
 
 	// 手数目標
@@ -3097,6 +3216,11 @@ void Game::GameDraw()
 	if ( 0 != textLength )
 	{
 		TextDraw();
+	}
+	// Ｒボタンへの矢印
+	if ( pArrow )
+	{
+		pArrow->Draw( GameImage::hArrow );
 	}
 
 #if DEBUG_MODE
