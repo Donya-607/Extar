@@ -1934,6 +1934,7 @@ void Game::MilkyWayUpdate()
 #if USE_IMGUI_FOR_ROTATOR
 namespace ROTATOR
 {
+	static int   destroyFrame	= 110;
 	static float generatePos	= 2048.0f;
 	static float lineWidth		= 128.0f;
 	static float moveSpeed		= -24.0f;
@@ -1945,12 +1946,13 @@ void Game::GenerateRotator()
 	// 現在は存在していたものは消されて，上書きされるようになっている
 
 #if USE_IMGUI_FOR_ROTATOR
-	pRotator = std::make_unique<Rotator>( ROTATOR::generatePos, ROTATOR::lineWidth, ROTATOR::moveSpeed );
+	pRotator = std::make_unique<Rotator>( ROTATOR::destroyFrame, ROTATOR::generatePos, ROTATOR::lineWidth, ROTATOR::moveSpeed );
 #else
+	constexpr int   DESTROY_FRAME	= 110;
 	constexpr float GENERATE_POS	= 2048.0f;
 	constexpr float LINE_WIDTH		= 128.0f;
 	constexpr float MOVE_SPEED		= -24.0f;
-	pRotator = std::make_unique<Rotator>( GENERATE_POS, LINE_WIDTH, MOVE_SPEED );
+	pRotator = std::make_unique<Rotator>( DESTROY_FRAME, GENERATE_POS, LINE_WIDTH, MOVE_SPEED );
 #endif // USE_IMGUI_FOR_ROTATOR
 }
 void Game::RotatorUpdate()
@@ -1960,6 +1962,7 @@ void Game::RotatorUpdate()
 	{
 		ImGui::Begin( "Rotator" );
 
+		ImGui::SliderInt  ( "DestroyFrame",	&ROTATOR::destroyFrame,	1,		1024	);
 		ImGui::SliderFloat( "GeneratePos",	&ROTATOR::generatePos,	0.0f,	1920.0f	);
 		ImGui::SliderFloat( "Line Width",	&ROTATOR::lineWidth,	0.1f,	32.0f	);
 		ImGui::DragFloat  ( "Move Speed",	&ROTATOR::moveSpeed,	0.5f	);
@@ -2610,8 +2613,8 @@ bool Game::Exposure()
 	std::vector<int>		targets{};		// 露光の適用対象たち
 	std::vector<Vector2>	particlePos{};
 
-	constexpr int VIBRATE_POWER = 200;
-	constexpr int VIBRATE_TIME  = 200; // m/sec
+	constexpr int VIBRATE_POWER = 400;
+	constexpr int VIBRATE_TIME  = 100; // m/sec
 
 	// 適用番号の検査
 	bool isCovered = false;	// 星が一つでもカメラの枠内に入っていれば真

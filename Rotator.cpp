@@ -6,12 +6,13 @@
 
 #include "Common.h"	// SCREEN_WIDTH, SCREEN_HEIGHT
 
-Rotator::Rotator( float genPosX, float halfWidth, float moveSpeed ) :
-	pos( genPosX ), width( halfWidth ), moveSpeed( moveSpeed )
+Rotator::Rotator( int destroyFrame, float genPosX, float halfWidth, float moveSpeed ) :
+	timer( destroyFrame ), pos( genPosX ), width( halfWidth ), moveSpeed( moveSpeed )
 {}
 
 void Rotator::Update()
 {
+	timer--;
 	Move();
 }
 
@@ -33,17 +34,7 @@ void Rotator::DrawHitBox( int R, int G, int B )
 
 bool Rotator::ShouldRemove() const
 {
-	const float halfScreenWidth  = scast<float>( SCREEN_WIDTH  >> 1 );
-	const float halfScreenHeight = scast<float>( SCREEN_HEIGHT >> 1 );
-
-	Box screen{};
-	screen.cx = halfScreenWidth;
-	screen.cy = halfScreenHeight;
-	screen.w  = halfScreenWidth;
-	screen.h  = halfScreenHeight;
-	screen.exist = true;
-
-	return ( Box::IsHitBox( GetHitBox(), screen ) ) ? false : true;
+	return ( timer <= 0 ) ? true : false;
 }
 
 Box  Rotator::GetHitBox() const

@@ -10,11 +10,12 @@
 class Rotator
 {
 private:
+	int		timer;
 	float	pos;				// ‚wÀ•W
 	float	width{ 1.0f };		// ”¼•ª‚Ì•
 	float	moveSpeed{ 1.0f };	// ‰¡•ûŒü
 public:
-	Rotator( float generatePosX, float halfWidth, float moveSpeed );
+	Rotator( int destroyFrame, float generatePosX, float halfWidth, float moveSpeed );
 public:
 	void Update();
 
