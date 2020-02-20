@@ -2,7 +2,7 @@
 #include "Input.h"
 
 // XInputのコントローラにのみ対応。DirectInputバージョンもあるにはあるが，ラップしていない
-#define VER_CONTROLLER ( false )
+#define VER_CONTROLLER ( true)
 
 namespace InputImpl
 {
