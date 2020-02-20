@@ -1944,6 +1944,11 @@ namespace ROTATOR
 	static float generatePos	= 2048.0f;
 	static float lineWidth		= 128.0f;
 	static float moveSpeed		= -24.0f;
+
+	static int vibPowerH = 1000;
+	static int vibTimeH  = 120;
+	static int vibPowerL = 770;
+	static int vibTimeL  = 85;
 }
 #endif // USE_IMGUI_FOR_ROTATOR
 void Game::GenerateRotator()
@@ -2619,8 +2624,11 @@ bool Game::Exposure()
 	std::vector<int>		targets{};		// 露光の適用対象たち
 	std::vector<Vector2>	particlePos{};
 
-	constexpr int VIBRATE_POWER = 400;
-	constexpr int VIBRATE_TIME  = 100; // m/sec
+	// 単発の発動でもモーターが回り切り，かつ複数回発動しても重なりにくいような調整
+	constexpr int VIBRATE_POWER_H = 1000;
+	constexpr int VIBRATE_TIME_H  = 120; // m/sec
+	constexpr int VIBRATE_POWER_L = 770;
+	constexpr int VIBRATE_TIME_L  = 85; // m/sec
 
 	// 適用番号の検査
 	bool isCovered = false;	// 星が一つでもカメラの枠内に入っていれば真
@@ -2636,7 +2644,8 @@ bool Game::Exposure()
 			if ( pStarMng->FetchLevel( i ) <= 1 )
 			{
 				pCamera->SetShake();
-				StartJoypadVibration( DX_INPUT_PAD1, VIBRATE_POWER, VIBRATE_TIME );
+				StopJoypadVibration ( DX_INPUT_PAD1 );
+				StartJoypadVibration( DX_INPUT_PAD1, VIBRATE_POWER_H, VIBRATE_TIME_H );
 				UsedExposure( /* succeeded = */ false );
 				PlaySE( M_FAILURE );
 
@@ -2651,7 +2660,8 @@ bool Game::Exposure()
 			else // カメラの枠が星に触れてはいるが，星のサイズが大きく，はみだしている場合に入る（露光は失敗する）
 			{
 				pCamera->SetShake();
-				StartJoypadVibration( DX_INPUT_PAD1, VIBRATE_POWER, VIBRATE_TIME );
+				StopJoypadVibration ( DX_INPUT_PAD1 );
+				StartJoypadVibration( DX_INPUT_PAD1, VIBRATE_POWER_H, VIBRATE_TIME_H );
 				UsedExposure( /* succeeded = */ false );
 				PlaySE( M_FAILURE );
 
@@ -2664,7 +2674,8 @@ bool Game::Exposure()
 	if ( !isCovered )
 	{
 		pCamera->SetShake();
-		StartJoypadVibration( DX_INPUT_PAD1, VIBRATE_POWER >> 1, VIBRATE_TIME >> 1 );
+		StopJoypadVibration ( DX_INPUT_PAD1 );
+		StartJoypadVibration( DX_INPUT_PAD1, VIBRATE_POWER_L, VIBRATE_TIME_L );
 		// 「それ以上は露光できない」とは言えないためはぶく
 		// UsedExposure( /* succeeded = */ false );
 		PlaySE( M_FAILURE );

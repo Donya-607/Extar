@@ -24,7 +24,7 @@ namespace
 
 	static int		borderBright		= 64;
 
-	static int		waitForTransition	= 85;
+	static int		waitForTransition	= 65;
 
 	static int		beginShowImageTime	= 40 + waitForTransition;
 	static int		slideImageTime		= 24;

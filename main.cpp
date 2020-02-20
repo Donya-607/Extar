@@ -35,8 +35,7 @@ LRESULT CALLBACK WndProc( HWND wnd, UINT msg, WPARAM wParam, LPARAM lParam );
 int WINAPI WinMain(	HINSTANCE	hCurInst/*インスタンスハンドル*/,	HINSTANCE	hPrevInst/*名残*/,	
 					LPSTR		lpsCmdLine/*コマンドライン引数*/,	int			nCmdShow/*ウィンドウの表示状態の設定*/)
 {
-	// エラーチェック
-#if defined( DEBUG ) | defined( _DEBUG )
+#if DEBUG_MODE
 	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
 	//_crtBreakAlloc = ;	// メモリリークが起きていた場合，出力される番号をこれに代入することで，該当箇所で動的確保した際に止めてくれるようになる
 	// _crtBreakAlloc = ;
@@ -46,14 +45,24 @@ int WINAPI WinMain(	HINSTANCE	hCurInst/*インスタンスハンドル*/,	HINSTANCE	hPrevI
 	SetGraphMode( SCREEN_WIDTH, SCREEN_HEIGHT, 16 );// SizeX, SizeY, ColorBitNum
 	SetWindowIconID( 128 );							// タイトルバーのアイコンを変更
 	SetMainWindowText( "エクスタ" );					// タイトルバーのテキストを変更
+#if DEBUG_MODE
 	ChangeWindowMode( TRUE );						// TRUE:ウィンドウモード, FALSE:フルスクリーンモード
+#else
+	ChangeWindowMode( FALSE );						// TRUE:ウィンドウモード, FALSE:フルスクリーンモード
+#endif // DEBUG_MODE
+
 
 	if ( DxLib_Init() == -1 )
 	{
 		return -1;	// エラー処理, 終了させる
 	}
 
+#if DEBUG_MODE
 	SetMouseDispFlag( TRUE );						// FALSE:マウスカーソルの非表示
+#else
+	SetMouseDispFlag( FALSE );						// FALSE:マウスカーソルの非表示
+#endif // DEBUG_MODE
+
 	SetDrawScreen( DX_SCREEN_BACK );				// DX_SCREEN_BACK:描画先を裏画面に設定
 
 	srand( scast<unsigned int>( time( NULL ) ) );
