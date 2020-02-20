@@ -2823,13 +2823,14 @@ void Game::PrepareChangeSceneToTitle()
 
 void Game::TakeScreenShot()
 {
+	constexpr const char *SS_FILE_PATH = "./Data/Images/ScreenShot/ScreenShot.png";
 	int result = SaveDrawScreenToPNG
 	(
 		FRAME_POS_X,
 		FRAME_POS_Y,
 		FRAME_POS_X + FRAME_WIDTH,
 		FRAME_POS_Y + FRAME_HEIGHT,
-		"./Data/Images/ScreenShot/ScreenShot.png"
+		SS_FILE_PATH
 	);
 	if ( result != 0 )
 	{
@@ -2839,7 +2840,7 @@ void Game::TakeScreenShot()
 	}
 	// else
 
-	hScreenShot = LoadGraph( "./Data/Images/ScreenShot/ScreenShot.png" );
+	hScreenShot = LoadGraph( SS_FILE_PATH );
 
 	isClearMoment = false;
 	isTakeScreenShot = true;
