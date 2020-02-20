@@ -500,7 +500,7 @@ void Cursor::Update( bool isAcceptInput, bool canDecision )
 	StageSelect::SetBackGlow( isChooseBack );
 	GlowUpdate();
 	
-	if ( IsTrigger( InputTrigger::Exposure ) && canDecision )
+	if ( IsTrigger( InputTrigger::Exposure ) )
 	{
 		if ( canDecision )
 		{
