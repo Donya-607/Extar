@@ -502,7 +502,14 @@ void Cursor::Update( bool isAcceptInput, bool canDecision )
 	
 	if ( IsTrigger( InputTrigger::Exposure ) && canDecision )
 	{
-		isDecision = true;
+		if ( canDecision )
+		{
+			isDecision = true;
+		}
+		else
+		{
+			PlaySE( M_CANT_PUSH );
+		}
 	}
 }
 
