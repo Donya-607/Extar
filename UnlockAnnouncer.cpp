@@ -32,7 +32,7 @@ namespace
 	static int		beginFadeoutTime	= 160 + waitForTransition;
 	static int		takeFadeoutTime		= 20;
 
-	static Vector2	imagePosStart{ 960.0f, 512.0f }; // ScreenSize/2
+	static Vector2	imagePosStart{ 960.0f, 548.0f }; // ScreenSize/2
 	static Vector2	imagePosDest { 960.0f, 512.0f }; // ScreenSize/2
 
 	static int hImage = 0;
