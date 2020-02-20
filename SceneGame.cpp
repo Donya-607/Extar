@@ -2610,6 +2610,9 @@ bool Game::Exposure()
 	std::vector<int>		targets{};		// 露光の適用対象たち
 	std::vector<Vector2>	particlePos{};
 
+	constexpr int VIBRATE_POWER = 200;
+	constexpr int VIBRATE_TIME  = 200; // m/sec
+
 	// 適用番号の検査
 	bool isCovered = false;	// 星が一つでもカメラの枠内に入っていれば真
 	const int end = pStarMng->GetArraySize();
@@ -2624,6 +2627,7 @@ bool Game::Exposure()
 			if ( pStarMng->FetchLevel( i ) <= 1 )
 			{
 				pCamera->SetShake();
+				StartJoypadVibration( DX_INPUT_PAD1, VIBRATE_POWER, VIBRATE_TIME );
 				UsedExposure( /* succeeded = */ false );
 				PlaySE( M_FAILURE );
 
@@ -2638,6 +2642,7 @@ bool Game::Exposure()
 			else // カメラの枠が星に触れてはいるが，星のサイズが大きく，はみだしている場合に入る（露光は失敗する）
 			{
 				pCamera->SetShake();
+				StartJoypadVibration( DX_INPUT_PAD1, VIBRATE_POWER, VIBRATE_TIME );
 				UsedExposure( /* succeeded = */ false );
 				PlaySE( M_FAILURE );
 
@@ -2650,6 +2655,7 @@ bool Game::Exposure()
 	if ( !isCovered )
 	{
 		pCamera->SetShake();
+		StartJoypadVibration( DX_INPUT_PAD1, VIBRATE_POWER >> 1, VIBRATE_TIME >> 1 );
 		// 「それ以上は露光できない」とは言えないためはぶく
 		// UsedExposure( /* succeeded = */ false );
 		PlaySE( M_FAILURE );
