@@ -24,7 +24,7 @@ namespace
 
 	static int		borderBright		= 64;
 
-	static int		waitForTransition	= 100;
+	static int		waitForTransition	= 85;
 
 	static int		beginShowImageTime	= 40 + waitForTransition;
 	static int		slideImageTime		= 24;
@@ -32,8 +32,8 @@ namespace
 	static int		beginFadeoutTime	= 160 + waitForTransition;
 	static int		takeFadeoutTime		= 20;
 
-	static Vector2	imagePosStart{ 560.0f, 572.0f }; // ScreenSize/2 - ImageSize/2
-	static Vector2	imagePosDest { 560.0f, 508.0f }; // ScreenSize/2 - ImageSize/2
+	static Vector2	imagePosStart{ 960.0f, 512.0f }; // ScreenSize/2
+	static Vector2	imagePosDest { 960.0f, 512.0f }; // ScreenSize/2
 
 	static int hImage = 0;
 	void Load()
@@ -78,9 +78,10 @@ void UnlockAnnouncer::Update()
 void UnlockAnnouncer::Draw()
 {
 	SetDrawBlendMode( DX_BLENDMODE_ALPHA, alpha );
-	DrawGraphF
+	DrawRotaGraphF
 	(
 		pos.x, pos.y,
+		1.0, 0.0,
 		hImage, TRUE
 	);
 	SetDrawBlendMode( DX_BLENDMODE_ALPHA, 255 );

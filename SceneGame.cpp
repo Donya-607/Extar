@@ -1520,6 +1520,10 @@ void Game::GameUpdate()
 				ResetExposureCount();
 				PlaySE( M_UNDO );
 			}
+			else // 露光のログが無くアンドゥできなかった場合
+			{
+				PlaySE( M_CANT_PUSH );
+			}
 		}
 	}
 
@@ -1567,7 +1571,7 @@ void Game::GameUpdate()
 	}
 
 	// Ｒボタンへの矢印の，生成・削除条件の確認
-	if ( stageNumber == LIMIT_STAGE_NUMBER )
+	if ( stageNumber == LIMIT_STAGE_NUMBER && !isUnlockedStage )
 	{
 		if ( textNumber == TextBehavior::TUTORIAL_TOGGLE_GENERATE_ARROW_TIMING )
 		{
