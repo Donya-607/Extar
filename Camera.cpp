@@ -80,7 +80,7 @@ void Camera::Uninit()
 
 void Camera::Update( bool isAllowMove, bool isAllowExposure, bool isAllowToggle )
 {
-	if ( isAllowToggle && IsTrigger( InputTrigger::ToggleCamera ) )
+	if (TRG(KEY_INPUT_R) ||isAllowToggle && IsTrigger( InputTrigger::ToggleCamera ) )
 	{
 		ToggleAspectRatio();
 		PlaySE( M_TOGGLE_CAMERA );
