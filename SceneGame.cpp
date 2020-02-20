@@ -1672,8 +1672,14 @@ void Game::ClearUpdate()
 		// 発生
 		if ( isOpenFade )	// DEBUG
 		{
+			// HACK:星の数が３つじゃないなら，これも変える必要がある
+			constexpr int RECORD_STAR_COUNT = 3; // １始まり
+
+			// ０始まりにした星の最大数から，０始まりの現在のランクを引くことで，０始まりの星獲得数が求まる
+			const int acquiredCount = RECORD_STAR_COUNT - pNumMoves->CalcRank( numMoves );
+
 			// constexpr int PROBABILITY = 12;// 256;
-			if ( !( rand() % SS_PROBABILITY ) )
+			if ( !( rand() % SS_PROBABILITY >> acquiredCount ) )
 			{
 				const std::vector<float> POS_X =
 				{
@@ -1729,10 +1735,10 @@ void Game::ClearUpdate()
 			const float   interval = scast<float>( ( 160 + ClearImage::SIZE_STAR_X ) * nextGenerateIndex );
 			const Vector2 base{ 602.0f + interval, 864.0f };
 
-			int nowRank = pNumMoves->CalcRank( numMoves );	// 0始まり
+			int nowRank = pNumMoves->CalcRank( numMoves );	// 0始まり，星の獲得数は「RECORD_STAR_COUNT - ( CalcRank + 1 )」となる。ここで +1 しているのは０始まりを１始まりに変換するため。
 			// 達成難易度は，右からの降順で並んでいるとする（左のほうが達成されやすい）
 			bool isGlow =
-				( nextGenerateIndex <= scast<int>( generateFrames.size() ) - 1 - nowRank )
+				( nextGenerateIndex <= RECORD_STAR_COUNT - 1 - nowRank )
 				? true
 				: false;
 
@@ -1752,8 +1758,8 @@ void Game::ClearUpdate()
 
 		const int nextGenerate = scast<int>( recordStars.size() ); // 生成するたびにサイズが増えていくことを利用
 		if	(
-				nextGenerate < scast<int>( generateFrames.size() ) &&
-				clearTimer == generateFrames[nextGenerate]	// 短絡評価
+				nextGenerate < RECORD_STAR_COUNT &&
+				clearTimer  == generateFrames[nextGenerate]	// 短絡評価
 			)
 		{
 			GenerateImpl( nextGenerate );
