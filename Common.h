@@ -18,7 +18,7 @@ constexpr	float EPSILON	=	1.192092896e-07F;	// smallest such that 1.0+FLT_EPSILO
 #define		ToDegree( x )		( x * ( 180.0f / PI ) )
 #define		ZeroEqual( x )		( -EPSILON < x && x < EPSILON )
 
-#define		DEBUG_MODE			( 1 )	/* DEBUG:デバッグモード */
+#define		DEBUG_MODE			( defined( DEBUG ) | defined( _DEBUG ) )	/* DEBUG:デバッグモード */
 #define		USE_IMGUI			( 1 )	/* DEBUG:ImGuiを使うなら，オンにする */
 #define		USE_DIRECT_INPUT	( 0 )	/* DEBUG:DirectInputコントローラを使うなら，オンにする */
 

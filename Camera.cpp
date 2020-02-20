@@ -101,6 +101,10 @@ void Camera::Update( bool isAllowMove, bool isAllowExposure, bool isAllowToggle 
 	else
 	{
 		isExposure = false;
+		if ( IsTrigger( InputTrigger::Exposure ) )
+		{
+			PlaySE( M_CANT_PUSH );
+		}
 	}
 
 	if ( isGlow )

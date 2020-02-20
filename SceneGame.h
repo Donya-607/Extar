@@ -20,6 +20,7 @@
 
 #include "ProgressStorage.h"
 #include "Rotator.h"
+#include "UnlockAnnouncer.h"
 
 //--------------------
 //
@@ -151,6 +152,7 @@ private:
 	std::unique_ptr<ParticleMng> pParticleMng;
 
 	std::unique_ptr<Cursor>   pCursor;
+	std::unique_ptr<UnlockAnnouncer> pUnlockAnnouncer;
 
 	std::unique_ptr<Camera>   pCamera;
 	std::unique_ptr<StarMng>  pStarMng;
@@ -174,6 +176,7 @@ private:
 
 	bool isPause;
 	bool isDrawCollision;
+	bool isUnlockedStage;// 制限している最大のステージをクリアしたら真。
 private:	// 他ＰＧによる作業
 	Vector2 str_up_pos;
 	Vector2 str_down_pos;
@@ -214,7 +217,7 @@ public:
 		armPos( { scast<float>( SCREEN_WIDTH ), scast<float>( SCREEN_HEIGHT ) } ),
 		pausePos(),
 		pSSMng( nullptr ), pParticleMng( nullptr ),
-		pCursor( nullptr ),
+		pCursor( nullptr ), pUnlockAnnouncer( nullptr ),
 		pCamera( nullptr ), pStarMng( nullptr ), pNumMoves( nullptr ),
 		pRotator( nullptr ), pProgress( nullptr ),
 		pBoard( nullptr ), recordStars(),
@@ -224,6 +227,7 @@ public:
 		isDoneMoveArm( false ),
 		isShowClearMenu( false ),
 		isPause( false ), isDrawCollision( false ),
+		isUnlockedStage( false ),
 
 		str_up_pos( { 0, 0 } ),
 		str_down_pos( { 192.0f, 64.0f } ),
@@ -272,6 +276,7 @@ public:
 	void ReactionUpdate();
 	void UsedExposure( bool succeeded );
 	void UsedOperate();
+	void ResetExposureCount();
 
 	void FadeBegin();
 	void FadeCheck();

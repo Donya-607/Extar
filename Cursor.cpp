@@ -469,7 +469,7 @@ void Cursor::Uninit()
 
 }
 
-void Cursor::Update( bool isAcceptInput )
+void Cursor::Update( bool isAcceptInput, bool canDecision )
 {
 	if ( !isAcceptInput )
 	{
@@ -502,7 +502,14 @@ void Cursor::Update( bool isAcceptInput )
 	
 	if ( IsTrigger( InputTrigger::Exposure ) )
 	{
-		isDecision = true;
+		if ( canDecision )
+		{
+			isDecision = true;
+		}
+		else
+		{
+			PlaySE( M_CANT_PUSH );
+		}
 	}
 }
 

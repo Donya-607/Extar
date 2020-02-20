@@ -14,18 +14,21 @@ void MusicInit()
 	BGMhandles[M_Title_Select]	= LoadSoundMem( "./Data/Sounds/BGM/Title_Select.wav" );
 	//BGMhandles[]				= LoadSoundMem( "./Data/Sounds/BGM/.wav" );
 
+	SEhandles[M_ALIGN_STARS]	= LoadSoundMem( "./Data/Sounds/SE/Game/Align.wav" );
 	SEhandles[M_CAMERA_MOVE]	= LoadSoundMem( "./Data/Sounds/SE/Camera/CameraFrameMove.wav" );
+	SEhandles[M_CANT_PUSH]		= LoadSoundMem( "./Data/Sounds/SE/CantPush.wav" );
 	SEhandles[M_DECISION]		= LoadSoundMem( "./Data/Sounds/SE/Decision.wav" );
 	SEhandles[M_EXPOSURE]		= LoadSoundMem( "./Data/Sounds/SE/Camera/Exposure.wav" );
 	SEhandles[M_FAILURE]		= LoadSoundMem( "./Data/Sounds/SE/Camera/Failure.wav" );
-	SEhandles[M_TOGGLE_CAMERA]	= LoadSoundMem( "./Data/Sounds/SE/Camera/ToggleCamera.wav" );
 	SEhandles[M_GOTO_TITLE]		= LoadSoundMem( "./Data/Sounds/SE/Select/Back.wav" );
 	SEhandles[M_PAUSE]			= LoadSoundMem( "./Data/Sounds/SE/Pause/Pause.wav" );
-	SEhandles[M_SELECT]			= LoadSoundMem( "./Data/Sounds/SE/Select/Move.wav" );
-	SEhandles[M_SHUTTER]		= LoadSoundMem( "./Data/Sounds/SE/Camera/Shutter.wav" );
 	SEhandles[M_RECORD_STAR]	= LoadSoundMem( "./Data/Sounds/SE/Result/Reward.wav" );
 	SEhandles[M_UNDO]			= LoadSoundMem( "./Data/Sounds/SE/Game/Undo.wav" );
+	SEhandles[M_UNLOCK_STAGE]	= LoadSoundMem( "./Data/Sounds/SE/Select/UnlockStage.wav" );
 	SEhandles[M_UNRECORD_STAR]	= LoadSoundMem( "./Data/Sounds/SE/Result/FailureReward.wav" );
+	SEhandles[M_SELECT]			= LoadSoundMem( "./Data/Sounds/SE/Select/Move.wav" );
+	SEhandles[M_SHUTTER]		= LoadSoundMem( "./Data/Sounds/SE/Camera/Shutter.wav" );
+	SEhandles[M_TOGGLE_CAMERA]	= LoadSoundMem( "./Data/Sounds/SE/Camera/ToggleCamera.wav" );
 	SEhandles[M_VOICE]			= LoadSoundMem( "./Data/Sounds/SE/Human/Voice.wav" );
 
 

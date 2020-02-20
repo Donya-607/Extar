@@ -27,6 +27,8 @@
 
 namespace
 {
+	constexpr int LIMIT_STAGE_NUMBER = 12;
+
 	constexpr int PARTICLE_AMOUNT = 6;
 	constexpr int SS_PROBABILITY  = 128;
 }
@@ -36,6 +38,8 @@ namespace
 namespace TextBehavior
 {
 	// 文の要素数と表示フレームの要素数は揃えてください
+	// TUTORIAL_XXXは初めのステージのもの，
+	// TUROAIL_TOGGLE_XXXはカメラの回転のものです
 
 	const std::vector<std::string> TUTORIAL =
 	{
@@ -63,7 +67,9 @@ namespace TextBehavior
 
 		"やっほー！初心者さんかな？　やり方教えるね♪",
 		"水色の枠がカメラの範囲だよ！",
+
 		"範囲内に星をおさめると、ＡかＸで露光が使えるよ",
+		"そうそう！いい感じ♪",
 
 		"露光は、範囲内にある星を明るくできるよ",
 		"すべての星の明るさをそろえて撮影しよう！",
@@ -97,7 +103,9 @@ namespace TextBehavior
 
 		180,
 		180,
-		180,
+
+		120,
+		120,
 
 		180,
 		180,
@@ -131,8 +139,10 @@ namespace TextBehavior
 	#else
 
 		PSCond::WaitingTime,
-		PSCond::InputMove		| PSCond::WaitingTime,
+		PSCond::WaitingTime,
+
 		PSCond::InputExposure	| PSCond::WaitingTime,
+		PSCond::WaitingTime,
 
 		PSCond::WaitingTime,
 		PSCond::WaitingTime,
@@ -167,6 +177,8 @@ namespace TextBehavior
 
 		PSInput::Move,
 		PSInput::Move,
+
+		PSInput::Move | PSInput::Exposure,
 		PSInput::Move | PSInput::Exposure,
 
 		PSInput::Move | PSInput::Exposure,
@@ -175,9 +187,54 @@ namespace TextBehavior
 
 	#endif // STRING_FOR_MOVIE
 	};
+
+	// 矢印を生成するテキスト番号（０始まり）
+	constexpr int TUTORIAL_TOGGLE_GENERATE_ARROW_TIMING = 1;
+	const std::vector<std::string> TUTORIAL_TOGGLE =
+	{
+		"おっ！なかなか難しそうな空だね",
+		"Ｒでカメラを縦にすることができるよ！",
+
+		"その調子！",
+		"ここからはもっといい写真を撮っていこう♪",
+
+		"セレクトボタンでもう一度教えるよ！"
+	};
+	const std::vector<int> TUTORIAL_TOGGLE_SHOW_FRAME =
+	{
+		180,
+		120,
+
+		120,
+		180,
+
+		-1
+	};
+	const std::vector<PSCond> TUTORIAL_TOGGLE_CONDITIONS =
+	{
+		PSCond::WaitingTime,
+		PSCond::WaitingTime | PSCond::InputToggle,
+
+		PSCond::WaitingTime,
+		PSCond::WaitingTime,
+
+		PSCond::IMPOSSIBLE
+	};
+	const std::vector<PSInput> TUTORIAL_TOGGLE_PERMISSIONS =
+	{
+		PSInput::Move,
+		PSInput::Move | PSInput::Toggle,
+
+		PSInput::Move | PSInput::Toggle,
+		PSInput::Move | PSInput::Exposure | PSInput::Toggle,
+
+		PSInput::Move | PSInput::Exposure | PSInput::Toggle
+	};
+
 	const std::vector<std::string> EMPHASIS_STR =	// RGB( 87, 101, 255 )
 	{
-		// すべての文章にて，ここの強調文字一覧が調べられ，どれかに引っかかり次第それのみが強調されます
+		// チュートリアル時のみ，すべての文章にて，
+		// ここの強調文字一覧が調べられ，どれかに引っかかり次第，それのみが強調されます
 
 	#if STRING_FOR_MOVIE
 
@@ -191,6 +248,8 @@ namespace TextBehavior
 		"露光",
 		"すべて",
 		"セレクトボタン",
+
+		"Ｒ",
 
 	#endif // STRING_FOR_MOVIE
 	};
@@ -310,11 +369,15 @@ namespace GameImage
 	static int hGameBG;
 	static int hFrameBG;
 	static int hFrameUI;
+	static int hUsageR;
 	//static int hMovesUI;
+	static int hArrow;
 
 
 	static int hshutter;
 
+	constexpr int WIDTH_USAGE_R  = 280;
+	constexpr int HEIGHT_USAGE_R = 190;
 
 	void Load()
 	{
@@ -328,7 +391,9 @@ namespace GameImage
 		hGameBG		= LoadGraph( "./Data/Images/BG/Game.png"  );
 		hFrameBG	= LoadGraph( "./Data/Images/BG/Frame.png" );
 		hFrameUI	= LoadGraph( "./Data/Images/UI/FrameUI.png" );
+		hUsageR		= LoadGraph( "./Data/Images/UI/UsageR.png" );
 		//hMovesUI	= LoadGraph( "./Data/Images/UI/NumberOfMoves.png" );
+		hArrow		= LoadGraph( "./Data/Images/UI/Arrow.png" );
 
 
 		hshutter	= LoadGraph( "./Data/Images/Camera/Shutter.png" );
@@ -340,10 +405,14 @@ namespace GameImage
 		DeleteGraph( hGameBG	);
 		DeleteGraph( hFrameBG	);
 		DeleteGraph( hFrameUI	);
+		DeleteGraph( hUsageR	);
+		DeleteGraph( hArrow		);
 		//DeleteGraph( hMovesUI );
 		hGameBG		= 0;
 		hFrameBG	= 0;
 		hFrameUI	= 0;
+		hUsageR		= 0;
+		hArrow		= 0;
 		//hMovesUI	= 0;
 
 
@@ -647,6 +716,53 @@ namespace HumanBehavior
 	constexpr float	HAND_RISE_SPD_Y = scast<float>( RISE_REQUIRED_TIME ) / 6;
 }
 
+// 横着な名前空間。別のヘッダやソースファイルなど作ってそちらで管理すべきである
+namespace
+{
+	static float   arrowShakeSpeed  = 16.0f;
+	static float   arrowShakeAmount = 16.0f;
+	static Vector2 arrowBasePos{ 1700.0f, 800.0f };
+
+	class HorizontalArrow
+	{
+	private:
+		float   radian = 0.0f;
+		Vector2 pos{};
+		Vector2 shake{};
+	public:
+		void Reset()
+		{
+			radian  = 0.0f;
+			pos     = { 0.0f, 0.0f };
+			shake.x = 0.0f;
+			shake.y = 0.0f;
+		}
+		void SetPosition( const Vector2 &initPos )
+		{
+			pos = initPos;
+		}
+
+		void Update()
+		{
+			radian += ToRadian( arrowShakeSpeed );
+
+			shake.y = sinf( radian ) * arrowShakeAmount;
+		}
+
+		void Draw( int handle )
+		{
+			DrawGraphF
+			(
+				( pos + shake ).x,
+				( pos + shake ).y,
+				handle, TRUE
+			);
+		}
+	};
+
+	static std::unique_ptr<HorizontalArrow> pArrow{ nullptr };
+}
+
 void RecordStar::Init( Vector2 centerPos, bool isGlowStar )
 {
 	pos		= centerPos;
@@ -794,6 +910,8 @@ void Game::Init()
 	FileIO::ReadAllCamera();
 	FileIO::ReadAllStars();
 	FileIO::ReadAllNumMoves();
+	FileIO::SetStageLimit( LIMIT_STAGE_NUMBER );
+	isUnlockedStage = false;
 
 	Number::Load();
 
@@ -813,6 +931,9 @@ void Game::Init()
 	StageImage::Load();
 	CursorImage::Load();
 	BoardImage::Load();
+	UnlockAnnouncer::LoadImages();
+
+	pArrow.reset();
 
 	hFont = CreateFontToHandle
 	(
@@ -828,6 +949,8 @@ void Game::Init()
 
 	pParticleMng.reset( new ParticleMng() );
 	pParticleMng->Init();
+
+	pUnlockAnnouncer.reset();
 
 	switch ( state )
 	{
@@ -849,7 +972,7 @@ void Game::SelectInit()
 {
 	PlayBGM( M_Title_Select );
 
-	numMoves = 0;
+	numMoves	= 0;
 
 	selectTimer	= 0;
 	selectPos	= { 710.0f, 40.0f };
@@ -865,6 +988,8 @@ void Game::GameInit()
 	const float GRID_SIZE = scast<float>( StarImage::SIZE );
 	Vector2 gridSize{ GRID_SIZE, GRID_SIZE };
 	Grid::SetSize( gridSize );
+
+	pArrow.reset();
 
 	pCamera.reset( new Camera() );
 	pCamera->Init( stageNumber );
@@ -882,6 +1007,15 @@ void Game::GameInit()
 		(
 			TextBehavior::TUTORIAL_CONDITIONS,
 			TextBehavior::TUTORIAL_PERMISSIONS
+		);
+	}
+	else
+	if ( stageNumber == LIMIT_STAGE_NUMBER && !isUnlockedStage )
+	{
+		pProgress = std::make_unique<ProgressStorage>
+		(
+			TextBehavior::TUTORIAL_TOGGLE_CONDITIONS,
+			TextBehavior::TUTORIAL_TOGGLE_PERMISSIONS
 		);
 	}
 	else
@@ -979,6 +1113,7 @@ void Game::Uninit()
 	StageImage::Release();
 	CursorImage::Release();
 	BoardImage::Release();
+	UnlockAnnouncer::ReleaseImages();
 
 	DeleteFontToHandle( hFont );
 	hFont = 0;
@@ -1042,6 +1177,15 @@ void Game::Update()
 	{
 		GenerateRotator();
 	}
+	
+	if ( TRG( KEY_INPUT_F ) && state == State::Select )
+	{
+		pUnlockAnnouncer = std::make_unique<UnlockAnnouncer>();
+	}
+
+#if USE_IMGUI
+	FileIO::UpdateShowWindowState();
+#endif // USE_IMGUI
 
 #endif // DEBUG_MODE
 
@@ -1123,18 +1267,6 @@ void Game::Update()
 			}
 		}
 	}
-
-#if DEBUG_MODE
-
-	if ( 0 && TRG( KEY_INPUT_RETURN ) )
-	{
-		nextState = State::GotoTitle;
-		FadeBegin();
-
-		PlaySE( M_E_NEXT );
-	}
-
-#endif // DEBUG_MODE
 }
 
 void Game::SelectUpdate()
@@ -1181,30 +1313,47 @@ void Game::SelectUpdate()
 		pSSMng->Update();
 	}
 
+	if ( pUnlockAnnouncer )
+	{
+		pUnlockAnnouncer->Update();
+		if ( pUnlockAnnouncer->ShouldRemove() )
+		{
+			pUnlockAnnouncer.reset();
+		}
+	}
+
 	if ( pCursor )
 	{
-		pCursor->Update( isOpenFade/* フェードイン中の操作制限のため */ );
+		bool canDecision = ( pUnlockAnnouncer ) ? false : true;
+		pCursor->Update( isOpenFade/* フェードイン中の操作制限のため */, canDecision );
 
 		stageNumber = pCursor->GetNowStageNumber();
 
 		if ( nextState == State::Null && pCursor->IsDecision() )
 		{
-			if ( pCursor->IsChoiceBack() )
+			// 演出中は選択できない
+			if ( pUnlockAnnouncer )
 			{
-				nextState = State::GotoTitle;
-				PlaySE( M_GOTO_TITLE );
+				PlaySE( M_CANT_PUSH );
 			}
 			else
 			{
-				nextState = State::Game;
-				PlaySE( M_DECISION );
-			}
+				if ( pCursor->IsChoiceBack() )
+				{
+					nextState = State::GotoTitle;
+					PlaySE( M_GOTO_TITLE );
+				}
+				else
+				{
+					nextState = State::Game;
+					PlaySE( M_DECISION );
+				}
 
-			FadeBegin();
+				FadeBegin();
+			}
 		}
 	}
 }
-
 void Game::GameUpdate()
 {
 	if ( isTakeScreenShot )
@@ -1256,6 +1405,8 @@ void Game::GameUpdate()
 			isDoneMoveArm = false;
 
 			GenerateRotator();
+
+			PlaySE( M_ALIGN_STARS );
 		}
 
 		// 上の「クリア判定の瞬間のみ入るプロセス」内でpRotatorを生成しているので，
@@ -1286,6 +1437,10 @@ void Game::GameUpdate()
 			allowMove		= pProgress->IsAllowInput( Input::Move		);
 			allowExposure	= pProgress->IsAllowInput( Input::Exposure	);
 			allowToggle		= pProgress->IsAllowInput( Input::Toggle	);
+		}
+		if ( stageNumber < LIMIT_STAGE_NUMBER )
+		{
+			allowToggle		= false;
 		}
 		pCamera->Update( allowMove, allowExposure, allowToggle );
 
@@ -1358,11 +1513,16 @@ void Game::GameUpdate()
 
 		if ( IsTrigger( InputTrigger::Undo ) && canUndo )
 		{
-			if ( pStarMng->Undo(), pCamera->Undo()/* HAC:ちゃんと両方での成功を条件に取るべきである */ )
+			if ( pStarMng->Undo(), pCamera->Undo()/* HACK:ちゃんと両方での成功を条件に取るべきである */ )
 			{
 				numMoves--;
 				UsedOperate();
+				ResetExposureCount();
 				PlaySE( M_UNDO );
+			}
+			else // 露光のログが無くアンドゥできなかった場合
+			{
+				PlaySE( M_CANT_PUSH );
 			}
 		}
 	}
@@ -1410,11 +1570,45 @@ void Game::GameUpdate()
 		}
 	}
 
+	// Ｒボタンへの矢印の，生成・削除条件の確認
+	if ( stageNumber == LIMIT_STAGE_NUMBER && !isUnlockedStage )
+	{
+		if ( textNumber == TextBehavior::TUTORIAL_TOGGLE_GENERATE_ARROW_TIMING )
+		{
+			if ( !pArrow )
+			{
+				pArrow = std::make_unique<HorizontalArrow>();
+				pArrow->Reset();
+				pArrow->SetPosition( arrowBasePos );
+			}
+		}
+		else
+		{
+			pArrow.reset();
+		}
+	}
+
+	if ( pArrow )
+	{
+		pArrow->Update();
+
+	#if USE_IMGUI
+		if ( FileIO::IsShowImGuiWindow() && ImGui::Begin( "Arrow to R" ) )
+		{
+			ImGui::DragFloat ( "Shaking Speed",  &arrowShakeSpeed,  0.1f );
+			ImGui::DragFloat ( "Shaking Amount", &arrowShakeAmount );
+			ImGui::DragFloat2( "Arrow Pos",      &arrowBasePos.x );
+			pArrow->SetPosition( arrowBasePos );
+			
+			ImGui::End();
+		}
+	#endif // USE_IMGUI
+	}
+
 	BalloonUpdate();
 
 #if USE_IMGUI
 
-	FileIO::UpdateShowWIndowState();
 	FileIO::UpdateNowStageNumberByImGui();
 	if ( FileIO::IsCreateNewStage() )
 	{
@@ -1440,7 +1634,6 @@ void Game::GameUpdate()
 
 	ShakeUpdate();
 }
-
 void Game::ClearUpdate()
 {
 	constexpr int CLEAR_TIMER_MAX = ClearRelated::FADE_WAIT + ClearRelated::GOTO_NEXT_WAIT;
@@ -1479,8 +1672,14 @@ void Game::ClearUpdate()
 		// 発生
 		if ( isOpenFade )	// DEBUG
 		{
+			// HACK:星の数が３つじゃないなら，これも変える必要がある
+			constexpr int RECORD_STAR_COUNT = 3; // １始まり
+
+			// ０始まりにした星の最大数から，０始まりの現在のランクを引くことで，０始まりの星獲得数が求まる
+			const int acquiredCount = RECORD_STAR_COUNT - pNumMoves->CalcRank( numMoves );
+
 			// constexpr int PROBABILITY = 12;// 256;
-			if ( !( rand() % SS_PROBABILITY ) )
+			if ( !( rand() % SS_PROBABILITY >> acquiredCount ) )
 			{
 				const std::vector<float> POS_X =
 				{
@@ -1536,10 +1735,10 @@ void Game::ClearUpdate()
 			const float   interval = scast<float>( ( 160 + ClearImage::SIZE_STAR_X ) * nextGenerateIndex );
 			const Vector2 base{ 602.0f + interval, 864.0f };
 
-			int nowRank = pNumMoves->CalcRank( numMoves );	// 0始まり
+			int nowRank = pNumMoves->CalcRank( numMoves );	// 0始まり，星の獲得数は「RECORD_STAR_COUNT - ( CalcRank + 1 )」となる。ここで +1 しているのは０始まりを１始まりに変換するため。
 			// 達成難易度は，右からの降順で並んでいるとする（左のほうが達成されやすい）
 			bool isGlow =
-				( nextGenerateIndex <= scast<int>( generateFrames.size() ) - 1 - nowRank )
+				( nextGenerateIndex <= RECORD_STAR_COUNT - 1 - nowRank )
 				? true
 				: false;
 
@@ -1559,8 +1758,8 @@ void Game::ClearUpdate()
 
 		const int nextGenerate = scast<int>( recordStars.size() ); // 生成するたびにサイズが増えていくことを利用
 		if	(
-				nextGenerate < scast<int>( generateFrames.size() ) &&
-				clearTimer == generateFrames[nextGenerate]	// 短絡評価
+				nextGenerate < RECORD_STAR_COUNT &&
+				clearTimer  == generateFrames[nextGenerate]	// 短絡評価
 			)
 		{
 			GenerateImpl( nextGenerate );
@@ -1705,11 +1904,20 @@ void Game::ClearUpdate()
 			gotoNextPosX = DESTINATION;
 		}
 
-		if ( IsTrigger( InputTrigger::Exposure ) && !skipPerformance/* スキップした瞬間もボタンを押していることになり，そのままこの条件にも入るが，それは意図しない */ )
+		if ( IsTrigger( InputTrigger::Exposure ) && !skipPerformance/* スキップした瞬間もボタンを押していることになり，そのままこの条件にも入るが，それは意図しない */ && isOpenFade/* 強制的にセレクト画面へ戻す際の連打防止 */ )
 		{
 			PlaySE( M_DECISION );
 
-			isShowClearMenu = true;
+			// 制限を解放するステージの場合，必ずセレクト画面にもどす
+			if ( !isUnlockedStage && stageNumber == LIMIT_STAGE_NUMBER )
+			{
+				nextState = State::Select;
+				FadeBegin();
+			}
+			else
+			{
+				isShowClearMenu = true;
+			}
 		}
 	}
 
@@ -1732,6 +1940,7 @@ void Game::MilkyWayUpdate()
 #if USE_IMGUI_FOR_ROTATOR
 namespace ROTATOR
 {
+	static int   destroyFrame	= 110;
 	static float generatePos	= 2048.0f;
 	static float lineWidth		= 128.0f;
 	static float moveSpeed		= -24.0f;
@@ -1743,12 +1952,13 @@ void Game::GenerateRotator()
 	// 現在は存在していたものは消されて，上書きされるようになっている
 
 #if USE_IMGUI_FOR_ROTATOR
-	pRotator = std::make_unique<Rotator>( ROTATOR::generatePos, ROTATOR::lineWidth, ROTATOR::moveSpeed );
+	pRotator = std::make_unique<Rotator>( ROTATOR::destroyFrame, ROTATOR::generatePos, ROTATOR::lineWidth, ROTATOR::moveSpeed );
 #else
+	constexpr int   DESTROY_FRAME	= 110;
 	constexpr float GENERATE_POS	= 2048.0f;
 	constexpr float LINE_WIDTH		= 128.0f;
 	constexpr float MOVE_SPEED		= -24.0f;
-	pRotator = std::make_unique<Rotator>( GENERATE_POS, LINE_WIDTH, MOVE_SPEED );
+	pRotator = std::make_unique<Rotator>( DESTROY_FRAME, GENERATE_POS, LINE_WIDTH, MOVE_SPEED );
 #endif // USE_IMGUI_FOR_ROTATOR
 }
 void Game::RotatorUpdate()
@@ -1758,6 +1968,7 @@ void Game::RotatorUpdate()
 	{
 		ImGui::Begin( "Rotator" );
 
+		ImGui::SliderInt  ( "DestroyFrame",	&ROTATOR::destroyFrame,	1,		1024	);
 		ImGui::SliderFloat( "GeneratePos",	&ROTATOR::generatePos,	0.0f,	1920.0f	);
 		ImGui::SliderFloat( "Line Width",	&ROTATOR::lineWidth,	0.1f,	32.0f	);
 		ImGui::DragFloat  ( "Move Speed",	&ROTATOR::moveSpeed,	0.5f	);
@@ -1919,8 +2130,17 @@ void Game::BalloonUpdate()
 	// else
 
 	// チュートリアル台詞
-	if ( stageNumber == 1 && pProgress )
+	if ( pProgress )
 	{
+		const bool isFirstVer = ( stageNumber == 1 );
+
+		const std::vector<std::string>	&baseTexts = ( isFirstVer )
+			? TextBehavior::TUTORIAL
+			: TextBehavior::TUTORIAL_TOGGLE;
+		const std::vector<int>			&showFrames = ( isFirstVer )
+			? TextBehavior::TUTORIAL_SHOW_FRAME
+			: TextBehavior::TUTORIAL_TOGGLE_SHOW_FRAME;
+
 		constexpr int TUTORIAL_TEXT_START_FRAME		= 80; // フェードのための待ち時間
 		constexpr int TUTORIAL_BALLOON_START_FRAME	= TUTORIAL_TEXT_START_FRAME - 20; // フキダシが出てからテキストを表示するための差分
 		if ( state == State::Game )	// クリア後は新しくは出さない
@@ -1939,12 +2159,12 @@ void Game::BalloonUpdate()
 		// 表示時間経過確認
 		if ( state == State::Game )
 		{
-			if ( textNumber < scast<int>( TextBehavior::TUTORIAL.size() ) - 1 )
+			if ( textNumber < scast<int>( baseTexts.size() ) - 1 )
 			{
 				int sumFrame = 0;
 				for ( int i = 0; i <= textNumber; i++ )
 				{
-					sumFrame += TextBehavior::TUTORIAL_SHOW_FRAME[i];
+					sumFrame += showFrames[i];
 				}
 
 				bool isOverCurrentShowFrame = sumFrame <= textTimer - TUTORIAL_TEXT_START_FRAME;
@@ -1968,7 +2188,7 @@ void Game::BalloonUpdate()
 			else // else文にすると，すべて表示した後でないとリセットできないようになる
 			if ( IsTrigger( InputTrigger::Select ) )
 			{
-				textTimer  = TUTORIAL_TEXT_START_FRAME + TextBehavior::TUTORIAL_SHOW_FRAME[0];
+				textTimer  = TUTORIAL_TEXT_START_FRAME + showFrames[0];
 
 				textLength = 1;
 				textExtendInterval = 0;
@@ -1981,7 +2201,7 @@ void Game::BalloonUpdate()
 		}
 
 		// 文字数増加確認
-		if ( 0 != textLength && ( textLength * 2 ) <= scast<int>( TextBehavior::TUTORIAL[textNumber].size() ) )
+		if ( 0 != textLength && ( textLength * 2 ) <= scast<int>( baseTexts[textNumber].size() ) )
 		{
 			constexpr int INTERVAL = 3;
 			textExtendInterval++;
@@ -1992,7 +2212,7 @@ void Game::BalloonUpdate()
 
 				// 口変化
 				{
-					if ( scast<int>( TextBehavior::TUTORIAL[textNumber].size() ) <= ( textLength * 2 ) )
+					if ( scast<int>( baseTexts[textNumber].size() ) <= ( textLength * 2 ) )
 					{
 						mouthIndex = 0;
 					}
@@ -2147,7 +2367,7 @@ void Game::BalloonUpdate()
 void Game::TalkReaction( int textIndex )
 {
 	// チュートリアル中は出さない
-	if ( stageNumber == 1 ) { return; }
+	if ( stageNumber == 1 || ( stageNumber == LIMIT_STAGE_NUMBER && !isUnlockedStage ) ) { return; }
 	// else
 
 	assert( 0 <= textIndex && textIndex < TextBehavior::Reactions::REACTION_END );
@@ -2271,6 +2491,11 @@ void Game::UsedOperate()
 {
 	timeSinceOperated = 0;
 }
+void Game::ResetExposureCount()
+{
+	succeedCounter   = 0;
+	timeSinceSucceed = 0;
+}
 
 void Game::FadeBegin()
 {
@@ -2315,6 +2540,15 @@ void Game::FadeDone()
 		return;
 	}
 
+	// 制限を解放するステージだった場合。これは下のif文より先にみないといけない（下のif文によりステージ番号がインクリメントされると，そのままこちらも通ってしまう）
+	if ( !isUnlockedStage && stageNumber == LIMIT_STAGE_NUMBER && state == State::Clear )
+	{
+		isUnlockedStage  = true;
+		pUnlockAnnouncer = std::make_unique<UnlockAnnouncer>();
+		stageNumber += 1; // 次のステージにカーソルを合わせておくため
+		FileIO::ResetStageLimit();
+	}
+
 	// 「次のステージ」を選んだ場合
 	if ( isShowClearMenu && state == State::Clear && nextState == State::Game )
 	{
@@ -2324,8 +2558,8 @@ void Game::FadeDone()
 		}
 	}
 
-	state = nextState;
-	nextState = State::Null;
+	state		= nextState;
+	nextState	= State::Null;
 
 	switch ( state )
 	{
@@ -2341,8 +2575,8 @@ void Game::FadeDone()
 		return;
 	}
 
-	isPause = false;
-	isOpenFade = false;
+	isPause		= false;
+	isOpenFade	= false;
 }
 void Game::FadeEnd()
 {
@@ -2385,6 +2619,9 @@ bool Game::Exposure()
 	std::vector<int>		targets{};		// 露光の適用対象たち
 	std::vector<Vector2>	particlePos{};
 
+	constexpr int VIBRATE_POWER = 400;
+	constexpr int VIBRATE_TIME  = 100; // m/sec
+
 	// 適用番号の検査
 	bool isCovered = false;	// 星が一つでもカメラの枠内に入っていれば真
 	const int end = pStarMng->GetArraySize();
@@ -2399,6 +2636,7 @@ bool Game::Exposure()
 			if ( pStarMng->FetchLevel( i ) <= 1 )
 			{
 				pCamera->SetShake();
+				StartJoypadVibration( DX_INPUT_PAD1, VIBRATE_POWER, VIBRATE_TIME );
 				UsedExposure( /* succeeded = */ false );
 				PlaySE( M_FAILURE );
 
@@ -2413,6 +2651,7 @@ bool Game::Exposure()
 			else // カメラの枠が星に触れてはいるが，星のサイズが大きく，はみだしている場合に入る（露光は失敗する）
 			{
 				pCamera->SetShake();
+				StartJoypadVibration( DX_INPUT_PAD1, VIBRATE_POWER, VIBRATE_TIME );
 				UsedExposure( /* succeeded = */ false );
 				PlaySE( M_FAILURE );
 
@@ -2425,7 +2664,9 @@ bool Game::Exposure()
 	if ( !isCovered )
 	{
 		pCamera->SetShake();
-		UsedExposure( /* succeeded = */ false );
+		StartJoypadVibration( DX_INPUT_PAD1, VIBRATE_POWER >> 1, VIBRATE_TIME >> 1 );
+		// 「それ以上は露光できない」とは言えないためはぶく
+		// UsedExposure( /* succeeded = */ false );
 		PlaySE( M_FAILURE );
 		return false;
 	}
@@ -2656,6 +2897,12 @@ void Game::SelectDraw()
 {
 	Vector2 shake = GetShakeAmount();
 
+	if ( pUnlockAnnouncer )
+	{
+		int bright = pUnlockAnnouncer->GetDrawBright();
+		SetDrawBright( bright, bright, bright );
+	}
+
 	// 背景
 	{
 		// 仮置きなので，ExtendGraph
@@ -2705,6 +2952,13 @@ void Game::SelectDraw()
 	if ( pCursor )
 	{
 		pCursor->Draw( shake );
+	}
+
+	if ( pUnlockAnnouncer )
+	{
+		SetDrawBright( 255, 255, 255 );
+
+		pUnlockAnnouncer->Draw();
 	}
 }
 
@@ -2785,6 +3039,17 @@ void Game::GameDraw()
 			GameImage::hFrameUI,
 			TRUE
 		);
+
+		if ( LIMIT_STAGE_NUMBER <= stageNumber )
+		{
+			DrawGraph
+			(
+				SCREEN_WIDTH  - GameImage::WIDTH_USAGE_R,
+				SCREEN_HEIGHT - GameImage::HEIGHT_USAGE_R,
+				GameImage::hUsageR,
+				TRUE
+			);
+		}
 	}
 
 	// 手数目標
@@ -2972,6 +3237,11 @@ void Game::GameDraw()
 	{
 		TextDraw();
 	}
+	// Ｒボタンへの矢印
+	if ( pArrow )
+	{
+		pArrow->Draw( GameImage::hArrow );
+	}
 
 #if DEBUG_MODE
 	RotatorDraw();
@@ -3044,12 +3314,24 @@ void Game::ClearDraw()
 		}
 
 		// 枠のUI
-		DrawGraph
-		(
-			0, 0,
-			GameImage::hFrameUI,
-			TRUE
-		);
+		{
+			DrawGraph
+			(
+				0, 0,
+				GameImage::hFrameUI,
+				TRUE
+			);
+			if ( LIMIT_STAGE_NUMBER <= stageNumber )
+			{
+				DrawGraph
+				(
+					SCREEN_WIDTH  - GameImage::WIDTH_USAGE_R,
+					SCREEN_HEIGHT - GameImage::HEIGHT_USAGE_R,
+					GameImage::hUsageR,
+					TRUE
+				);
+			}
+		}
 
 		// 手数目標
 		if ( pNumMoves )
@@ -3132,6 +3414,7 @@ void Game::ClearDraw()
 		}
 
 		// 人
+		if ( 0 ) // フェードアウトさせないようにした
 		{
 			int animIndex = 0;
 
@@ -3202,19 +3485,24 @@ void Game::ClearDraw()
 		GameDrawUI();
 	}
 
+	constexpr int NOT_USE_BLEND = -1;
+	int blendAlpha = NOT_USE_BLEND;
 	if ( isShowClearMenu )
 	{
 		SetDrawBright( 64, 64, 64 );
 	}
 	else if ( clearTimer < 255 )
 	{
-		int alpha = ( 255 / ClearRelated::FADE_WAIT )/* AMPL */ * clearTimer;
-
-		SetDrawBlendMode( DX_BLENDMODE_ALPHA, alpha );
+		blendAlpha = ( 255 / ClearRelated::FADE_WAIT )/* AMPL */ * clearTimer;
 	}
 	else
 	{
-		SetDrawBlendMode( DX_BLENDMODE_ALPHA, 255 );
+		blendAlpha = 255;
+	}
+
+	if ( blendAlpha != NOT_USE_BLEND )
+	{
+		SetDrawBlendMode( DX_BLENDMODE_ALPHA, blendAlpha );
 	}
 
 	// BG
@@ -3364,6 +3652,40 @@ void Game::ClearDraw()
 		}
 	}
 
+	// 人（フェードとは無関係にするため，内部でブレンドモードをいったんいじっている）
+	{
+		SetDrawBlendMode( DX_BLENDMODE_ALPHA, 255 );
+
+		// 体
+		DrawGraph
+		(
+			0,
+			SCREEN_HEIGHT - HumanImage::SIZE_Y,
+			HumanImage::GetBodyHandle( wink.GetAnimeIndex() ),
+			TRUE
+		);
+
+		// 口
+		DrawGraph
+		(
+			0,
+			SCREEN_HEIGHT - HumanImage::SIZE_Y,
+			HumanImage::GetMouthHandle( mouthIndex ),
+			TRUE
+		);
+
+		// 腕
+		DrawGraph
+		(
+			scast<int>( armPos.x ),
+			scast<int>( armPos.y ),
+			HumanImage::GetArmHandle( NULL ),
+			TRUE
+		);
+
+		SetDrawBlendMode( DX_BLENDMODE_ALPHA, blendAlpha );
+	}
+
 	// 背景としての，暗い星
 	{
 		// HACK:星の数が３つじゃないなら，ここも変える必要がある
@@ -3497,13 +3819,22 @@ void Game::TextDraw()
 	// else
 
 	// チュートリアル台詞
-	if ( stageNumber == 1 )
+	if ( stageNumber == 1 || ( stageNumber == LIMIT_STAGE_NUMBER && !isUnlockedStage ) )
 	{
-		int index = textNumber % scast<int>( TextBehavior::TUTORIAL.size() );
+		const bool isFirstVer = ( stageNumber == 1 );
+
+		const std::vector<std::string>	&baseTexts = ( isFirstVer )
+			? TextBehavior::TUTORIAL
+			: TextBehavior::TUTORIAL_TOGGLE;
+		const std::vector<int>			&showFrames = ( isFirstVer )
+			? TextBehavior::TUTORIAL_SHOW_FRAME
+			: TextBehavior::TUTORIAL_TOGGLE_SHOW_FRAME;
+
+		int index = textNumber % scast<int>( baseTexts.size() );
 		int length = textLength * 2/* 日本語で２バイト文字なので，倍にして対応 */;
-		if ( scast<int>( TextBehavior::TUTORIAL[index].size() ) <= textLength )
+		if ( scast<int>( baseTexts[index].size() ) <= textLength )
 		{
-			length = scast<int>( TextBehavior::TUTORIAL[index].size() );
+			length = scast<int>( baseTexts[index].size() );
 		}
 
 		constexpr int DIST_X	= 80;
@@ -3513,21 +3844,22 @@ void Game::TextDraw()
 		int emphasisPos = 0, i = 0;
 		for ( ; i < scast<int>( TextBehavior::EMPHASIS_STR.size() ); i++ )
 		{
-			emphasisPos = TextBehavior::TUTORIAL[index].find( TextBehavior::EMPHASIS_STR[i] );
+			emphasisPos = baseTexts[index].find( TextBehavior::EMPHASIS_STR[i] );
 			if ( emphasisPos != std::string::npos )
 			{
 				break;
 			}
 		}
 
-		if ( i == scast<int>( TextBehavior::EMPHASIS_STR.size() ) )	// ループが終わったら，見つからなかったということになる
+		// ループが終わったら，見つからなかったということになる
+		if ( i == scast<int>( TextBehavior::EMPHASIS_STR.size() ) )
 		{
 			DrawExtendStringToHandle
 			(
 				HumanBehavior::BALLOON_POS_X + DIST_X,
 				HumanBehavior::BALLOON_POS_Y + DIST_Y,
 				MAGNI, MAGNI,
-				( TextBehavior::TUTORIAL[index].substr( 0, length ) ).c_str(),
+				( baseTexts[index].substr( 0, length ) ).c_str(),
 				GetColor( 42, 97, 110 ),
 				hFont
 			);
@@ -3545,7 +3877,7 @@ void Game::TextDraw()
 		std::string text = "";
 
 		// 強調する文字列まで
-		text = TextBehavior::TUTORIAL[index].substr( 0, std::min( length, emphasisPos ) );
+		text = baseTexts[index].substr( 0, std::min( length, emphasisPos ) );
 
 		// Draw
 		{
@@ -3573,7 +3905,7 @@ void Game::TextDraw()
 		// else
 
 		// 強調文字列
-		text = TextBehavior::TUTORIAL[index].substr( emphasisPos, std::min( length, scast<int>( TextBehavior::EMPHASIS_STR[i].size() ) ) );
+		text = baseTexts[index].substr( emphasisPos, std::min( length, scast<int>( TextBehavior::EMPHASIS_STR[i].size() ) ) );
 
 		// Draw
 		{
@@ -3601,7 +3933,7 @@ void Game::TextDraw()
 		// else
 
 		// その後の文字列
-		text = TextBehavior::TUTORIAL[index].substr( emphasisPos + TextBehavior::EMPHASIS_STR[i].size(), length );
+		text = baseTexts[index].substr( emphasisPos + TextBehavior::EMPHASIS_STR[i].size(), length );
 
 		// Draw
 		{

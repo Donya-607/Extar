@@ -19,6 +19,7 @@ namespace FileIO
 
 	// TODO:各要素で読み込みが別なので，フォルダの数を不揃いにできてしまう
 	static int maxStageNumber = 1;
+	static int upperLimitStageNumber = -1;
 
 	void ReadAllCamera()
 	{
@@ -331,15 +332,24 @@ namespace FileIO
 		std::vector<std::vector<int>>().swap( numMoves );
 	}
 
+	void SetStageLimit( int upperLimitNumber )
+	{
+		upperLimitStageNumber = upperLimitNumber;
+	}
+	void ResetStageLimit()
+	{
+		upperLimitStageNumber = -1;
+	}
+
 	int  GetMaxStageNumber()
 	{
-		return maxStageNumber;
+		return ( upperLimitStageNumber != -1 ) ? upperLimitStageNumber : maxStageNumber;
 	}
 
 #if USE_IMGUI
 
 	static bool isShowWindows = false;
-	void UpdateShowWIndowState()
+	void UpdateShowWindowState()
 	{
 		if ( TRG( CHANGE_SHOW_IMGUI_KEY ) )
 		{
