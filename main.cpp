@@ -48,7 +48,7 @@ int WINAPI WinMain(	HINSTANCE	hCurInst/*インスタンスハンドル*/,	HINSTANCE	hPrevI
 #if DEBUG_MODE
 	ChangeWindowMode( TRUE );						// TRUE:ウィンドウモード, FALSE:フルスクリーンモード
 #else
-	ChangeWindowMode( FALSE );						// TRUE:ウィンドウモード, FALSE:フルスクリーンモード
+	ChangeWindowMode( TRUE );						// TRUE:ウィンドウモード, FALSE:フルスクリーンモード
 #endif // DEBUG_MODE
 
 
