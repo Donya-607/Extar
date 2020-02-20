@@ -11,7 +11,7 @@ private:
 	int		timer  = 0;
 	int		alpha  = 0; // 0 ~ 255
 	int		bright = 0; // 0 ~ 255
-	Vector2	pos{};		// Left-Top.
+	Vector2	pos{};		// Center.
 public:
 	void Update();
 
