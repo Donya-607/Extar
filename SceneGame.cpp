@@ -721,7 +721,7 @@ namespace
 {
 	static float   arrowShakeSpeed  = 16.0f;
 	static float   arrowShakeAmount = 16.0f;
-	static Vector2 arrowBasePos{ 1710.0f, 828.0f };
+	static Vector2 arrowBasePos{ 1710.0f, 791.0f };
 
 	class HorizontalArrow
 	{
