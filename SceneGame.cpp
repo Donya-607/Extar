@@ -721,7 +721,7 @@ namespace
 {
 	static float   arrowShakeSpeed  = 16.0f;
 	static float   arrowShakeAmount = 16.0f;
-	static Vector2 arrowBasePos{ 1700.0f, 800.0f };
+	static Vector2 arrowBasePos{ 1710.0f, 828.0f };
 
 	class HorizontalArrow
 	{
@@ -751,10 +751,11 @@ namespace
 
 		void Draw( int handle )
 		{
-			DrawGraphF
+			DrawRotaGraph
 			(
-				( pos + shake ).x,
-				( pos + shake ).y,
+				scast<int>( ( pos + shake ).x ),
+				scast<int>( ( pos + shake ).y ),
+				1.0, 0.0f,
 				handle, TRUE
 			);
 		}
@@ -1367,6 +1368,7 @@ void Game::GameUpdate()
 		PlaySE( M_SHUTTER );
 	}
 
+	// クリア判定（と，その後の処理）
 	// カメラの更新より先に判定し，描画後にスクショが始まるようにする
 	if ( !isDoneMoveArm && pStarMng->IsEqualLevels() )
 	{
@@ -3154,7 +3156,7 @@ void Game::GameDraw()
 	if ( shutter_flag )
 	{
 		//シャッター(上から下)
-		DrawRectGraph
+		auto result = DrawRectGraph
 		(
 			DrawStart_X,
 			DrawStart_Y,
@@ -3168,7 +3170,7 @@ void Game::GameDraw()
 		);
 
 		//シャッター(下から上)
-		DrawRectGraph
+		result = DrawRectGraph
 		(
 			DrawStart_X,
 			DrawStart_Y,
@@ -3180,6 +3182,7 @@ void Game::GameDraw()
 			GameImage::hshutter,
 			TRUE
 		);
+		result += 1;
 	}
 
 #if DEBUG_MODE
