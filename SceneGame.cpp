@@ -3156,7 +3156,7 @@ void Game::GameDraw()
 	if ( shutter_flag )
 	{
 		//シャッター(上から下)
-		auto result = DrawRectGraph
+		DrawRectGraph
 		(
 			DrawStart_X,
 			DrawStart_Y,
@@ -3170,7 +3170,7 @@ void Game::GameDraw()
 		);
 
 		//シャッター(下から上)
-		result = DrawRectGraph
+		DrawRectGraph
 		(
 			DrawStart_X,
 			DrawStart_Y,
@@ -3182,7 +3182,6 @@ void Game::GameDraw()
 			GameImage::hshutter,
 			TRUE
 		);
-		result += 1;
 	}
 
 #if DEBUG_MODE
