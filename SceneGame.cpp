@@ -1397,7 +1397,7 @@ void Game::GameUpdate()
 				textLength = 1;
 				textExtendInterval = 0;
 				textNumber = rand() % scast<int>( TextBehavior::CLEAR_SAY.size() );
-
+				
 				isOpenBalloon = true;
 			}
 
@@ -1571,7 +1571,7 @@ void Game::GameUpdate()
 	}
 
 	// Ｒボタンへの矢印の，生成・削除条件の確認
-	if ( stageNumber == LIMIT_STAGE_NUMBER && !isUnlockedStage )
+	if ( stageNumber == LIMIT_STAGE_NUMBER && !isUnlockedStage && nextState == State::Null/* クリア時の発言がＲボタン定数と被った際に通るのを防ぐため */ )
 	{
 		if ( textNumber == TextBehavior::TUTORIAL_TOGGLE_GENERATE_ARROW_TIMING )
 		{
